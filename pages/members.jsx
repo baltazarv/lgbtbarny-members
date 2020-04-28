@@ -18,6 +18,18 @@ import MemberMenu from '../components/members/member-menu';
 import Banner from '../components/utils/banner';
 import NewsNotification from '../components/utils/open-notification';
 import './members.less';
+import SvgIcon from '../components/utils/svg-icon';
+
+const MenuIcon = ({ name, ariaLabel }) =>
+  <span role="img" aria-label={ariaLabel} className="anticon">
+    <SvgIcon
+      name={name}
+      width="1.6em"
+      height="1.6em"
+      fill="currentColor" // "#008cdb"
+      className="mb-2"
+    />
+  </span>
 
 const TextContent =({text}) => {
   return <span>{text}</span>
@@ -28,11 +40,11 @@ const menuKeys = ['profile', 'perks', 'account'];
 const menuItems = {
   options: {
     defaultSelectedKeys: ['messages'],
-    avatarSrc: 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png',
+    avatarSrc: '/images/accounts/river-phoenix-cropped.jpg',
   },
 
   messages: {
-    icon: <BellOutlined />,
+    icon: <MenuIcon name="bell" ariaLabel="messages" />,
     label: 'Messages',
     title: 'Message inbox',
     content: <>
@@ -43,12 +55,12 @@ const menuItems = {
       </ul>
     </>
   },
-  account: {
-    icon: <UserOutlined />,
+  profile: {
+    icon: <MenuIcon name="customer-profile" ariaLabel="profile" />,
     label: 'Profile',
     children: {
       logininfo: {
-        label: 'Email & pwd',
+        label: 'Email & login',
         title: 'Login credentials',
         content: <>
           <ul>
@@ -81,7 +93,7 @@ const menuItems = {
     },
   },
   participate: {
-    icon: <SettingOutlined />,
+    icon: <MenuIcon name="people-group" ariaLabel="participate" />,
     label: 'Participate',
     children: {
       committees: {
@@ -90,8 +102,8 @@ const menuItems = {
       },
     }
   },
-  profile: {
-    icon: <SettingOutlined />,
+  account: {
+    icon: <MenuIcon name="user-admin" ariaLabel="account" />,
     label: 'Account',
     title: 'Account overview',
     children: {
@@ -118,7 +130,7 @@ const menuItems = {
     }
   },
   perks: {
-    icon: <HeartOutlined />,
+    icon: <MenuIcon name="gift" ariaLabel="perks" />,
     label: 'Perks',
     title: 'Membership perks',
     children: {
@@ -137,7 +149,7 @@ const menuItems = {
     }
   },
   logout: {
-    icon: <PoweroffOutlined />,
+    icon: <MenuIcon name="logout" ariaLabel="logout" />,
     label: 'Log Out',
     onClick: 'onClick',
   }
@@ -264,9 +276,10 @@ const Members = ({ loggedIn }) => {
                 <Col>
                   <Card className="mt-3">
                     <Banner
-                      title="Optional Banner"
-                      text="Release of the latest Law Notes edition, of this year's annual report, of a podcast episode... An event promotion... Reminder to renew membership. Encouragement to join a committee or section... Push to donate. (To update this, admin would upload an image or edit text fields.)"
+                      title="Advertising Banner (Optional)"
+                      text="Release of the latest Law Notes edition, of this year's annual report, of a podcast episode... An event promotion... Reminder to renew membership. Encouragement to join a committee or section... Push to donate..."
                     />
+                    {/* (To update this, admin would upload an image or edit text fields.) */}
                     <Card.Body>
                       {renderBreadcrumbs(breadcrumbs)}
                       <Card.Title>

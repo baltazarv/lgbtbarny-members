@@ -4,9 +4,6 @@ import { Container, Row, Col, Navbar, Nav, NavDropdown } from "react-bootstrap";
 // import 'bootstrap/dist/css/bootstrap.min.css';
 import './main-header.less';
 
-import UserAdminSvg from '../assets/icons/user-admin.svg';
-import UserAdminIcon from './icons/user-admin';
-
 const onGetLegalHelpClick = (evt) => {
   event
   alert('Legal help info...')
@@ -137,6 +134,10 @@ const navItemsData = {
   participate: {
     title: 'GET INVOLVED',
     subitems: {
+      ways: {
+        title: 'Ways to Participate',
+        href: 'https://www.lgbtbarny.org/get-involved',
+      },
       referrals: {
         title: 'Referral Network',
         href: 'https://www.lgbtbarny.org/lrn-pbp',

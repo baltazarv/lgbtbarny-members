@@ -1,11 +1,29 @@
+import { useState, useEffect } from 'react';
 import { Card } from 'react-bootstrap';
-// TO-DO: add random pastel background color
 
-const Banner = ({title, text}) => {
+const colors = [
+  // { backgroundColor: '#e6fffb', color: '#006d75' }, // cyan
+  { backgroundColor: '#fcffe6', color: '#3f6600' }, // green
+  { backgroundColor: '#feffe6', color: '#ad8b00' }, // yellow
+  { backgroundColor: '#f9f0ff', color: '#531dab' }, // purple
+  { backgroundColor: '#f9f0ff', color: '#9e1068' }, // magenta
+]
+
+const Banner = ({ title, text }) => {
+
+  const [colorStyles, setColorStyles] = useState({});
+
+  useEffect(() => {
+    const randomArrayValue = (array) => {
+      return array[Math.floor(Math.random() * array.length)];
+    }
+
+    setColorStyles(randomArrayValue(colors));
+  }, [colorStyles])
+
   return (
     <>
-      <Card.Header className="card-banner">
-        {/* blah */}
+      <Card.Header className="card-banner" style={colorStyles}>
         {title &&
           <div className="title">{title}</div>
         }
