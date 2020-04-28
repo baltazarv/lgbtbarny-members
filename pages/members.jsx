@@ -2,19 +2,13 @@ import { useEffect, useState } from 'react';
 // import { useRouter } from 'next/router'
 // import dynamic from "next/dynamic";
 // const Login = dynamic(() => import("./login"));
-import { Jumbotron, Container, Row, Col, Card } from 'react-bootstrap';
-import { Layout, Button, Avatar, Tooltip, Breadcrumb, notification } from 'antd';
-import {
-  InboxOutlined,
-  BellOutlined,
-  SettingOutlined, // account
-  UserOutlined, // profile
-  HeartOutlined, // perks
-  // jobs
-  PoweroffOutlined, // log out
-} from '@ant-design/icons';
+import { Breakpoint } from 'react-socks';
+import { Jumbotron, Container } from 'react-bootstrap';
+import { Layout, Button, Avatar, Tooltip } from 'antd';
 import MainLayout from '../components/main-layout';
 import MemberMenu from '../components/members/member-menu';
+import MemberAccordion from '../components/members/member-accordion';
+import MemberContent from '../components/members/member-content';
 import Banner from '../components/utils/banner';
 import NewsNotification from '../components/utils/open-notification';
 import './members.less';
@@ -31,10 +25,6 @@ const MenuIcon = ({ name, ariaLabel }) =>
     />
   </span>
 
-const TextContent =({text}) => {
-  return <span>{text}</span>
-}
-
 const { Sider } = Layout;
 const menuKeys = ['profile', 'perks', 'account'];
 const menuItems = {
@@ -42,9 +32,12 @@ const menuItems = {
     defaultSelectedKeys: ['messages'],
     avatarSrc: '/images/accounts/river-phoenix-cropped.jpg',
   },
-
   messages: {
     icon: <MenuIcon name="bell" ariaLabel="messages" />,
+    banner: <Banner
+      title="Advertising Banner (Optional)"
+      text="Release of the latest Law Notes edition, of this year's annual report, of a podcast episode... An event promotion... Reminder to renew membership. Encouragement to join a committee or section... Push to donate..."
+    />, // (To update this, admin would upload an image or edit text fields.)
     label: 'Messages',
     title: 'Message inbox',
     content: <>
@@ -159,10 +152,9 @@ const notifThemeColor = '#BC1552';
 const Members = ({ loggedIn }) => {
 
   const [menuCollapsed, setMenuCollapsed] = useState(false);
-  const [menuOpenKeys, setMenuOpenKeys] = useState(['profile', 'participate', 'account', 'perks']);
-  const [breadcrumbs, setBreadcrumbs] = useState([]);
-  const [pageTitle, setPageTitle] = useState([menuItems.messages.title]);
-  const [pageContent, setPageContent] = useState(menuItems.messages.content);
+  const [menuOpenKeys, setMenuOpenKeys] = useState([]); // 'profile', 'participate', 'account', 'perks'
+  const [selectedPageData, setSelectedPageData] = useState(null);
+  const [selectedParentData, setSelectedParentData] = useState(null);
   const [notification, setNotification] = useState({
     message: 'What\'t New',
     description: 'There\'s some news for all members. Or a message just for you!',
@@ -178,24 +170,35 @@ const Members = ({ loggedIn }) => {
     ),
   })
 
+  const getContentData = (key, keyPath) => {
+    let pageData = null;
+    let parentData = null;
+    if (keyPath.length === 1) {
+      // `messages`
+      pageData = menuItems[key];
+    } else {
+      // others
+      const parentKey = keyPath[1];
+      parentData = menuItems[parentKey];
+      pageData = menuItems[parentKey].children[key];
+    }
+    return { pageData, parentData };
+  }
+
+  // triggered by ant-menu-submenu-title
+  const onMenuOpenChange = openKeys => {
+    setMenuOpenKeys(openKeys);
+  }
+
+  // ant-menu-submenu-title triggers onMenuOpenChange, NOT onMenuClick
   const onMenuClick = ({ item, key, keyPath, domEvent }) => {
-    console.log('onMenuClick', key);
+    // console.log('onMenuClick', item, key, keyPath, domEvent);
     if (key === 'logout') {
       alert('Log out!')
     } else {
-      // console.log('onMenuClick', item, key, keyPath, domEvent);
-      let _breadcrumbs = [];
-      if (keyPath.length === 1) {
-        setPageTitle(menuItems[key].title)
-        // _breadcrumbs = [menuItems[key].label];
-      } else {
-        const parent = keyPath[1];
-        const children = menuItems[parent].children;
-        setPageTitle(menuItems[parent].children[key].title)
-        _breadcrumbs = [menuItems[parent].label, children[key].label];
-        children[key].content ? setPageContent(children[key].content) : setPageContent(null);
-      }
-      setBreadcrumbs(_breadcrumbs);
+      const contentData = getContentData(key, keyPath);
+      setSelectedPageData(contentData.pageData);
+      setSelectedParentData(contentData.parentData);
     }
   }
 
@@ -215,18 +218,9 @@ const Members = ({ loggedIn }) => {
     }
   }
 
-  const onMenuOpenChange = openKeys => {
-    setMenuOpenKeys(openKeys);
-  }
-
-  const renderBreadcrumbs = (_breadcrumbs) => {
-    if (_breadcrumbs.length === 0) null
-    return (
-      <Breadcrumb>
-        {_breadcrumbs.map(crumb => <Breadcrumb.Item key={crumb}>{crumb}</Breadcrumb.Item>)}
-      </Breadcrumb>
-    )
-  }
+  useEffect(() => {
+    setSelectedPageData(menuItems.messages);
+  }, [menuItems]);
 
   useEffect(() => {
     NewsNotification(notification);
@@ -244,56 +238,43 @@ const Members = ({ loggedIn }) => {
           </Container>
         </Jumbotron>
 
-        <Layout
-            className="member-page-layout"
-          >
-          <Sider
-            collapsible
-            collapsed={menuCollapsed}
-            onCollapse={onMenuCollapse}
-            theme="light"
-          >
-            <Tooltip title="toggle opening menu">
-              <div className="avatar-box" onClick={toggleOpenMenuKeys}>
-                <Avatar
-                  src={menuItems.options.avatarSrc}
-                />
-              </div>
-            </Tooltip>
+        <Breakpoint xs only>
+          <MemberAccordion />
+        </Breakpoint>
 
-            <MemberMenu
-              onMenuClick={onMenuClick}
-              data={menuItems}
-              onMenuOpenChange={onMenuOpenChange}
-              menuOpenKeys={menuOpenKeys}
-            />
-
-          </Sider>
-
-          <Layout className="site-layout">
-            <Container>
-              <Row>
-                <Col>
-                  <Card className="mt-3">
-                    <Banner
-                      title="Advertising Banner (Optional)"
-                      text="Release of the latest Law Notes edition, of this year's annual report, of a podcast episode... An event promotion... Reminder to renew membership. Encouragement to join a committee or section... Push to donate..."
-                    />
-                    {/* (To update this, admin would upload an image or edit text fields.) */}
-                    <Card.Body>
-                      {renderBreadcrumbs(breadcrumbs)}
-                      <Card.Title>
-                        <h2 className="h2">{pageTitle}</h2>
-                      </Card.Title>
-                      <div>{pageContent}</div>
-                    </Card.Body>
-                  </Card>
-                </Col>
-              </Row>
-            </Container>
+        <Breakpoint sm up>
+          <Layout
+              className="member-page-layout"
+            >
+            <Sider
+              collapsible
+              collapsed={menuCollapsed}
+              onCollapse={onMenuCollapse}
+              theme="light"
+            >
+              <Tooltip title="toggle opening menu">
+                <div className="avatar-box" onClick={toggleOpenMenuKeys}>
+                  <Avatar
+                    src={menuItems.options.avatarSrc}
+                  />
+                </div>
+              </Tooltip>
+              <MemberMenu
+                onMenuClick={onMenuClick}
+                data={menuItems}
+                onMenuOpenChange={onMenuOpenChange}
+                menuOpenKeys={menuOpenKeys}
+              />
+            </Sider>
+            <Layout className="site-layout">
+              <MemberContent
+                pageData={selectedPageData}
+                parentData={selectedParentData}
+              />
+            </Layout>
           </Layout>
+        </Breakpoint>
 
-        </Layout>
       </MainLayout>
     </div>
   )
