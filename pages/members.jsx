@@ -37,6 +37,7 @@ const data = {
   },
   messages: {
     icon: <MenuIcon name="bell" ariaLabel="messages" />,
+    badge: 1,
     banner: <Banner
       title="Advertising Banner (Optional)"
       text="Release of the latest Law Notes edition, of this year's annual report, of a podcast episode... An event promotion... Reminder to renew membership. Encouragement to join a committee or section... Push to donate..."

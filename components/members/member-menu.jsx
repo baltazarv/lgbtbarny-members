@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Menu } from 'antd';
+import { Menu, Badge } from 'antd';
 import './member-menu.less';
 
 const { SubMenu } = Menu;
@@ -22,9 +22,11 @@ const MemberMenu = ({ data, onMenuClick, onMenuOpenChange, menuOpenKeys }) => {
     }
     const _menuChildren = items.map(item => {
       if (!item.children) {
+        let badge = null;
+        if (item.badge) badge = <Badge count={item.badge} />;
         return <Menu.Item key={item.key}>
           {item.icon}
-          <span>{item.label}</span>
+          <span>{item.label} {badge}</span>
         </Menu.Item>
       } else {
         let subitems = [];
@@ -52,6 +54,7 @@ const MemberMenu = ({ data, onMenuClick, onMenuOpenChange, menuOpenKeys }) => {
 
   return (
     <Menu
+      className="member-menu"
       theme="light"
       defaultSelectedKeys={data.options.defaultSelectedKeys}
       mode="inline"
