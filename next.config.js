@@ -22,7 +22,7 @@ const plugins = [
   withLess({
     lessLoaderOptions: {
       javascriptEnabled: true,
-      modifyVars: themeVariables, // make your antd custom effective
+      // modifyVars: themeVariables, // make your antd custom effective
     },
     webpack: (config) => {
       if (typeof require !== 'undefined') {
