@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card } from 'react-bootstrap';
 
-const colors = [
+const colorsOptions = [
   // { backgroundColor: '#e6fffb', color: '#006d75' }, // cyan
   { backgroundColor: '#fcffe6', color: '#3f6600' }, // green
   { backgroundColor: '#feffe6', color: '#ad8b00' }, // yellow
@@ -9,7 +9,7 @@ const colors = [
   { backgroundColor: '#f9f0ff', color: '#9e1068' }, // magenta
 ]
 
-const Banner = ({ title, text }) => {
+const Banner = ({ title, text, colors }) => {
 
   const [colorStyles, setColorStyles] = useState({});
 
@@ -17,9 +17,12 @@ const Banner = ({ title, text }) => {
     const randomArrayValue = (array) => {
       return array[Math.floor(Math.random() * array.length)];
     }
-
-    setColorStyles(randomArrayValue(colors));
-  }, [colorStyles])
+    if (colors) {
+      setColorStyles(colors);
+    } else {
+      setColorStyles(randomArrayValue(colorsOptions));
+    }
+  }, [colors]);
 
   return (
     <>

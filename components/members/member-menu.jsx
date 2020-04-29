@@ -4,11 +4,7 @@ import './member-menu.less';
 
 const { SubMenu } = Menu;
 
-const MemberMenu = ({ data, onMenuClick, onMenuOpenChange, menuOpenKeys }) => {
-
-  const onMenuSelect = ({ item, key, keyPath, selectedKeys, domEvent }) => {
-    // console.log('select', item, key, keyPath, selectedKeys, domEvent);
-  }
+const MemberMenu = ({ data, onMenuClick, onMenuOpenChange, menuOpenKeys, selectedKeys, setSelectedKeys }) => {
 
   const [menuChildren, setMenuChildren] = useState(null);
 
@@ -52,14 +48,20 @@ const MemberMenu = ({ data, onMenuClick, onMenuOpenChange, menuOpenKeys }) => {
     setMenuChildren(_menuChildren);
   }, [data]);
 
+  const onMenuSelect = ({ item, key, keyPath, selectedKeys, domEvent }) => {
+    // console.log('select', item, key, keyPath, selectedKeys, domEvent);
+    setSelectedKeys(selectedKeys);
+  }
+
   return (
     <Menu
       className="member-menu"
       theme="light"
-      defaultSelectedKeys={data.options.defaultSelectedKeys}
       mode="inline"
       onClick={onMenuClick}
       onSelect={onMenuSelect}
+      // defaultSelectedKeys={data.options.defaultSelectedKeys}
+      selectedKeys={selectedKeys}
       openKeys={menuOpenKeys}
       onOpenChange={onMenuOpenChange}
     >
@@ -71,5 +73,3 @@ const MemberMenu = ({ data, onMenuClick, onMenuOpenChange, menuOpenKeys }) => {
 }
 
 export default MemberMenu;
-
-// ReactDOM.render(<SiderDemo />, mountNode);

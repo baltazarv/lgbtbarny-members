@@ -1,20 +1,38 @@
 import { useState } from 'react';
-import { Breadcrumb } from 'antd';
+import { Breadcrumb, Button } from 'antd';
 import { Container, Row, Col, Card } from 'react-bootstrap';
 import { useEffect } from 'react';
+// data
+import { getMembersPageItem } from '../../data/members-data';
 
-const MemberContent = ({ pageData, parentData = null }) => {
+const MemberContent = ({ pageData, parentData = null, onLinkClick }) => {
 
   const [banner, setBanner] = useState(null);
   const [breadcrumbs, setBreadcrumbs] = useState([]);
   const [pageTitle, setPageTitle] = useState('');
   const [pageContent, setPageContent] = useState(null);
+  const [usefulLinks, setUsefulLinks] = useState(null);
 
   useEffect(() => {
     if (pageData) {
 
+      const getUsefulLinks = keys => {
+        const _usefulLinks = keys.map((key, index) => {
+          const link = getMembersPageItem(key);
+          return <>
+            <Button type="link" key={key} onClick={() => onLinkClick(key)}>{link.title}</Button>{index !== keys.length - 1 ? " | " : null}
+          </>
+        });
+        return <Card.Footer>
+          <div className="font-weight-bold">Useful Links</div>
+          <div>{_usefulLinks}</div>
+        </Card.Footer>
+      }
+
       if (pageData.banner) {
         setBanner(pageData.banner);
+      } else if (parentData.banner) {
+        setBanner(parentData.banner);
       } else {
         setBanner(null);
       }
@@ -32,10 +50,18 @@ const MemberContent = ({ pageData, parentData = null }) => {
       } else {
         setPageContent(null);
       }
+
+      if (pageData.links) {
+        setUsefulLinks(getUsefulLinks(pageData.links))
+      } else if (parentData.links) {
+        setUsefulLinks(getUsefulLinks(parentData.links))
+      } else {
+        setUsefulLinks(null);
+      }
     }
   }, [pageData, parentData])
 
-  return <Container>
+  return <Container className="member-content">
     <Row>
       <Col>
         <Card className="mt-3">
@@ -52,9 +78,16 @@ const MemberContent = ({ pageData, parentData = null }) => {
             </Card.Title>
             <div>{pageContent}</div>
           </Card.Body>
+          {usefulLinks}
         </Card>
       </Col>
     </Row>
+    <style global jsx>{`
+      .card-footer button {
+        margin: 0;
+        padding: 0;
+      }
+    `}</style>
   </Container>
 }
 

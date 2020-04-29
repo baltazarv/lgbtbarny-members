@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Collapse, Avatar } from 'antd';
-import { Container } from 'react-bootstrap';
 import MemberContent from './member-content';
 import SvgIcon from '../utils/svg-icon';
 import './member-accordion.less';
@@ -22,7 +21,15 @@ const genExtra = () => (
 const MemberAccordion = ({ data, logout }) => {
 
   const [panels, setPanels] = useState(null);
-  const defaultActiveKey = []; // 'messages'
+  const [activeKey, setActiveKey] = useState('messages');
+
+  const onPanelSelected = key => {
+    setActiveKey(key);
+  }
+
+  const onLinkClick = key => {
+    setActiveKey(key);
+  }
 
   useEffect(() => {
     const items = [];
@@ -42,6 +49,7 @@ const MemberAccordion = ({ data, logout }) => {
           >
           <MemberContent
             pageData={item}
+            onLinkClick={onLinkClick}
           />
         </Panel>);
       } else {
@@ -61,6 +69,7 @@ const MemberAccordion = ({ data, logout }) => {
             <MemberContent
               pageData={subitem}
               parentData={item}
+              onLinkClick={onLinkClick}
             />
           </Panel>);
         });
@@ -74,28 +83,28 @@ const MemberAccordion = ({ data, logout }) => {
       accordion
       className="member-accordion"
       bordered={true}
-      defaultActiveKey={defaultActiveKey}
+      activeKey={activeKey}
+      // defaultActiveKey={defaultActiveKey}
       expandIconPosition="right"
+      onChange={onPanelSelected}
     >
-      <Container className="toolbar">
-        <div className="d-flex justify-content-around align-items-center">
-          <span>
-            <Avatar
-              src={data.options.avatarSrc}
-            />
-          </span>
-          <span
-            onClick={logout}
-            className="d-flex flex-column justify-content-around align-items-center"
-          >
-            <SvgIcon
-              name="logout"
-              fill="currentColor"
-            />
-            logout
-          </span>
-        </div>
-      </Container>
+      <div className="toolbar d-flex justify-content-around align-items-center">
+        <span>
+          <Avatar
+            src={data.options.avatarSrc}
+          />
+        </span>
+        <span
+          onClick={logout}
+          className="d-flex flex-column justify-content-around align-items-center"
+        >
+          <SvgIcon
+            name="logout"
+            fill="currentColor"
+          />
+          logout
+        </span>
+      </div>
       {panels}
     </Collapse>
   </>

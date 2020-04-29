@@ -9,20 +9,10 @@ import MainLayout from '../components/main-layout';
 import MemberMenu from '../components/members/member-menu';
 import MemberAccordion from '../components/members/member-accordion';
 import MemberContent from '../components/members/member-content';
-import Banner from '../components/utils/banner';
 import NewsNotification from '../components/utils/open-notification';
 import './members.less';
-import SvgIcon from '../components/utils/svg-icon';
-
-const MenuIcon = ({ name, ariaLabel }) =>
-  <span role="img" aria-label={ariaLabel} className="anticon">
-    <SvgIcon
-      name={name}
-      width="1.6em"
-      height="1.6em"
-      fill="currentColor" // "#008cdb"
-    />
-  </span>
+// data
+import { data, getMemberPageParentKey } from '../data/members-data';
 
 const logOut = () => {
   alert('Log out!');
@@ -30,137 +20,13 @@ const logOut = () => {
 
 const { Sider } = Layout;
 const menuKeys = ['profile', 'perks', 'account'];
-const data = {
-  options: {
-    defaultSelectedKeys: ['messages'],
-    avatarSrc: '/images/accounts/river-phoenix-cropped.jpg',
-  },
-  messages: {
-    icon: <MenuIcon name="bell" ariaLabel="messages" />,
-    badge: 1,
-    banner: <Banner
-      title="Advertising Banner (Optional)"
-      text="Release of the latest Law Notes edition, of this year's annual report, of a podcast episode... An event promotion... Reminder to renew membership. Encouragement to join a committee or section... Push to donate..."
-    />, // (To update this, admin would upload an image or edit text fields.)
-    label: 'Messages',
-    title: 'Message inbox',
-    content: <>
-      <div>Notifications that can also be emailed to members:</div>
-      <ul>
-        <li>Events members have registered for.</li>
-        <li>Promotions.</li>
-      </ul>
-    </>
-  },
-  profile: {
-    icon: <MenuIcon name="customer-profile" ariaLabel="profile" />,
-    label: 'Profile',
-    children: {
-      logininfo: {
-        label: 'Email & login',
-        title: 'Login credentials',
-        banner: <Banner
-          title="Profile banner title"
-          text="Profile banner text"
-        />,
-        content: <>
-          <ul>
-            <li>Email address for login.</li>
-            <li>Alternate email address.</li>
-          </ul>
-          <hr />
-          <ul>
-            <li>Change password.</li>
-          </ul>
-          <hr />
-          <ul>
-            <li>Optional phone number for account recovery.</li>
-          </ul>
-        </>
-      },
-      basicinfo: {
-        label: 'Basic info',
-        title: 'Edit basic profile info',
-        content: <>
-          <ul>
-            <li>txt</li>
-          </ul>
-        </>
-      },
-      advinfo: {
-        label: 'Advanced info',
-        title: 'Demographic info for statistics',
-      },
-    },
-  },
-  participate: {
-    icon: <MenuIcon name="people-group" ariaLabel="participate" />,
-    label: 'Participate',
-    children: {
-      committees: {
-        label: 'Committees',
-        title: 'Committee & section participation & preferences',
-      },
-    }
-  },
-  account: {
-    icon: <MenuIcon name="user-admin" ariaLabel="account" />,
-    label: 'Account',
-    title: 'Account overview',
-    children: {
-      autorenew: {
-        label: 'Auto-renewal',
-        title: 'Auto-renewal settings',
-      },
-      mailing: {
-        label: 'Email notifications',
-        title: 'Email notification & promotion preferences',
-      },
-      receipts: {
-        label: 'Receipts',
-        title: 'Receipts for membership fees, donations, CLE courses, & events',
-      },
-      clecerts: {
-        label: 'CLE certs',
-        title: 'CLE course certifications',
-      },
-      taxforms: {
-        label: 'Tax Forms',
-        title: 'Tax donation forms',
-      },
-    }
-  },
-  perks: {
-    icon: <MenuIcon name="gift" ariaLabel="perks" />,
-    label: 'Perks',
-    title: 'Membership perks',
-    children: {
-      lawnotes: {
-        label: 'Law Notes',
-        title: 'Law Notes: current & past',
-      },
-      cle: {
-        label: 'CLE Library',
-        title: 'CLE materials: current & past',
-      },
-      discounts: {
-        label: 'Discounts',
-        title: 'Affiliate Discounts',
-      },
-    }
-  },
-  logout: {
-    icon: <MenuIcon name="logout" ariaLabel="logout" />,
-    label: 'Log Out',
-    onClick: 'onClick',
-  }
-}
 const notifThemeColor = '#BC1552';
 
 const Members = ({ loggedIn }) => {
 
   const [menuCollapsed, setMenuCollapsed] = useState(false);
-  const [menuOpenKeys, setMenuOpenKeys] = useState([]); // 'profile', 'participate', 'account', 'perks'
+  const [menuOpenKeys, setMenuOpenKeys] = useState(['profile', 'participate', 'account', 'perks']); //
+  const [menuSelectedKeys, setMenuSelectedKeys] = useState(data.options.defaultSelectedKeys);
   const [selectedPageData, setSelectedPageData] = useState(null);
   const [selectedParentData, setSelectedParentData] = useState(null);
   const [notification, setNotification] = useState({
@@ -206,7 +72,7 @@ const Members = ({ loggedIn }) => {
     setMenuOpenKeys(openKeys);
   }
 
-  // ant-menu-submenu-title triggers onMenuOpenChange, NOT onMenuClick
+  // ant-menu-submenu-title triggers setMenuOpenKeys, NOT onMenuClick
   const onMenuClick = ({ item, key, keyPath, domEvent }) => {
     // console.log('onMenuClick', item, key, keyPath, domEvent);
     if (key === 'logout') {
@@ -233,6 +99,16 @@ const Members = ({ loggedIn }) => {
       }
     }
   }
+
+  const selectMenuItem = key => {
+    setMenuSelectedKeys([key]);
+    const parent = getMemberPageParentKey(key);
+    if (parent) setMenuOpenKeys([...menuOpenKeys, parent]);
+    const keyPath = parent ? [key, parent] : [key];
+    const contentData = getContentData(key, keyPath);
+    setSelectedPageData(contentData.pageData);
+    setSelectedParentData(contentData.parentData);
+}
 
   // if (!loggedIn) return <Login />;
   return (
@@ -275,12 +151,15 @@ const Members = ({ loggedIn }) => {
                 data={data}
                 onMenuOpenChange={onMenuOpenChange}
                 menuOpenKeys={menuOpenKeys}
+                selectedKeys={menuSelectedKeys}
+                setSelectedKeys={setMenuSelectedKeys}
               />
             </Sider>
             <Layout className="site-layout">
               <MemberContent
                 pageData={selectedPageData}
                 parentData={selectedParentData}
+                onLinkClick={selectMenuItem}
               />
             </Layout>
           </Layout>
