@@ -24,6 +24,10 @@ const MenuIcon = ({ name, ariaLabel }) =>
     />
   </span>
 
+const logOut = () => {
+  alert('Log out!');
+}
+
 const { Sider } = Layout;
 const menuKeys = ['profile', 'perks', 'account'];
 const data = {
@@ -205,7 +209,7 @@ const Members = ({ loggedIn }) => {
   const onMenuClick = ({ item, key, keyPath, domEvent }) => {
     // console.log('onMenuClick', item, key, keyPath, domEvent);
     if (key === 'logout') {
-      alert('Log out!')
+      logOut();
     } else {
       const contentData = getContentData(key, keyPath);
       setSelectedPageData(contentData.pageData);
@@ -244,6 +248,7 @@ const Members = ({ loggedIn }) => {
         <Breakpoint xs only>
           <MemberAccordion
             data={data}
+            logout={logOut}
           />
         </Breakpoint>
 

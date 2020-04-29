@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Collapse } from 'antd';
-import { Container, Row, Col } from 'react-bootstrap';
+import { Collapse, Avatar } from 'antd';
+import { Container } from 'react-bootstrap';
 import MemberContent from './member-content';
+import SvgIcon from '../utils/svg-icon';
 import './member-accordion.less';
 
 
@@ -18,7 +19,7 @@ const genExtra = () => (
   />
 );
 
-const MemberAccordion = ({data}) => {
+const MemberAccordion = ({ data, logout }) => {
 
   const [panels, setPanels] = useState(null);
   const defaultActiveKey = []; // 'messages'
@@ -76,12 +77,25 @@ const MemberAccordion = ({data}) => {
       defaultActiveKey={defaultActiveKey}
       expandIconPosition="right"
     >
-      {/* <Container>
-        <Row>
-          <Col>avatar</Col>
-          <Col>logout</Col>
-        </Row>
-      </Container> */}
+      <Container className="toolbar">
+        <div className="d-flex justify-content-around align-items-center">
+          <span>
+            <Avatar
+              src={data.options.avatarSrc}
+            />
+          </span>
+          <span
+            onClick={logout}
+            className="d-flex flex-column justify-content-around align-items-center"
+          >
+            <SvgIcon
+              name="logout"
+              fill="currentColor"
+            />
+            logout
+          </span>
+        </div>
+      </Container>
       {panels}
     </Collapse>
   </>
