@@ -1,13 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Menu } from 'antd';
-import {
-  InboxOutlined,
-  // BellOutlined,
-  UserOutlined,
-  HeartOutlined,
-  SettingOutlined,
-  PoweroffOutlined,
-} from '@ant-design/icons';
 import './member-menu.less';
 
 const { SubMenu } = Menu;

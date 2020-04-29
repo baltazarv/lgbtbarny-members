@@ -21,13 +21,12 @@ const MenuIcon = ({ name, ariaLabel }) =>
       width="1.6em"
       height="1.6em"
       fill="currentColor" // "#008cdb"
-      className="mb-2"
     />
   </span>
 
 const { Sider } = Layout;
 const menuKeys = ['profile', 'perks', 'account'];
-const menuItems = {
+const data = {
   options: {
     defaultSelectedKeys: ['messages'],
     avatarSrc: '/images/accounts/river-phoenix-cropped.jpg',
@@ -55,6 +54,10 @@ const menuItems = {
       logininfo: {
         label: 'Email & login',
         title: 'Login credentials',
+        banner: <Banner
+          title="Profile banner title"
+          text="Profile banner text"
+        />,
         content: <>
           <ul>
             <li>Email address for login.</li>
@@ -118,7 +121,7 @@ const menuItems = {
       },
       taxforms: {
         label: 'Tax Forms',
-        title: 'Download tax donation forms',
+        title: 'Tax donation forms',
       },
     }
   },
@@ -170,17 +173,25 @@ const Members = ({ loggedIn }) => {
     ),
   })
 
+  useEffect(() => {
+    setSelectedPageData(data.messages);
+  }, [data]);
+
+  useEffect(() => {
+    NewsNotification(notification);
+  }, [notification]);
+
   const getContentData = (key, keyPath) => {
     let pageData = null;
     let parentData = null;
     if (keyPath.length === 1) {
       // `messages`
-      pageData = menuItems[key];
+      pageData = data[key];
     } else {
       // others
       const parentKey = keyPath[1];
-      parentData = menuItems[parentKey];
-      pageData = menuItems[parentKey].children[key];
+      parentData = data[parentKey];
+      pageData = data[parentKey].children[key];
     }
     return { pageData, parentData };
   }
@@ -218,14 +229,6 @@ const Members = ({ loggedIn }) => {
     }
   }
 
-  useEffect(() => {
-    setSelectedPageData(menuItems.messages);
-  }, [menuItems]);
-
-  useEffect(() => {
-    NewsNotification(notification);
-  }, [notification]);
-
   // if (!loggedIn) return <Login />;
   return (
     <div className="members-page">
@@ -239,7 +242,9 @@ const Members = ({ loggedIn }) => {
         </Jumbotron>
 
         <Breakpoint xs only>
-          <MemberAccordion />
+          <MemberAccordion
+            data={data}
+          />
         </Breakpoint>
 
         <Breakpoint sm up>
@@ -255,13 +260,13 @@ const Members = ({ loggedIn }) => {
               <Tooltip title="toggle opening menu">
                 <div className="avatar-box" onClick={toggleOpenMenuKeys}>
                   <Avatar
-                    src={menuItems.options.avatarSrc}
+                    src={data.options.avatarSrc}
                   />
                 </div>
               </Tooltip>
               <MemberMenu
                 onMenuClick={onMenuClick}
-                data={menuItems}
+                data={data}
                 onMenuOpenChange={onMenuOpenChange}
                 menuOpenKeys={menuOpenKeys}
               />
