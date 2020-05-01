@@ -1,9 +1,11 @@
+/**
+ * Accordion is Ant Design Collapse component with accordion property set to true
+ */
 import { useState, useEffect } from 'react';
 import { Collapse, Avatar } from 'antd';
 import MemberContent from './member-content';
 import SvgIcon from '../utils/svg-icon';
 import './member-accordion.less';
-
 
 import { SettingOutlined } from '@ant-design/icons';
 
@@ -18,20 +20,28 @@ const genExtra = () => (
   />
 );
 
-const MemberAccordion = ({ data, logout }) => {
+const MemberAccordion = ({
+    activeKey,
+    setActiveKey,
+    data,
+    logout
+  }) => {
 
   const [panels, setPanels] = useState(null);
-  const [activeKey, setActiveKey] = useState('messages');
 
   const onPanelSelected = key => {
     setActiveKey(key);
   }
 
-  const onLinkClick = key => {
-    setActiveKey(key);
-  }
-
   useEffect(() => {
+    const memberContent = (item) => (
+      <MemberContent
+        key={item.key}
+        dataKey={activeKey}
+        onLinkClick={setActiveKey}
+      />
+    )
+
     const items = [];
     for (const key in data) {
       if (key !== 'options' && key !== 'logout') {
@@ -47,10 +57,7 @@ const MemberAccordion = ({ data, logout }) => {
             key={item.key}
             extra={item.icon}
           >
-          <MemberContent
-            pageData={item}
-            onLinkClick={onLinkClick}
-          />
+          {memberContent(item)}
         </Panel>);
       } else {
         let subitems = [];
@@ -66,26 +73,22 @@ const MemberAccordion = ({ data, logout }) => {
             key={subitem.key}
             extra={item.icon}
           >
-            <MemberContent
-              pageData={subitem}
-              parentData={item}
-              onLinkClick={onLinkClick}
-            />
+            {memberContent(subitem)}
           </Panel>);
         });
       }
     });
     setPanels(_panels);
-  }, [data]);
+  }, [data, activeKey]);
 
   return <>
     <Collapse
       accordion
       className="member-accordion"
       bordered={true}
-      activeKey={activeKey}
-      // defaultActiveKey={defaultActiveKey}
       expandIconPosition="right"
+      // defaultActiveKey={defaultActiveKey}
+      activeKey={activeKey}
       onChange={onPanelSelected}
     >
       <div className="toolbar d-flex justify-content-around align-items-center">

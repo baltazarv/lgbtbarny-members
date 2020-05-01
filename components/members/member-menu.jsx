@@ -4,7 +4,14 @@ import './member-menu.less';
 
 const { SubMenu } = Menu;
 
-const MemberMenu = ({ data, onMenuClick, onMenuOpenChange, menuOpenKeys, selectedKeys, setSelectedKeys }) => {
+const MemberMenu = ({
+    data,
+    selectedKeys, // array
+    setSelectedKey, // string
+    onMenuClick,
+    onMenuOpenChange,
+    menuOpenKeys,
+  }) => {
 
   const [menuChildren, setMenuChildren] = useState(null);
 
@@ -50,7 +57,7 @@ const MemberMenu = ({ data, onMenuClick, onMenuOpenChange, menuOpenKeys, selecte
 
   const onMenuSelect = ({ item, key, keyPath, selectedKeys, domEvent }) => {
     // console.log('select', item, key, keyPath, selectedKeys, domEvent);
-    setSelectedKeys(selectedKeys);
+    setSelectedKey(selectedKeys[0]);
   }
 
   return (
@@ -67,8 +74,6 @@ const MemberMenu = ({ data, onMenuClick, onMenuOpenChange, menuOpenKeys, selecte
     >
       {menuChildren}
     </Menu>
-
-
   );
 }
 

@@ -3,9 +3,9 @@ import { Breadcrumb, Button } from 'antd';
 import { Container, Row, Col, Card } from 'react-bootstrap';
 import { useEffect } from 'react';
 // data
-import { getMembersPageItem } from '../../data/members-data';
+import { getMemberPageParentKey, getMembersPageItem } from '../../data/members-data';
 
-const MemberContent = ({ pageData, parentData = null, onLinkClick }) => {
+const MemberContent = ({ dataKey, onLinkClick }) => {
 
   const [banner, setBanner] = useState(null);
   const [breadcrumbs, setBreadcrumbs] = useState([]);
@@ -14,14 +14,16 @@ const MemberContent = ({ pageData, parentData = null, onLinkClick }) => {
   const [usefulLinks, setUsefulLinks] = useState(null);
 
   useEffect(() => {
-    if (pageData) {
+    if (dataKey) {
+      const pageData = getMembersPageItem(dataKey);
+      const parentData = getMembersPageItem(getMemberPageParentKey(dataKey));
 
       const getUsefulLinks = keys => {
         const _usefulLinks = keys.map((key, index) => {
           const link = getMembersPageItem(key);
-          return <>
-            <Button type="link" key={key} onClick={() => onLinkClick(key)}>{link.title}</Button>{index !== keys.length - 1 ? " | " : null}
-          </>
+          return <span key={key}>
+            <Button type="link" onClick={() => onLinkClick(key)}>{link.title}</Button>{index !== keys.length - 1 ? " | " : null}
+          </span>
         });
         return <Card.Footer>
           <div className="font-weight-bold">Useful Links</div>
@@ -31,7 +33,7 @@ const MemberContent = ({ pageData, parentData = null, onLinkClick }) => {
 
       if (pageData.banner) {
         setBanner(pageData.banner);
-      } else if (parentData.banner) {
+      } else if (parentData && parentData.banner) {
         setBanner(parentData.banner);
       } else {
         setBanner(null);
@@ -53,13 +55,14 @@ const MemberContent = ({ pageData, parentData = null, onLinkClick }) => {
 
       if (pageData.links) {
         setUsefulLinks(getUsefulLinks(pageData.links))
-      } else if (parentData.links) {
+      } else if (parentData && parentData.links) {
         setUsefulLinks(getUsefulLinks(parentData.links))
       } else {
         setUsefulLinks(null);
       }
+
     }
-  }, [pageData, parentData])
+  }, [dataKey])
 
   return <Container className="member-content">
     <Row>
