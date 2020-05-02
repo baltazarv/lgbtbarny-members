@@ -63,11 +63,6 @@ export const data = {
       basicinfo: {
         label: 'Basic info',
         title: 'Edit basic profile info',
-        content: <>
-          <ul>
-            <li>txt</li>
-          </ul>
-        </>
       },
       advinfo: {
         label: 'Advanced info',
@@ -87,6 +82,10 @@ export const data = {
       committees: {
         label: 'Committees',
         title: 'Committee & section participation & preferences',
+      },
+      events: {
+        label: 'Events',
+        title: 'Member events + discounts',
       },
     }
   },
@@ -129,7 +128,7 @@ export const data = {
       },
       discounts: {
         label: 'Discounts',
-        title: 'Affiliate Discounts',
+        title: 'Affiliate discounts & discounts to events',
       },
     }
   },

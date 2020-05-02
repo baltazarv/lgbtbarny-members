@@ -30,7 +30,7 @@ const MemberAccordion = ({
   const [panels, setPanels] = useState(null);
 
   const onPanelSelected = key => {
-    setActiveKey(key);
+    if (key) setActiveKey(key);
   }
 
   useEffect(() => {
@@ -78,7 +78,7 @@ const MemberAccordion = ({
         });
       }
     });
-    setPanels(_panels);
+    if (_panels) setPanels(_panels);
   }, [data, activeKey]);
 
   return <>

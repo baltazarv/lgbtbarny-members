@@ -14,21 +14,20 @@ import './members.less';
 // data
 import { data, getMemberPageParentKey } from '../data/members-data';
 
+const { Sider } = Layout;
+
+const menuKeys = ['profile', 'perks', 'account'];
+const notifThemeColor = '#BC1552';
+
 const logOut = () => {
   alert('Log out!');
 }
 
-const { Sider } = Layout;
-const menuKeys = ['profile', 'perks', 'account'];
-const notifThemeColor = '#BC1552';
-
 const Members = ({ loggedIn }) => {
 
+  const [selectedKey, setSelectedKey] = useState(data.options.defaultSelectedKeys[0]);
   const [menuCollapsed, setMenuCollapsed] = useState(false);
-  const [menuOpenKeys, setMenuOpenKeys] = useState(['profile', 'participate', 'account', 'perks']); //
-  const [menuSelectedKeys, setMenuSelectedKeys] = useState(data.options.defaultSelectedKeys);
-  const [selectedPageData, setSelectedPageData] = useState(null);
-  const [selectedParentData, setSelectedParentData] = useState(null);
+  const [menuOpenKeys, setMenuOpenKeys] = useState([]); // 'profile', 'participate', 'account', 'perks'
   const [notification, setNotification] = useState({
     message: 'What\'t New',
     description: 'There\'s some news for all members. Or a message just for you!',
@@ -45,26 +44,13 @@ const Members = ({ loggedIn }) => {
   })
 
   useEffect(() => {
-    setSelectedPageData(data.messages);
-  }, [data]);
-
-  useEffect(() => {
     NewsNotification(notification);
   }, [notification]);
 
-  const getContentData = (key, keyPath) => {
-    let pageData = null;
-    let parentData = null;
-    if (keyPath.length === 1) {
-      // `messages`
-      pageData = data[key];
-    } else {
-      // others
-      const parentKey = keyPath[1];
-      parentData = data[parentKey];
-      pageData = data[parentKey].children[key];
-    }
-    return { pageData, parentData };
+  const selectItem = key => {
+    setSelectedKey(key);
+    const parent = getMemberPageParentKey(key);
+    if (parent) setMenuOpenKeys([...menuOpenKeys, parent]);
   }
 
   // triggered by ant-menu-submenu-title
@@ -72,15 +58,13 @@ const Members = ({ loggedIn }) => {
     setMenuOpenKeys(openKeys);
   }
 
-  // ant-menu-submenu-title triggers setMenuOpenKeys, NOT onMenuClick
+  // triggered by ant-menu-item
   const onMenuClick = ({ item, key, keyPath, domEvent }) => {
     // console.log('onMenuClick', item, key, keyPath, domEvent);
     if (key === 'logout') {
       logOut();
     } else {
-      const contentData = getContentData(key, keyPath);
-      setSelectedPageData(contentData.pageData);
-      setSelectedParentData(contentData.parentData);
+      setSelectedKey(key);
     }
   }
 
@@ -100,16 +84,6 @@ const Members = ({ loggedIn }) => {
     }
   }
 
-  const selectMenuItem = key => {
-    setMenuSelectedKeys([key]);
-    const parent = getMemberPageParentKey(key);
-    if (parent) setMenuOpenKeys([...menuOpenKeys, parent]);
-    const keyPath = parent ? [key, parent] : [key];
-    const contentData = getContentData(key, keyPath);
-    setSelectedPageData(contentData.pageData);
-    setSelectedParentData(contentData.parentData);
-}
-
   // if (!loggedIn) return <Login />;
   return (
     <div className="members-page">
@@ -126,6 +100,8 @@ const Members = ({ loggedIn }) => {
           <MemberAccordion
             data={data}
             logout={logOut}
+            activeKey={selectedKey}
+            setActiveKey={selectItem}
           />
         </Breakpoint>
 
@@ -147,19 +123,18 @@ const Members = ({ loggedIn }) => {
                 </div>
               </Tooltip>
               <MemberMenu
-                onMenuClick={onMenuClick}
                 data={data}
-                onMenuOpenChange={onMenuOpenChange}
+                selectedKeys={[selectedKey]}
+                setSelectedKey={setSelectedKey}
+                onMenuClick={onMenuClick}
                 menuOpenKeys={menuOpenKeys}
-                selectedKeys={menuSelectedKeys}
-                setSelectedKeys={setMenuSelectedKeys}
+                onMenuOpenChange={onMenuOpenChange}
               />
             </Sider>
             <Layout className="site-layout">
               <MemberContent
-                pageData={selectedPageData}
-                parentData={selectedParentData}
-                onLinkClick={selectMenuItem}
+                dataKey={selectedKey}
+                onLinkClick={selectItem}
               />
             </Layout>
           </Layout>
