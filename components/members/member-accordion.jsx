@@ -2,7 +2,7 @@
  * Accordion is Ant Design Collapse component with accordion property set to true
  */
 import { useState, useEffect } from 'react';
-import { Collapse, Avatar } from 'antd';
+import { Collapse, Avatar, Badge } from 'antd';
 import MemberContent from './member-content';
 import SvgIcon from '../utils/svg-icon';
 import './member-accordion.less';
@@ -30,7 +30,7 @@ const MemberAccordion = ({
   const [panels, setPanels] = useState(null);
 
   const onPanelSelected = key => {
-    if (key) setActiveKey(key);
+    setActiveKey(key);
   }
 
   useEffect(() => {
@@ -51,12 +51,14 @@ const MemberAccordion = ({
     }
     let _panels = [];
     items.forEach(item => {
+      let badge = null;
+      if (item.badge) badge = <span>&nbsp;&nbsp;<Badge count={item.badge} /></span>
       if (!item.children) {
         _panels.push(<Panel
-            header={item.title}
-            key={item.key}
-            extra={item.icon}
-          >
+          header={<span>{item.label}{badge}</span>}
+          key={item.key}
+          extra={item.icon}
+        >
           {memberContent(item)}
         </Panel>);
       } else {
@@ -78,7 +80,7 @@ const MemberAccordion = ({
         });
       }
     });
-    if (_panels) setPanels(_panels);
+    setPanels(_panels);
   }, [data, activeKey]);
 
   return <>

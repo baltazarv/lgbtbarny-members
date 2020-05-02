@@ -18,6 +18,7 @@ const { Sider } = Layout;
 
 const menuKeys = ['profile', 'perks', 'account'];
 const notifThemeColor = '#BC1552';
+const defaultKey = data.options.defaultSelectedKeys[0];
 
 const logOut = () => {
   alert('Log out!');
@@ -25,7 +26,7 @@ const logOut = () => {
 
 const Members = ({ loggedIn }) => {
 
-  const [selectedKey, setSelectedKey] = useState(data.options.defaultSelectedKeys[0]);
+  const [selectedKey, setSelectedKey] = useState(defaultKey);
   const [menuCollapsed, setMenuCollapsed] = useState(false);
   const [menuOpenKeys, setMenuOpenKeys] = useState([]); // 'profile', 'participate', 'account', 'perks'
   const [notification, setNotification] = useState({
@@ -124,7 +125,7 @@ const Members = ({ loggedIn }) => {
               </Tooltip>
               <MemberMenu
                 data={data}
-                selectedKeys={[selectedKey]}
+                selectedKeys={selectedKey ? [selectedKey] : defaultKey}
                 setSelectedKey={setSelectedKey}
                 onMenuClick={onMenuClick}
                 menuOpenKeys={menuOpenKeys}
@@ -133,7 +134,7 @@ const Members = ({ loggedIn }) => {
             </Sider>
             <Layout className="site-layout">
               <MemberContent
-                dataKey={selectedKey}
+                dataKey={selectedKey ? selectedKey : defaultKey}
                 onLinkClick={selectItem}
               />
             </Layout>
