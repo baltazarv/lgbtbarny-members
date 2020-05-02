@@ -62,6 +62,13 @@ const MemberAccordion = ({
           {memberContent(item)}
         </Panel>);
       } else {
+        _panels.push(<Panel
+          header={<span>{item.label}</span>}
+          key={item.key}
+          showArrow={false}
+          disabled
+          extra={item.icon}
+        />);
         let subitems = [];
         for (const key in item.children) {
           const newObject = Object.assign({}, item.children[key], {key});
@@ -69,11 +76,8 @@ const MemberAccordion = ({
         }
         subitems.map(subitem => {
           _panels.push(<Panel
-            header={<span>
-                <span className="parent-label">{item.label} / </span>{subitem.label}
-              </span>}
+            header={<span>{subitem.label}</span>}
             key={subitem.key}
-            extra={item.icon}
           >
             {memberContent(subitem)}
           </Panel>);
