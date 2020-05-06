@@ -22,13 +22,13 @@ const defaultKey = data.options.defaultSelectedKeys[0];
 
 const logOut = () => {
   alert('Log out!');
-}
+};
 
 const Members = ({ loggedIn }) => {
 
   const [selectedKey, setSelectedKey] = useState(defaultKey);
   const [menuCollapsed, setMenuCollapsed] = useState(false);
-  const [menuOpenKeys, setMenuOpenKeys] = useState([]); // 'profile', 'participate', 'account', 'perks'
+  const [menuOpenKeys, setMenuOpenKeys] = useState([]); // 'profile', 'participate', 'account', 'benefits'
   const [notification, setNotification] = useState({
     message: 'What\'t New',
     description: 'There\'s some news for all members. Or a message just for you!',
@@ -42,7 +42,7 @@ const Members = ({ loggedIn }) => {
         Show me what's new
       </Button>
     ),
-  })
+  });
 
   useEffect(() => {
     NewsNotification(notification);
@@ -52,12 +52,12 @@ const Members = ({ loggedIn }) => {
     setSelectedKey(key);
     const parent = getMemberPageParentKey(key);
     if (parent) setMenuOpenKeys([...menuOpenKeys, parent]);
-  }
+  };
 
   // triggered by ant-menu-submenu-title
   const onMenuOpenChange = openKeys => {
     setMenuOpenKeys(openKeys);
-  }
+  };
 
   // triggered by ant-menu-item
   const onMenuClick = ({ item, key, keyPath, domEvent }) => {
@@ -67,7 +67,7 @@ const Members = ({ loggedIn }) => {
     } else {
       setSelectedKey(key);
     }
-  }
+  };
 
   const onMenuCollapse = collapsed => {
     setMenuCollapsed(collapsed);
@@ -83,7 +83,7 @@ const Members = ({ loggedIn }) => {
         setMenuOpenKeys(menuKeys);
       }
     }
-  }
+  };
 
   // if (!loggedIn) return <Login />;
   return (
@@ -143,7 +143,7 @@ const Members = ({ loggedIn }) => {
 
       </MainLayout>
     </div>
-  )
-}
+  );
+};
 
 export default Members;
