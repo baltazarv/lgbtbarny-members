@@ -21,15 +21,16 @@ const MemberContent = ({ dataKey, onLinkClick }) => {
       const getUsefulLinks = keys => {
         const _usefulLinks = keys.map((key, index) => {
           const link = getMembersPageItem(key);
+          if (!link) return <span key={key}>{key}{index !== keys.length - 1 ? " | " : null}</span>;
           return <span key={key}>
             <Button type="link" onClick={() => onLinkClick(key)}>{link.title}</Button>{index !== keys.length - 1 ? " | " : null}
-          </span>
+          </span>;
         });
         return <Card.Footer>
           <div className="font-weight-bold">Useful Links</div>
           <div>{_usefulLinks}</div>
-        </Card.Footer>
-      }
+        </Card.Footer>;
+      };
 
       if (pageData.banner) {
         setBanner(pageData.banner);
