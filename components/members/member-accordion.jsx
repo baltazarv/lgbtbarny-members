@@ -37,6 +37,7 @@ const MemberAccordion = ({
     const memberContent = (item) => (
       <MemberContent
         key={item.key}
+        data={data}
         dataKey={activeKey}
         onLinkClick={setActiveKey}
       />

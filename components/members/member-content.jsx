@@ -70,7 +70,7 @@ const MemberContent = ({
       }
 
     }
-  }, [dataKey])
+  }, [dataKey]);
 
   return <Container className="member-content">
     <Row>
