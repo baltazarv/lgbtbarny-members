@@ -5,7 +5,11 @@ import { useEffect } from 'react';
 // data
 import { getMemberPageParentKey, getMembersPageItem } from '../../data/members-data';
 
-const MemberContent = ({ dataKey, onLinkClick }) => {
+const MemberContent = ({
+  data,
+  dataKey,
+  onLinkClick
+}) => {
 
   const [banner, setBanner] = useState(null);
   const [breadcrumbs, setBreadcrumbs] = useState([]);
@@ -15,15 +19,18 @@ const MemberContent = ({ dataKey, onLinkClick }) => {
 
   useEffect(() => {
     if (dataKey) {
-      const pageData = getMembersPageItem(dataKey);
-      const parentData = getMembersPageItem(getMemberPageParentKey(dataKey));
+      const pageData = getMembersPageItem(data, dataKey);
+      const parentData = getMembersPageItem(data, getMemberPageParentKey(data, dataKey));
 
       const getUsefulLinks = keys => {
         const _usefulLinks = keys.map((key, index) => {
-          const link = getMembersPageItem(key);
-          if (!link) return <span key={key}>{key}{index !== keys.length - 1 ? " | " : null}</span>;
+          const link = getMembersPageItem(data, key);
+          const optionalPipe = index !== keys.length - 1 ? " | " : null;
+          if (!link) {
+            return <span key={key}>{key}{optionalPipe}</span>;
+          }
           return <span key={key}>
-            <Button type="link" onClick={() => onLinkClick(key)}>{link.title}</Button>{index !== keys.length - 1 ? " | " : null}
+            <Button type="link" onClick={() => onLinkClick(key)}>{link.title}</Button>{optionalPipe}
           </span>;
         });
         return <Card.Footer>
@@ -32,7 +39,7 @@ const MemberContent = ({ dataKey, onLinkClick }) => {
         </Card.Footer>;
       };
 
-      if (pageData.banner) {
+      if (pageData && pageData.banner) {
         setBanner(pageData.banner);
       } else if (parentData && parentData.banner) {
         setBanner(parentData.banner);
@@ -40,21 +47,21 @@ const MemberContent = ({ dataKey, onLinkClick }) => {
         setBanner(null);
       }
 
-      if (pageData.title) setPageTitle(pageData.title);
+      if (pageData && pageData.title) setPageTitle(pageData.title);
 
-      if (parentData && pageData.label && parentData.label) {
+      if (parentData && parentData && pageData.label && parentData.label) {
         setBreadcrumbs([parentData.label, pageData.label])
       } else {
         setBreadcrumbs([]);
       }
 
-      if (pageData.content) {
+      if (pageData && pageData.content) {
         setPageContent(pageData.content);
       } else {
         setPageContent(null);
       }
 
-      if (pageData.links) {
+      if (pageData && pageData.links) {
         setUsefulLinks(getUsefulLinks(pageData.links))
       } else if (parentData && parentData.links) {
         setUsefulLinks(getUsefulLinks(parentData.links))

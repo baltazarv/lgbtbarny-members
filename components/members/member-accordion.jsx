@@ -97,23 +97,28 @@ const MemberAccordion = ({
       activeKey={activeKey}
       onChange={onPanelSelected}
     >
+      {
+        data.options && data.options.avatar ?
       <div className="toolbar d-flex justify-content-around align-items-center">
-        <span>
-          <Avatar
-            src={data.options.avatarSrc}
-          />
-        </span>
-        <span
-          onClick={logout}
-          className="d-flex flex-column justify-content-around align-items-center"
-        >
-          <SvgIcon
-            name="logout"
-            fill="currentColor"
-          />
-          logout
-        </span>
-      </div>
+          <span>
+            <Avatar
+              src={data.options.avatarSrc}
+            />
+          </span>
+          <span
+            onClick={logout}
+            className="d-flex flex-column justify-content-around align-items-center"
+          >
+            <SvgIcon
+              name="logout"
+              fill="currentColor"
+            />
+            logout
+          </span>
+        </div>
+      :
+        null
+      }
       {panels}
     </Collapse>
   </>

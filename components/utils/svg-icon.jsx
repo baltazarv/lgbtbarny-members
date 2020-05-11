@@ -5,6 +5,7 @@ import LogoutPaths from '../../assets/svgs/logout-svg-paths.jsx';
 import BellPaths from '../../assets/svgs/bell-svg-paths.jsx';
 import PeopleGroupPaths from '../../assets/svgs/people-group-svg-paths.jsx';
 import CustomerProfilePaths from '../../assets/svgs/customer-profile-svg-paths';
+import BriefcasePaths from '../../assets/svgs/briefcase-svg-paths';
 
 const getPath = (name, props) => {
   switch(name) {
@@ -28,6 +29,8 @@ const getPath = (name, props) => {
       return <LogoutPaths {...props} />
     case 'people-group':
       return <PeopleGroupPaths {...props} />
+    case 'briefcase':
+      return <BriefcasePaths {...props} />
     default:
       return <path />
   }
