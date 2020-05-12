@@ -250,15 +250,15 @@ export const attorneyData = {
   participate: {
     icon: <MenuIcon name="demographic" ariaLabel="Participate" />,
     label: 'Participate',
+    banner: <Banner
+      title="Join (optional banner)"
+      text="Promote committees or sections... Committee news..."
+      colors={{ backgroundColor: '#f9f0ff', color: '#531dab' }}
+    />,
     children: {
       committees: {
         label: 'Committees',
         title: 'Committees & Sections',
-        banner: <Banner
-          title="Join (optional banner)"
-          text="Promote committees or sections... Committee news..."
-          colors={{ backgroundColor: '#f9f0ff', color: '#531dab' }}
-        />,
         content: <>
           <div>Apply to committees/sections or find out how to apply. Choose from the following</div>
           <ul>
@@ -334,13 +334,13 @@ export const attorneyData = {
       lncurrent: {
         label: 'Current Issue',
         title: 'Current Law Notes Issue',
-        link: ['lnarchive'],
         content: <>
           <div>Full issue available to be read online or to be downloaded.</div>
-        </>
+        </>,
+        links: ['lnarchive'],
       },
       lnarchive: {
-        label: 'Archive Issues',
+        label: 'Archive',
         title: 'Law Notes Archive',
         content: <>
           <div>Full issues available to be read online or to be downloaded.</div>
@@ -350,7 +350,7 @@ export const attorneyData = {
             <li>...</li>
           </ul>
         </>,
-        link: ['lncurrent'],
+        links: ['lncurrent'],
       },
     }
   },
@@ -363,17 +363,25 @@ export const attorneyData = {
       colors={{ backgroundColor: '#fcffe6', color: '#3f6600' }}
     />,
     children: {
-      cleattended: {
-        label: 'Current Material',
+      clecurrent: {
+        label: 'Current CLE',
         title: 'Most Recent CLE Course Material',
-        links: ['Current CLE Event', 'clearchives', 'clecerts'],
         content: <>
           <div>Latest course material, available before course starts and afterwards.</div>
-        </>
+        </>,
+        links: ['Current CLE Event', 'clecerts', 'clearchives'],
+      },
+      clecerts: {
+        label: 'Certificates',
+        title: 'CLE Course Certifications',
+        content: <>
+          <div>Download course certificates. (Certificates generated on web server for relevant members.)</div>
+        </>,
+        links: ['Current CLE Event', 'clecurrent', 'clearchives'],
       },
       clearchives: {
-        label: 'Archived Material',
-        title: 'Archived CLE Material',
+        label: 'Archive',
+        title: 'Archived CLE Materials',
         content: <>
           <div>Courses members have attended will be marked as such.</div>
           <ul>
@@ -383,15 +391,7 @@ export const attorneyData = {
             <li>CLE Year in Review.</li>
           </ul>
         </>,
-        links: ['Current CLE Event', 'cleattended', 'clecerts'],
-      },
-      clecerts: {
-        label: 'CLE Certificates',
-        title: 'CLE Course Certifications',
-        content: <>
-          <div>Download course certificates. (Certificates generated on web server for relevant members.)</div>
-        </>,
-        links: ['Current CLE Event', 'cleattended', 'clearchives'],
+        links: ['Current CLE Event', 'clecurrent', 'clecerts'],
       },
     },
   },
@@ -412,11 +412,6 @@ export const attorneyData = {
   jobs: {
     icon: <MenuIcon name="briefcase" ariaLabel="Jobs" />,
     badge: 5,
-    banner: <Banner
-      title="Advertising Banner (Optional)"
-      text="Release of the latest Law Notes edition, of this year's annual report, of a podcast episode... An event promotion... Reminder to renew membership. Encouragement to join a committee or section... Push to donate..."
-      colors={{ backgroundColor: '#f9f0ff', color: '#9e1068' }}
-    />, // (To update this, admin would upload an image or edit text fields.)
     label: 'Jobs',
     title: 'Job Opportunities',
     content: <>
@@ -437,9 +432,8 @@ export const attorneyData = {
       <ul>
         <li>Transaction &amp; payment emails (donations, membership, paid events, merchandise).</li>
         <li>Event registration confirmations.</li>
-        <li>CLE materials for CLE registrants.</li>
       </ul>
-      <span className="font-weight-bold">LeGal (promotional) emails</span>
+      <span className="font-weight-bold">LeGaL (promotional) emails</span>
       <ul>
         <li>Newsletter (events, podcasts, photos, etc...).</li>
         <li>Event-specific promotions.</li>
@@ -447,13 +441,11 @@ export const attorneyData = {
       </ul>
       <span className="font-weight-bold">Law Notes emails</span>
       <ul>
-        <li>Magazine.</li>
-        <li>Podcast.</li>
+        <li>New publication/podcast.</li>
       </ul>
-      <span className="font-weight-bold">Emails about LGBT issues</span>
+      <span className="font-weight-bold">Emails focused on LGBT Pride and advocacy</span>
       <ul>
         <li>Special days (Trans Day of Remembrance, Bisexual Awareness Week).</li>
-        <li>Event-specific promotions</li>
         <li>Advocacy/Policy (news and call-to-action).</li>
       </ul>
       <p>This view will be available from link on emails.</p>
