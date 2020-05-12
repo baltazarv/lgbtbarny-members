@@ -1,13 +1,15 @@
 import BellPaths from '../../assets/svgs/bell-svg-paths.jsx';
 import CustomerProfilePaths from '../../assets/svgs/customer-profile-svg-paths';
 import AnnotatePaths from '../../assets/svgs/annotate-svg-paths.jsx';
-import DownloadPaths from '../../assets/svgs/download-svg-paths.jsx';
 import DemographicPaths from '../../assets/svgs/demographic-svg-paths.jsx';
+import BookmarkPaths from '../../assets/svgs/bookmark-svg-paths.jsx';
+import GovernmentPaths from '../../assets/svgs/government-svg-paths.jsx';
 import StarPaths from '../../assets/svgs/star-svg-paths.jsx';
 import BriefcasePaths from '../../assets/svgs/briefcase-svg-paths';
 import EmailGearPaths from '../../assets/svgs/email-gear-svg-paths.jsx';
 import LogoutPaths from '../../assets/svgs/logout-svg-paths.jsx';
 
+import DownloadPaths from '../../assets/svgs/download-svg-paths.jsx';
 import UserAdminPaths from '../../assets/svgs/user-admin-svg-paths.jsx';
 import DelegatePaths from '../../assets/svgs/delegate-svg-paths.jsx';
 import GiftPaths from '../../assets/svgs/gift-svg-paths.jsx';
@@ -31,6 +33,12 @@ const getPath = (name, props) => {
     // members: participate
     case 'demographic':
       return <DemographicPaths {...props} />
+    // members: law notes
+    case 'bookmark':
+      return <BookmarkPaths {...props} />
+    // members: cle center
+    case 'government':
+      return <GovernmentPaths {...props} />
     // members: benefits
     case 'star':
       return <StarPaths {...props} />
