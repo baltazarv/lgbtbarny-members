@@ -3,13 +3,17 @@ import Banner from '../components/utils/banner';
 import { UserOutlined } from '@ant-design/icons';
 import SvgIcon from '../components/utils/svg-icon';
 
-const MenuIcon = ({ name, ariaLabel }) =>
+const MenuIcon = ({
+  name,
+  ariaLabel,
+  fill='currentColor'
+}) =>
   <span role="img" aria-label={ariaLabel} className="anticon">
     <SvgIcon
       name={name}
       width="1.6em"
       height="1.6em"
-      fill="currentColor" // "#008cdb"
+      fill={fill} // "#008cdb"
     />
   </span>
 
@@ -33,10 +37,10 @@ export const anonymousData = {
       text="..."
       colors={{ backgroundColor: '#fcffe6', color: '#3f6600' }}
     />,
-  title: 'Membership',
-  content: <div>
-    Membership highlights.
-  </div>,
+    title: 'Membership',
+    content: <div>
+      Membership highlights.
+    </div>,
   },
   benefits: {
     icon: <MenuIcon name="gift" ariaLabel="benefits" />,
@@ -132,21 +136,21 @@ export const studentData = {
 export const attorneyData = {
   options: {
     defaultSelectedKeys: ['messages'],
-    defaultMenuOpenKeys: [], // 'profile', 'participate', 'account', 'benefits'
+    defaultMenuOpenKeys: [], //'profile', 'billing', 'documents','participate', 'benefits'
     avatar: <Avatar
       src="/images/accounts/denzel.jpg"
     />,
   },
   messages: {
-    icon: <MenuIcon name="bell" ariaLabel="messages" />,
+    icon: <MenuIcon name="bell" ariaLabel="Messages" />,
     badge: 1,
+    label: 'Messages',
     banner: <Banner
       title="Advertising Banner (Optional)"
       text="Release of the latest Law Notes edition, of this year's annual report, of a podcast episode... An event promotion... Reminder to renew membership. Encouragement to join a committee or section... Push to donate..."
       colors={{ backgroundColor: '#f9f0ff', color: '#9e1068' }}
     />, // (To update this, admin would upload an image or edit text fields.)
-    label: 'Messages',
-    title: 'Message inbox',
+    title: 'Message Inbox',
     content: <>
       <div>An inbox of all kinds of notification. This could be a repository for all messaging, even if the member opts out from receiving email notifications:</div>
       <ul>
@@ -162,83 +166,152 @@ export const attorneyData = {
     links: ['payments'],
   },
   profile: {
-    icon: <MenuIcon name="customer-profile" ariaLabel="profile" />,
+    icon: <MenuIcon name="customer-profile" ariaLabel="Profile" />,
     label: 'Profile',
+    banner: <Banner
+      title="Message about account (optional)"
+      text="Message to renew membership, upgrade account...."
+      colors={{ backgroundColor: '#feffe6', color: '#ad8b00' }}
+    />,
     children: {
-      basicprofile: {
-        label: 'Basic info',
-        title: 'Edit basic profile info',
+      logininfo: {
+        label: 'Log-in Info',
+        title: 'Log-in Information',
         content: <>
-          <span className="font-weight-bold">Log-in info</span>
+          <span>Edit log-in info:</span>
           <ul>
             <li>Email address.</li>
+            <li>Alternate email address (optional), for account recovery.</li>
             <li>Password.</li>
-            <li>Alternate email address, for account recovery.</li>
-            <li>Optional phone number, for account recovery.</li>
           </ul>
-          <hr />
-          <span className="font-weight-bold">Membership info</span>
+        </>,
+        links: ['memberinfo', 'emailprefs']
+      },
+      memberinfo: {
+        label: 'Member Info',
+        title: 'Member Information',
+        content: <>
+          <span>Edit member info, including some statistic &amp; demographic info:</span>
           <ul>
+            <li>Address (optional).</li>
+            <li>Phone number (optional), cell phone for account recovery.</li>
             <li>Attorney status (bar member, law graduate, retired attorney).</li>
             <li>Income range.</li>
             <li>Employer.</li>
-          </ul>
-        </>,
-        links: ['advprofile', 'emailprefs']
-      },
-      advprofile: {
-        label: 'Advanced info',
-        title: 'Edit advance profile info',
-        content: <>
-          <span className="font-weight-bold">Statistic & demographic info</span>
-          <ul>
             <li>Practice/work setting.</li>
             <li>Primary area of practice.</li>
             <li>Age range.</li>
             <li>Race/ethnicity.</li>
-            <li>Sexual orientation, gender identity, & preferred pronouns.</li>
+            <li>Sexual orientation, gender identity, &amp; preferred pronouns.</li>
             <li>Special accommodations (accessibility, ASL).</li>
           </ul>
         </>,
-        links: ['basicprofile']
+        links: ['logininfo', 'emailprefs']
+      },
+    },
+  },
+  billing: {
+    icon: <MenuIcon name="annotate" ariaLabel="Billing" />,
+    label: "Billing",
+    title: "Billing",
+    children: {
+      payments: {
+        label: 'Payment History',
+        title: 'Payment History',
+        content: <>
+          <div>Payment receipts for:</div>
+          <ul>
+            <li>Membership fees.</li>
+            <li>Donations.</li>
+            <li>Paid events.</li>
+          </ul>
+        </>,
+        links: ['tax', 'autorenew']
+      },
+      autorenew: {
+        label: 'Auto-renewal',
+        title: 'Auto-renewal Settings',
+        links: ['payments'],
+      },
+    }
+  },
+  documents: {
+    icon: <MenuIcon name="download" ariaLabel="Documents" />,
+    label: 'Documents',
+    children: {
+      clecerts: {
+        label: 'CLE Certs',
+        title: 'CLE Course Certifications',
+        content: <>
+          <div>Download course certificates. (Certificates generated on web server for relevant members.)</div>
+        </>,
+        links: ['CLE Center', 'cle'],
+      },
+      tax: {
+        label: 'Tax Forms',
+        title: 'Charitable Tax Deduction Forms',
+        content: <>
+          <div>Download tax forms for contributions to Foundation. (Forms generated on web server.)</div>
+          <ul>
+            <li>2019 tax deductions</li>
+            <li>2018 tax deductions</li>
+            <li>...</li>
+          </ul>
+        </>
       },
     },
   },
   participate: {
-    icon: <MenuIcon name="people-group" ariaLabel="participate" />,
+    icon: <MenuIcon name="demographic" ariaLabel="Participate" />,
     label: 'Participate',
     children: {
-      groups: {
-        label: 'Groups',
-        title: 'Committees & sections',
+      committees: {
+        label: 'Committees',
+        title: 'Committees & Sections',
         banner: <Banner
           title="Join (optional banner)"
           text="Promote committees or sections... Committee news..."
           colors={{ backgroundColor: '#f9f0ff', color: '#531dab' }}
         />,
         content: <>
+          <div>Apply to committees/sections or find out how to apply. Choose from the following</div>
           <ul>
-            <li>Committee/section preferences.</li>
-            <li>Applications for committees/sections.</li>
+            <li>Diversity Committee</li>
+            <li>Family &amp; Matrimonial Law Section</li>
+            <li>In-House Corporate Counsel Committee</li>
+            <li>Judiciary Committee</li>
+              <ul>
+              <li>Judicial Screening Panel</li>
+              </ul>
+            <li>Law Student Committee</li>
+            <li>Networking &amp; Social Events Committee</li>
+            <li>Public Interest Law Committee</li>
+            <li>Solo &amp; Small Law Firm Practitioners Committee</li>
+            <li className="font-italic text-muted">Advocacy Circle</li>
+            <li className="font-italic text-muted">Asylum Project</li>
+            <li className="font-italic text-muted">Partners Group</li>
+            <li className="font-italic text-muted">Prisoner's Rights Project</li>
+            <li className="font-italic text-muted">Solutions for Legislative Advocacy and Policy ("SLAP")</li>
           </ul>
         </>,
         links: ['messages'],
       },
-      events: {
-        label: 'Events',
-        title: 'Events',
-        banner: <Banner
-          title="Events (optional banner)"
-          text="Promote events... Event news..."
-          colors={{ backgroundColor: '#f9f0ff', color: '#531dab' }}
-          />,
+      referralsvs: {
+        label: 'Referral Service',
+        title: 'Referral Service',
         content: <>
           <ul>
-            <li>Member-only events.</li>
-            <li>Event discounts for members.</li>
+            <li>Lawyer Referral Network</li>
+            <li>Pro Bono Panel</li>
           </ul>
         </>,
-        links: ['discounts'],
+      },
+      leadership: {
+        label: 'Leadership Council',
+        title: 'Leadership Council',
+        content: <>
+          <div>Information on <span className="font-weight-bold">Leadership Council</span> and on <span className="font-weight-bold">Steering Committee</span>.</div>
+        </>
       },
       volunteer: {
         label: 'Volunteering',
@@ -247,101 +320,23 @@ export const attorneyData = {
           title="Volunteering (optional banner)"
           text="Promote volunteering..."
           colors={{ backgroundColor: '#f9f0ff', color: '#531dab' }}
-          />,
+        />,
         content: <>
           <ul>
             <li>Walk-in legal clinics.</li>
-            <li>Legal helpline.</li>
+            <li>Legal Helpline.</li>
           </ul>
         </>,
-        links: ['groups'],
+        links: ['committees'],
       },
-    }
-  },
-  account: {
-    icon: <MenuIcon name="user-admin" ariaLabel="account" />,
-    label: 'Account',
-    banner: <Banner
-      title="Message about account (optional)"
-      text="Message to renew membership, upgrade account...."
-      colors={{ backgroundColor: '#feffe6', color: '#ad8b00' }}
-    />,
-    title: 'Account overview',
-    // links: ['messages', 'basicprofile'],
-    children: {
-      autorenew: {
-        label: 'Auto-renewal',
-        title: 'Auto-renewal settings',
-        links: ['payments'],
-      },
-      emailprefs: {
-        label: 'Email prefs',
-        title: 'Email preferences',
-        content: <>
-          <p>Choose the type of emails to opt out from receiving:</p>
-          <span className="font-weight-bold">Transactional notifications</span>
-          <ul>
-            <li>Transaction & payment emails (donations, membership, paid events, merchandise).</li>
-            <li>Event registration confirmations.</li>
-            <li>CLE materials for CLE registrants.</li>
-          </ul>
-          <span className="font-weight-bold">LeGal (promotional) emails</span>
-          <ul>
-            <li>Newsletter (events, podcasts, photos, etc...).</li>
-            <li>Event-specific promotions.</li>
-            <li>Law students-specific (career fair, mentoring, fellowship).</li>
-          </ul>
-          <span className="font-weight-bold">Law Notes emails</span>
-          <ul>
-            <li>Publication.</li>
-            <li>Podcast.</li>
-          </ul>
-          <span className="font-weight-bold">Emails about LGBT issues</span>
-          <ul>
-            <li>Special days (Trans Day of Remembrance, Bisexual Awareness Week).</li>
-            <li>Event-specific promotions</li>
-            <li>Advocacy/Policy (news and call-to-action).</li>
-          </ul>
-        </>,
-        links: ['basicprofile']
-      },
-      payments: {
-        label: 'Payment history',
-        title: 'Payment history',
-        content: <>
-          <span className="font-weight-bold">Payment receipts</span> for:
-          <ul>
-            <li>membership fees</li>
-            <li>donations</li>
-            <li>paid events</li>
-            <li>CLE courses</li>
-          </ul>
-        </>,
-        links: ['tax', 'autorenew']
-      },
-      clecerts: {
-        label: 'CLE certs',
-        title: 'CLE course certifications',
-        content: <>
-          Certificates can be generated by web server.
-        </>,
-        links: ['CLE Center', 'cle'],
-      },
-      tax: {
-        label: 'Tax deductions',
-        title: 'Charitable tax deductions',
-        content: <>
-          <div>Tax info to help deduct contributions to Foundation. Forms can be generated from the web server.</div>
-          <ul>
-            <li>2019 tax deductions</li>
-            <li>2018 tax deductions</li>
-          </ul>
-        </>
+      mentoring: {
+        label: 'Mentoring Program',
+        title: 'Mentoring Program',
       },
     }
   },
   benefits: {
-    icon: <MenuIcon name="gift" ariaLabel="benefits" />,
+    icon: <MenuIcon name="star" ariaLabel="Benefits" />,
     label: 'Benefits',
     title: 'Membership benefits',
     children: {
@@ -355,8 +350,8 @@ export const attorneyData = {
         />,
         content: <>
           <ul>
-            <li>Latest Law Notes issue: April 2020 (+ headlines)</li>
-            <li>Previous issues:
+            <li>Current issue.</li>
+            <li>Archives:
               <ul>
                 <li>2019 December issue.</li>
                 <li>2019 November issue.</li>
@@ -367,8 +362,8 @@ export const attorneyData = {
         </>
       },
       cle: {
-        label: 'CLE material',
-        title: 'CLE material',
+        label: 'CLE Materials',
+        title: 'CLE Materials',
         banner: <Banner
           title="Optional advertisement"
           text="Promote CLE course."
@@ -376,12 +371,13 @@ export const attorneyData = {
         />,
         content: <>
           <ul>
-            <li>CLE Year in Review.</li>
-            <li>Archive of CLE materials.
+            <li>Most recent CLE course materials.</li>
+            <li>Archive:
               <ul>
                 <li>Oct. 10, 2019: <span className="font-italic">The Future of the Judiciary: Advancing Progressive Goals through New York State Courts.</span>.</li>
                 <li>Sept. 18, 2019: <span className="font-italic">Planning for Unmarried Couples LGBT and Others.</span>.</li>
                 <li>...</li>
+                <li>CLE Year in Review.</li>
               </ul>
             </li>
           </ul>
@@ -392,17 +388,19 @@ export const attorneyData = {
         label: 'Discounts',
         title: 'Discounts',
         content: <>
+          <div>Discounts:</div>
           <ul>
-            <li>Affiliate discounts.</li>
-            <li>Discounts to events.</li>
-            <li>Merchandise discounts.</li>
+            <li>Events.</li>
+            <li>Merchandise.</li>
+            <li>National LGBT Bar.</li>
+            <li>Third-party discounts.</li>
           </ul>
         </>
       },
     }
   },
   jobs: {
-    icon: <MenuIcon name="briefcase" ariaLabel="briefcase" />,
+    icon: <MenuIcon name="briefcase" ariaLabel="Jobs" />,
     badge: 5,
     banner: <Banner
       title="Advertising Banner (Optional)"
@@ -420,8 +418,40 @@ export const attorneyData = {
     </>,
     links: ['Job posting'],
   },
+  emailprefs: {
+    icon: <MenuIcon name="email-gear" ariaLabel="Email Preferences" fill="#415158" />,
+    label: 'Email prefs',
+    title: 'Email Preferences',
+    content: <>
+      <p>Choose the type of emails to opt out from receiving:</p>
+      <span className="font-weight-bold">Transactional notifications</span>
+      <ul>
+        <li>Transaction &amp; payment emails (donations, membership, paid events, merchandise).</li>
+        <li>Event registration confirmations.</li>
+        <li>CLE materials for CLE registrants.</li>
+      </ul>
+      <span className="font-weight-bold">LeGal (promotional) emails</span>
+      <ul>
+        <li>Newsletter (events, podcasts, photos, etc...).</li>
+        <li>Event-specific promotions.</li>
+        <li>Law students-specific (career fair, mentoring, fellowship).</li>
+      </ul>
+      <span className="font-weight-bold">Law Notes emails</span>
+      <ul>
+        <li>Magazine.</li>
+        <li>Podcast.</li>
+      </ul>
+      <span className="font-weight-bold">Emails about LGBT issues</span>
+      <ul>
+        <li>Special days (Trans Day of Remembrance, Bisexual Awareness Week).</li>
+        <li>Event-specific promotions</li>
+        <li>Advocacy/Policy (news and call-to-action).</li>
+      </ul>
+    </>,
+    links: ['logininfo', 'memberinfo']
+  },
   logout: {
-    icon: <MenuIcon name="logout" ariaLabel="logout" />,
+    icon: <MenuIcon name="logout" ariaLabel="Log Out" />,
     label: 'Log Out',
     onClick: 'onClick',
   }

@@ -20,16 +20,12 @@ const { Sider } = Layout;
 const menuKeys = ['profile', 'perks', 'account'];
 const notifThemeColor = '#BC1552';
 
-const logOut = () => {
-  alert('Log out!');
-};
-
 const Members = ({ loggedIn }) => {
 
   const [data, setData] = useState({});
   const [selectedKey, setSelectedKey] = useState('');
-  const [menuCollapsed, setMenuCollapsed] = useState(false);
   const [menuOpenKeys, setMenuOpenKeys] = useState([]);
+  const [menuCollapsed, setMenuCollapsed] = useState(false);
   const [notification, setNotification] = useState({
     message: 'What\'t New',
     description: 'There\'s some news for all members. Or a message just for you!',
@@ -86,6 +82,13 @@ const Members = ({ loggedIn }) => {
 
   const onMenuCollapse = collapsed => {
     setMenuCollapsed(collapsed);
+  };
+
+  const logOut = () => {
+    setSelectedKey(data.options.defaultSelectedKeys[0])
+    setMenuOpenKeys([]);
+    // setMenuOpenKeys(data.options.defaultMenuOpenKeys)
+    alert('Log out!');
   };
 
   const toggleOpenMenuKeys = () => {
