@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router'
-import { Card } from 'antd';
+import { Card, Row, Col } from 'antd';
 import { Container } from 'react-bootstrap';
 import LoginForm from './login-form';
-import SignupForm from './signup-form';
-import '../../assets/global-styles.less';
+import SignupForm from './signup/signup-form';
 
 const tabList = [
   {
@@ -22,6 +21,12 @@ const contentList = {
   signup: <SignupForm />,
 };
 
+
+const wrapperCol = {
+  xs: { span: 24, offset: 0 },
+  sm: { span: 16, offset: 8 },
+}
+
 const LoginSignup = () => {
 
   const router = useRouter();
@@ -29,12 +34,11 @@ const LoginSignup = () => {
   const [key, setKey] = useState('login');
 
   const onTabChange = (key, type) => {
-    console.log('key', key, 'type', type);
-    if (key === 'signup') {
-      router.push("/login", "/signup", { shallow: true });
-    } else {
-      router.push("/signup", "/login", { shallow: true });
-    }
+    // if (key === 'signup') {
+    //   router.push("/login", "/signup", { shallow: true });
+    // } else {
+    //   router.push("/signup", "/login", { shallow: true });
+    // }
     setKey(key);
   };
 
@@ -44,7 +48,7 @@ const LoginSignup = () => {
     >
       {/* login maxWidth: '300px' */}
       <Card
-        className="my-4 login-signup-card"
+        className="mt-4 mb-2 login-signup-card"
         // style={{ width: '100%' }}
         title="Membership"
         // extra={<a href="#">More</a>}
@@ -54,6 +58,10 @@ const LoginSignup = () => {
           onTabChange(key, 'key');
         }}
       >
+        <Row className="mx-5 mb-2">
+          <Col>
+            If you are already a member but this is your first time logging in to the new system, <a href=""><span className="font-italic">reset</span>&nbsp;password</a> to log in.</Col>
+        </Row>
         {contentList[key]}
       </Card>
     </Container>

@@ -11,12 +11,16 @@
     text-align: center;
   }
 
-  // .ant-divider {
-  //   margin: 0;
-  // }
-
   .ant-form-item {
-    margin-bottom: 0;
+    margin-bottom: 1em;
+
+    @media @sm-up {
+      margin-bottom: 0.8em;
+    }
+  }
+
+  .ant-col-xs-24.ant-form-item-label {
+    padding: 0;
   }
 
   .ant-form-item-control {
@@ -26,4 +30,5 @@
   .login-form-button {
     width: 100%;
   }
+
 } // @END .login-signup-card

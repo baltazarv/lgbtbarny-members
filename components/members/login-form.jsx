@@ -1,5 +1,16 @@
-import { Form, Input, Button, Tooltip, Divider } from 'antd';
-import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import { Form, Input, Button } from 'antd';
+import { LockOutlined } from '@ant-design/icons';
+
+const formItemLayout = {
+  labelCol: {
+    xs: { span: 24 },
+    sm: { span: 8 },
+  },
+  wrapperCol: {
+    xs: { span: 24 },
+    sm: { span: 16 },
+  },
+};
 
 const LoginForm = () => {
   const onFinish = values => {
@@ -8,18 +19,17 @@ const LoginForm = () => {
 
   return (
     <Form
+      {...formItemLayout}
       name="login"
-      className="login-form"
-      initialValues={{
-        // remember: true,
-      }}
+      className="login-form mx-5"
+      // initialValues={{}}
       onFinish={onFinish}
     >
 
       <Form.Item
-        className="mb-4"
+        className="mb-2"
         name="email"
-        label=" "
+        label="Email"
         colon={false}
         rules={[
           {
@@ -37,9 +47,9 @@ const LoginForm = () => {
       </Form.Item>
 
       <Form.Item
-        className="mb-4"
+        className="mb-3"
         name="password"
-        label=" "
+        label="Password"
         colon={false}
         rules={[
           {
@@ -57,16 +67,12 @@ const LoginForm = () => {
       </Form.Item>
 
       <Form.Item
-        className="mb-4"
+        className="text"
+        wrapperCol= {{
+          xs: { span: 24 },
+          sm: { span: 24 },
+        }}
       >
-        <Tooltip title="Enter email to get a password">
-          <a className="login-form-forgot" href="" onClick={()=> alert('Forgot password modal')}>
-            Forgot password?<br />Or already a member but don't have a login?
-          </a>
-        </Tooltip>
-      </Form.Item>
-
-      <Form.Item>
         <Button type="primary" htmlType="submit" className="login-form-button">
           Log In
         </Button>
