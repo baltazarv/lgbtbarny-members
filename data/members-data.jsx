@@ -17,111 +17,58 @@ const MenuIcon = ({
     />
   </span>
 
+const anonPromoTxt = {
+  members: 'Join to get these member-only benefits...',
+  lawnotes: 'Access to Law Notes archives...',
+  clecenter: 'Access to CLE materials archives. Download CLE certificates for courses completed.',
+  discounts: 'Discounts for Annual Dinner, merchandise, National LGBT Bar Association, and third-party discounts.',
+  participate: '...',
+  billing: 'Download tax deduction forms.',
+};
+
 export const anonymousData = {
   options: {
-    defaultSelectedKeys: ['members'],
-    defaultMenuOpenKeys: ['benefits'],
+    defaultSelectedKeys: [],
+    defaultMenuOpenKeys: ['members', 'lawnotes', 'clecenter', 'discounts', 'participate', 'billing'],
     avatar: null,
-    // <SvgIcon
-    //   name="customer-profile"
-    //   width="2.6em"
-    //   height="2.6em"
-    //   fill="currentColor"
-    // />,
   },
   members: {
     icon: <MenuIcon name="customer-profile" ariaLabel="profile" />,
     label: 'Membership',
-    banner: <Banner
-      title="Membership Highlights"
-      text="..."
-      colors={{ backgroundColor: '#fcffe6', color: '#3f6600' }}
-    />,
-    title: 'Membership',
-    content: <div>
-      Membership highlights.
-    </div>,
+    disabled: true,
+    tooltip: anonPromoTxt.members,
+    infopanel: anonPromoTxt.members,
   },
-  benefits: {
-    icon: <MenuIcon name="gift" ariaLabel="benefits" />,
-    label: 'Benefits',
-    title: 'Membership benefits',
-    children: {
-      lawnotes: {
-        label: 'Law Notes',
-        title: 'LGBT Law Notes',
-        banner: <Banner
-          title="Optional advertisement"
-          text="New LGBT Law Notes issue... New podcast..."
-          colors={{ backgroundColor: '#fcffe6', color: '#3f6600' }}
-        />,
-        content: <>
-          <ul>
-            <li>January teaser issue</li>
-            <li>List of previous issues - show only titles and descriptions:
-              <ul>
-                <li>2019 December issue.</li>
-                <li>2019 November issue.</li>
-                <li>...</li>
-              </ul>
-            </li>
-          </ul>
-        </>
-      },
-      cle: {
-        label: 'CLE material',
-        title: 'CLE material',
-        banner: <Banner
-          title="Optional advertisement"
-          text="Promote CLE course."
-          colors={{ backgroundColor: '#fcffe6', color: '#3f6600' }}
-        />,
-        content: <>
-          <ul>
-            <li>CLE Year in Review.</li>
-            <li>List of CLE material archives - titles and descriptions only.:
-              <ul>
-                <li>Oct. 10, 2019: <span className="font-italic">The Future of the Judiciary: Advancing Progressive Goals through New York State Courts.</span>.</li>
-                <li>Sept. 18, 2019: <span className="font-italic">Planning for Unmarried Couples LGBT and Others.</span>.</li>
-                <li>...</li>
-              </ul>
-            </li>
-          </ul>
-        </>,
-        links: ['CLE Center'],
-      },
-      discounts: {
-        label: 'Discounts',
-        title: 'Discounts',
-        content: <>
-          List of discounts:
-          <ul>
-            <li>List of affiliate discounts with company logos.</li>
-            <li>List of discounted events.</li>
-            <li>List of merchandise with savings.</li>
-          </ul>
-        </>
-      },
-    }
+  lawnotes: {
+    icon: <MenuIcon name="bookmark" ariaLabel="LGBT Law Notes" />,
+    label: 'Law Notes',
+    tooltip: anonPromoTxt.lawnotes,
+    infopanel: anonPromoTxt.lawnotes,
+  },
+  clecenter: {
+    icon: <MenuIcon name="government" ariaLabel="CLE Center" />,
+    label: 'CLE material',
+    tooltip: anonPromoTxt.clecenter,
+    infopanel: anonPromoTxt.clecenter,
+  },
+  discounts: {
+    icon: <MenuIcon name="star" ariaLabel="Benefits" />,
+    label: 'Discounts',
+    tooltip: anonPromoTxt.discounts,
+    infopanel: anonPromoTxt.discounts,
   },
   participate: {
     icon: <MenuIcon name="people-group" ariaLabel="participate" />,
     label: 'Participate',
-    banner: <Banner
-      title="Optional advertisements"
-      text="..."
-      colors={{ backgroundColor: '#f9f0ff', color: '#531dab' }}
-    />,
-    title: 'Participation',
-    content: <>
-      <div>Ways to participate</div>
-      <ul>
-        <li>Committees and sections to members can join.</li>
-        <li>Member-only events.</li>
-        <li>Volunteering opportunities as members.</li>
-      </ul>
-    </>,
-  }
+    tooltip: anonPromoTxt.participate,
+    infopanel: anonPromoTxt.participate,
+  },
+  billing: {
+    icon: <MenuIcon name="annotate" ariaLabel="Billing" />,
+    label: 'Billing',
+    tooltip: anonPromoTxt.billing,
+    infopanel: anonPromoTxt.billing,
+  },
 };
 
 export const studentData = {
@@ -134,6 +81,274 @@ export const studentData = {
 };
 
 export const attorneyData = {
+  options: {
+    defaultSelectedKeys: ['logininfo'],
+    defaultMenuOpenKeys: ['profile'], //, 'billing', 'documents','participate', 'benefits'
+    avatar: <Avatar
+      src="/images/accounts/denzel.jpg"
+    />,
+  },
+  profile: {
+    icon: <MenuIcon name="customer-profile" ariaLabel="Profile" />,
+    label: 'Profile',
+    children: {
+      logininfo: {
+        label: 'Log-in Info',
+        title: 'Log-in Information',
+        content: <>
+          <span>Edit log-in info:</span>
+          <ul>
+            <li>Email address.</li>
+            <li>Alternate email address (optional), for account recovery.</li>
+            <li>Password.</li>
+          </ul>
+        </>,
+        links: ['memberinfo', 'emailprefs']
+      },
+      memberinfo: {
+        label: 'Member Info',
+        title: 'Member Information',
+        content: <>
+          <span>Edit member info, including some statistic &amp; demographic info:</span>
+          <ul>
+            <li>Address (optional).</li>
+            <li>Telephone number (optional), cell phone for account recovery.</li>
+            <li>Attorney status (bar member, law graduate, retired attorney).</li>
+            <li>Income range.</li>
+            <li>Employer.</li>
+            <li>Practice/work setting.</li>
+            <li>Primary area of practice.</li>
+            <li>Age range.</li>
+            <li>Race/ethnicity.</li>
+            <li>Sexual orientation, gender identity, &amp; preferred pronouns.</li>
+            <li>Special accommodations (accessibility, ASL).</li>
+          </ul>
+        </>,
+        links: ['logininfo', 'emailprefs']
+      },
+    },
+  },
+  billing: {
+    icon: <MenuIcon name="annotate" ariaLabel="Billing" />,
+    label: "Billing",
+    title: "Billing",
+    children: {
+      payments: {
+        label: 'Payment History',
+        title: 'Payment History',
+        content: <>
+          <div>Payment receipts for:</div>
+          <ul>
+            <li>Membership fees.</li>
+            <li>Donations.</li>
+          </ul>
+        </>,
+        links: ['tax', 'autopay']
+      },
+      autopay: {
+        label: 'Auto Payments',
+        title: 'Auto Payment Settings',
+        links: ['payments'],
+      },
+      tax: {
+        label: 'Tax Deductions',
+        title: 'Charitable Tax Contribution Deductions',
+        content: <>
+          <div>Download tax forms for contributions to Foundation. (Forms generated on web server.)</div>
+          <ul>
+            <li>2019 tax deductions</li>
+            <li>2018 tax deductions</li>
+            <li>...</li>
+          </ul>
+        </>
+      },
+    }
+  },
+  participate: {
+    icon: <MenuIcon name="demographic" ariaLabel="Participate" />,
+    label: 'Participate',
+    children: {
+      committees: {
+        label: 'Committees',
+        title: 'Committees & Sections',
+        content: <>
+          <div>Apply to committees/sections or find out how to apply. Choose from the following</div>
+          <ul>
+            <li>Diversity Committee</li>
+            <li>Family &amp; Matrimonial Law Section</li>
+            <li>In-House Corporate Counsel Committee</li>
+            <li>Judiciary Committee</li>
+              <ul>
+              <li>Judicial Screening Panel</li>
+              </ul>
+            <li>Law Student Committee</li>
+            <li>Networking &amp; Social Events Committee</li>
+            <li>Public Interest Law Committee</li>
+            <li>Solo &amp; Small Law Firm Practitioners Committee</li>
+            <li className="font-italic text-muted">Advocacy Circle</li>
+            <li className="font-italic text-muted">Asylum Project</li>
+            <li className="font-italic text-muted">Partners Group</li>
+            <li className="font-italic text-muted">Prisoner's Rights Project</li>
+            <li className="font-italic text-muted">Solutions for Legislative Advocacy and Policy ("SLAP")</li>
+          </ul>
+        </>,
+        links: ['messages'],
+      },
+      referralsvs: {
+        label: 'Referral Service',
+        title: 'Referral Service',
+        content: <>
+          <ul>
+            <li>Lawyer Referral Network</li>
+            <li>Pro Bono Panel</li>
+          </ul>
+        </>,
+      },
+      leadership: {
+        label: 'Leadership Council',
+        title: 'Leadership Council',
+        content: <>
+          <div>Information on <span className="font-weight-bold">Leadership Council</span> and on <span className="font-weight-bold">Steering Committee</span>.</div>
+        </>
+      },
+      volunteer: {
+        label: 'Volunteering',
+        title: 'Volunteering',
+        banner: <Banner
+          title="Volunteering (optional banner)"
+          text="Promote volunteering..."
+          colors={{ backgroundColor: '#f9f0ff', color: '#531dab' }}
+        />,
+        content: <>
+          <ul>
+            <li>Walk-in Legal Clinics.</li>
+            <li>Legal Helpline.</li>
+          </ul>
+        </>,
+        links: ['committees'],
+      },
+      mentoring: {
+        label: 'Mentoring Program',
+        title: 'Mentoring Program',
+      },
+    }
+  },
+  lawnotes: {
+    label: 'Law Notes',
+    icon: <MenuIcon name="bookmark" ariaLabel="LGBT Law Notes" />,
+    title: 'LGBT Law Notes',
+    children: {
+      lncurrent: {
+        label: 'Current Issue',
+        title: 'Current Law Notes Issue',
+        content: <>
+          <div>Full issue available to be read online or to be downloaded.</div>
+        </>,
+        links: ['lnarchive'],
+      },
+      lnarchive: {
+        label: 'Archive',
+        title: 'Law Notes Archive',
+        content: <>
+          <div>Full issues available to be read online or to be downloaded.</div>
+          <ul>
+            <li>2019 December issue.</li>
+            <li>2019 November issue.</li>
+            <li>...</li>
+          </ul>
+        </>,
+        links: ['lncurrent'],
+      },
+    }
+  },
+  clecenter: {
+    icon: <MenuIcon name="government" ariaLabel="CLE Center" />,
+    label: 'CLE Center',
+    children: {
+      clecurrent: {
+        label: 'Current CLE',
+        title: 'Most Recent CLE Course Material',
+        content: <>
+          <div>Latest course material, available before course starts and afterwards.</div>
+        </>,
+        links: ['Current CLE Event', 'clecerts', 'clearchives'],
+      },
+      clecerts: {
+        label: 'Certificates',
+        title: 'CLE Course Certifications',
+        content: <>
+          <div>Download course certificates. (Certificates generated on web server for relevant members.)</div>
+        </>,
+        links: ['Current CLE Event', 'clecurrent', 'clearchives'],
+      },
+      clearchives: {
+        label: 'Archive',
+        title: 'Archived CLE Materials',
+        content: <>
+          <div>Courses members have attended will be marked as such.</div>
+          <ul>
+            <li>Oct. 10, 2019: <span className="font-italic">The Future of the Judiciary: Advancing Progressive Goals through New York State Courts.</span>.</li>
+            <li>Sept. 18, 2019: <span className="font-italic">Planning for Unmarried Couples LGBT and Others.</span>.</li>
+            <li>...</li>
+            <li>CLE Year in Review.</li>
+          </ul>
+        </>,
+        links: ['Current CLE Event', 'clecurrent', 'clecerts'],
+      },
+    },
+  },
+  discounts: {
+    icon: <MenuIcon name="star" ariaLabel="Benefits" />,
+    label: 'Discounts',
+    title: 'Discounts',
+    content: <>
+      <div>Discounts:</div>
+      <ul>
+        <li>Annual Dinner.</li>
+        <li>Merchandise on Zazzle discount code.</li>
+        <li>National LGBT Bar Association discount code.</li>
+        <li>Third-party discounts.</li>
+      </ul>
+    </>
+  },
+  emailprefs: {
+    icon: <MenuIcon name="email-gear" ariaLabel="Email Preferences" fill="#415158" />,
+    label: 'Email prefs',
+    title: 'Email Preferences',
+    content: <>
+      <p>Choose the type of emails to opt out from receiving:</p>
+      <span className="font-weight-bold">Transactional notifications</span>
+      <ul>
+        <li>Transaction &amp; payment emails (donations, membership, paid events, merchandise).</li>
+        <li>Event registration confirmations.</li>
+      </ul>
+      <span className="font-weight-bold">LeGaL (promotional) emails</span>
+      <ul>
+        <li>Newsletter (events, podcasts, photos, etc...).</li>
+        <li>Event-specific promotions.</li>
+        <li>Law students-specific (career fair, mentoring, fellowship).</li>
+      </ul>
+      <span className="font-weight-bold">Law Notes emails</span>
+      <ul>
+        <li>New publication/podcast.</li>
+      </ul>
+      <span className="font-weight-bold">Emails focused on LGBT Pride and advocacy</span>
+      <ul>
+        <li>Special days (Trans Day of Remembrance, Bisexual Awareness Week).</li>
+        <li>Advocacy/Policy (news and call-to-action).</li>
+      </ul>
+      <p>This view will be available from link on emails.</p>
+    </>,
+    links: ['logininfo', 'memberinfo']
+  },
+  logout: {
+    icon: <MenuIcon name="logout" ariaLabel="Log Out" />,
+    label: 'Log Out',
+    onClick: 'onClick',
+  }
+}
+
+export const attorneyBackupData = {
   options: {
     defaultSelectedKeys: ['messages'],
     defaultMenuOpenKeys: [], //'profile', 'billing', 'documents','participate', 'benefits'

@@ -49,8 +49,8 @@ const Members = ({ loggedIn }) => {
       _data = {...anonymousData};
     }
     setData(_data);
-    setSelectedKey(_data.options.defaultSelectedKeys[0])
-    setMenuOpenKeys(_data.options.defaultMenuOpenKeys)
+    setSelectedKey(_data.options.defaultSelectedKeys[0]);
+    setMenuOpenKeys(_data.options.defaultMenuOpenKeys);
   }, [router.query]);
 
   useEffect(() => {
@@ -83,10 +83,10 @@ const Members = ({ loggedIn }) => {
   };
 
   const logOut = () => {
-    setSelectedKey(data.options.defaultSelectedKeys[0])
-    setMenuOpenKeys([]);
-    // setMenuOpenKeys(data.options.defaultMenuOpenKeys)
-    alert('Log out!');
+    router.push('/login');
+    // setSelectedKey(data.options.defaultSelectedKeys[0])
+    // setMenuOpenKeys([]);
+    // alert('Log out!');
   };
 
   const toggleOpenMenuKeys = () => {

@@ -24,7 +24,26 @@ const MemberMenu = ({
       }
     }
     const _menuChildren = items.map(item => {
-      if (!item.children) {
+      if (item.infopanel) {
+
+        // info-only button/panel
+        let innerContent = <span>{item.icon}
+        <span>{item.label}</span></span>;
+        let content = null;
+        if (item.tooltip) {
+          content = <Tooltip title={item.tooltip}>{innerContent}</Tooltip>;
+        } else {
+          content = innerContent;
+        }
+        return <SubMenu
+          key={item.key}
+          disabled={item.disabled ? item.disabled : false}
+          title={content}
+        >
+          <li className="info-panel mb-2">{item.infopanel}</li>
+        </SubMenu>
+      } else if (!item.children) {
+
         // menu category w/out subitems
         let badge = null;
         if (item.badge) badge = <Badge count={item.badge} />;
@@ -42,6 +61,7 @@ const MemberMenu = ({
           }
         </Menu.Item>
       } else {
+
         // menu category w/ subitems
         let subitems = [];
         for (const key in item.children) {
