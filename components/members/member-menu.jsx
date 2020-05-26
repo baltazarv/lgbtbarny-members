@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Menu, Badge } from 'antd';
+import { Menu, Badge, Tooltip } from 'antd';
 import './member-menu.less';
 
 const { SubMenu } = Menu;
@@ -25,30 +25,57 @@ const MemberMenu = ({
     }
     const _menuChildren = items.map(item => {
       if (!item.children) {
+        // menu category w/out subitems
         let badge = null;
         if (item.badge) badge = <Badge count={item.badge} />;
-        return <Menu.Item key={item.key}>
+        let content = <span>
           {item.icon}
           <span>{item.label} {badge}</span>
+        </span>
+        return <Menu.Item
+          disabled={item.disabled ? item.disabled : false}
+          key={item.key}
+        >{item.tooltip ?
+            <Tooltip title={item.tooltip}>{content}</Tooltip>
+          :
+            <>{content}</>
+          }
         </Menu.Item>
       } else {
+        // menu category w/ subitems
         let subitems = [];
         for (const key in item.children) {
           const newObject = Object.assign({}, item.children[key], {key});
           subitems.push(newObject);
         }
+        let innerContent = <span>{item.icon}
+        <span>{item.label}</span></span>;
+        let content = null;
+        if (item.tooltip) {
+          content = <Tooltip title={item.tooltip}>{innerContent}</Tooltip>;
+        } else {
+          content = innerContent;
+        }
         return <SubMenu
           key={item.key}
-          title={
-            <span>
-              {item.icon}
-              <span>{item.label}</span>
-            </span>
-          }
+          disabled={item.disabled ? item.disabled : false}
+          title={content}
         >
-          {subitems.map(subitem => (
-            <Menu.Item key={subitem.key}>{subitem.label}</Menu.Item>
-          ))}
+          {subitems.map(subitem => {
+            // menu subitems
+            let subContent = null;
+            if (subitem.tooltip) {
+              subContent = <Tooltip title={subitem.tooltip}>{subitem.label}</Tooltip>
+            } else {
+              subContent = <>{subitem.label}</>
+            }
+            return <Menu.Item
+              key={subitem.key}
+              disabled={item.disabled ? item.disabled : false}
+            >
+              {subContent}
+            </Menu.Item>
+          })}
         </SubMenu>
       };
     });
