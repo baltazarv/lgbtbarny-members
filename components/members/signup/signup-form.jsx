@@ -23,7 +23,10 @@ const salaries = {
   over150K: { label: 'Income Over $150,000', fee: 87.5 },
 }
 
-const suggestDonations = [50, 100, 150, 200, 250, 300, 'Custom amount...'];
+const suggestDonations = {
+  attorney: [20, 50, 75, 100, 'Custom amount...'],
+  student: [10, 20, 30, 40, 'Custom amount...'],
+}
 
 const SignupForm = () => {
   const [form] = Form.useForm();
@@ -79,7 +82,7 @@ const SignupForm = () => {
       <Form.Item
         className="text-left"
         name="certify"
-        label="I certify that I am"
+        label="I am"
       >
         <Select
           style={{ width: '100%' }}
@@ -99,7 +102,7 @@ const SignupForm = () => {
       <MemberTypeFormItems
         type={memberType}
         salaries={salaries}
-        suggestDonations={suggestDonations}
+        suggestDonations={memberType ? suggestDonations[memberType] : []}
         paySummList={<PaySummList
           fee={memberType === 'attorney' ? memberFee : null}
           discount={memberType === 'attorney' ? discount : null}

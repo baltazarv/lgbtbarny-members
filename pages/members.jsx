@@ -13,7 +13,6 @@ import NewsNotification from '../components/utils/open-notification';
 import './members.less';
 // data
 import { anonymousData, attorneyData, getMemberPageParentKey } from '../data/members-data';
-import SvgIcon from '../components/utils/svg-icon';
 
 const { Sider } = Layout;
 
@@ -21,7 +20,6 @@ const menuKeys = ['profile', 'perks', 'account'];
 const notifThemeColor = '#BC1552';
 
 const Members = ({ loggedIn }) => {
-
   const [data, setData] = useState({});
   const [selectedKey, setSelectedKey] = useState('');
   const [menuOpenKeys, setMenuOpenKeys] = useState([]);

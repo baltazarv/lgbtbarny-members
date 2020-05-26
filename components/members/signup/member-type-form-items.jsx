@@ -68,7 +68,7 @@ const MemberTypeFormItems = ({
   useEffect(() => {
     const thisYear = new Date().getFullYear();
     let years = [];
-    for (let i = thisYear + 6; i >= thisYear; i--) {
+    for (let i = thisYear; i <= thisYear + 4; i++) {
       years.push(i);
     }
     const options = years.map((year) => <Option

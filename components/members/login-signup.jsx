@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router'
-import { Card, Row, Col } from 'antd';
+import { Card, Row, Col, Tabs } from 'antd';
 import { Container } from 'react-bootstrap';
 import LoginForm from './login-form';
 import SignupForm from './signup/signup-form';
+import './login-signup.less';
 
 const tabList = [
   {
@@ -45,6 +46,7 @@ const LoginSignup = () => {
   return (
     <Container
       style={{ maxWidth: '576px' }}
+      className="login-signup"
     >
       {/* login maxWidth: '300px' */}
       <Card
@@ -53,6 +55,10 @@ const LoginSignup = () => {
         title="Membership"
         // extra={<a href="#">More</a>}
         tabList={tabList}
+        tabProps={{
+          type: "card",
+          size: "small",
+        }}
         activeTabKey={key}
         onTabChange={key => {
           onTabChange(key, 'key');
