@@ -80,7 +80,7 @@ const MemberContent = ({
           <Card.Body>
             {
               breadcrumbs.length > 0 &&
-              <Breadcrumb>
+              <Breadcrumb separator="&gt;">
               {breadcrumbs.map(crumb => <Breadcrumb.Item key={crumb}>{crumb}</Breadcrumb.Item>)}
             </Breadcrumb>
             }
