@@ -71,14 +71,40 @@ export const anonymousData = {
   },
 };
 
-export const studentData = {
-  options: {
-    defaultSelectedKeys: [''],
-    avatar: <Avatar
-      src="/images/accounts/river-phoenix-cropped.jpg"
-    />,
-  },
-};
+const memberInfo = (memberType = 'attorney') => {
+  console.log(memberType)
+  return {
+    label: 'Member Info',
+    title: 'Member Information',
+    content: <>
+      <span>Edit member info, including some statistic &amp; demographic info:</span>
+      <ul>
+        <li>Address (optional).</li>
+        <li>Telephone number (optional), cell phone for account recovery.</li>
+        {memberType === 'attorney' &&
+          <>
+            <li>Attorney status (bar member, law graduate, retired attorney).</li>
+            <li>Income range.</li>
+            <li>Employer.</li>
+            <li>Practice/work setting.</li>
+            <li>Primary area of practice.</li>
+            <li>Age range.</li>
+          </>
+        }
+        {memberType === 'student' &&
+          <>
+            <li>Law school.</li>
+            <li>Graduation year.</li>
+          </>
+        }
+        <li>Race/ethnicity.</li>
+        <li>Sexual orientation, gender identity, &amp; preferred pronouns.</li>
+        <li>Special accommodations (accessibility, ASL).</li>
+      </ul>
+    </>,
+    links: ['logininfo', 'emailprefs'],
+  }
+}
 
 export const attorneyData = {
   options: {
@@ -105,27 +131,7 @@ export const attorneyData = {
         </>,
         links: ['memberinfo', 'emailprefs']
       },
-      memberinfo: {
-        label: 'Member Info',
-        title: 'Member Information',
-        content: <>
-          <span>Edit member info, including some statistic &amp; demographic info:</span>
-          <ul>
-            <li>Address (optional).</li>
-            <li>Telephone number (optional), cell phone for account recovery.</li>
-            <li>Attorney status (bar member, law graduate, retired attorney).</li>
-            <li>Income range.</li>
-            <li>Employer.</li>
-            <li>Practice/work setting.</li>
-            <li>Primary area of practice.</li>
-            <li>Age range.</li>
-            <li>Race/ethnicity.</li>
-            <li>Sexual orientation, gender identity, &amp; preferred pronouns.</li>
-            <li>Special accommodations (accessibility, ASL).</li>
-          </ul>
-        </>,
-        links: ['logininfo', 'emailprefs']
-      },
+      memberinfo: memberInfo('attorney'),
     },
   },
   billing: {
@@ -172,7 +178,7 @@ export const attorneyData = {
         label: 'Committees',
         title: 'Committees & Sections',
         content: <>
-          <div>Apply to committees/sections or find out how to apply. Choose from the following</div>
+          <div>Find out how to apply for the following:</div>
           <ul>
             <li>Diversity Committee</li>
             <li>Family &amp; Matrimonial Law Section</li>
@@ -181,18 +187,12 @@ export const attorneyData = {
               <ul>
               <li>Judicial Screening Panel</li>
               </ul>
-            <li>Law Student Committee</li>
             <li>Networking &amp; Social Events Committee</li>
-            <li>Public Interest Law Committee</li>
             <li>Solo &amp; Small Law Firm Practitioners Committee</li>
-            <li className="font-italic text-muted">Advocacy Circle</li>
-            <li className="font-italic text-muted">Asylum Project</li>
-            <li className="font-italic text-muted">Partners Group</li>
-            <li className="font-italic text-muted">Prisoner's Rights Project</li>
-            <li className="font-italic text-muted">Solutions for Legislative Advocacy and Policy ("SLAP")</li>
+            <li>Partners Group</li>
+            <li>Solutions for Legislative Advocacy and Policy ("SLAP")</li>
           </ul>
         </>,
-        links: ['messages'],
       },
       referralsvs: {
         label: 'Referral Service',
@@ -347,6 +347,56 @@ export const attorneyData = {
     onClick: 'onClick',
   }
 }
+
+export const studentData = {
+  options: {
+    defaultSelectedKeys: ['logininfo'],
+    defaultMenuOpenKeys: ['profile', 'donations' ], // , 'benefits'
+    avatar: <Avatar
+      src="/images/accounts/reese.jpg"
+    />,
+  },
+  profile: {
+    icon: <MenuIcon name="customer-profile" ariaLabel="Profile" />,
+    label: 'Profile',
+    children: {
+      logininfo: attorneyData.profile.children.logininfo,
+      memberinfo: memberInfo('student'),
+    },
+  },
+  donations: {
+    icon: <MenuIcon name="annotate" ariaLabel="Billing" />,
+    label: "Donations",
+    title: "Charitable Tax Contribution Deductions for Donations",
+    content: <>
+      <div>Download tax forms for contributions to Foundation. (Forms generated on web server.)</div>
+      <ul>
+        <li>2019 tax deductions</li>
+        <li>2018 tax deductions</li>
+        <li>...</li>
+      </ul>
+    </>,
+  },
+  participate: {
+    icon: attorneyData.participate.icon,
+    label: 'Participate',
+    title: 'Law Student Programs',
+    content: <>
+      <div>Find out how to apply for the following:</div>
+      <ul>
+        <li>Law Student Career Fair (early access?)</li>
+        <li>Internship Program</li>
+        <li>Hank Henry Judicial Fellowship</li>
+        <li>Leadership Summit</li>
+        <li>Mentoring Program</li>
+      </ul>
+    </>,
+  },
+  lawnotes: attorneyData.lawnotes,
+  clecenter: attorneyData.clecenter,
+  emailprefs: attorneyData.emailprefs,
+  logout: attorneyData.logout,
+};
 
 export const attorneyBackupData = {
   options: {

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 // import { useRouter } from 'next/router'
 import { Layout } from 'antd';
 import { Breakpoint } from 'react-socks';
+import { Jumbotron, Container } from 'react-bootstrap';
 import MainLayout from '../components/main-layout';
 import MemberMenu from '../components/members/member-menu';
 import LoginSignup from '../components/members/login-signup';
@@ -41,8 +42,13 @@ const Login = () => {
   };
 
   return (
-    <>
-      <MainLayout subtitle="| Home">
+    <div className="members-page">
+      <MainLayout subtitle="| Login">
+        <Jumbotron fluid>
+            <Container>
+              <h1 className="h1">MEMBERS <span className="subtitle">Dashboard</span></h1>
+            </Container>
+          </Jumbotron>
 
         <Breakpoint xs only>
           <LoginSignup />
@@ -69,7 +75,7 @@ const Login = () => {
         </Breakpoint>
 
       </MainLayout>
-    </>
+    </div>
   );
 }
 

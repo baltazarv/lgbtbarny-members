@@ -12,7 +12,7 @@ import MemberContent from '../components/members/member-content';
 import NewsNotification from '../components/utils/open-notification';
 import './members.less';
 // data
-import { anonymousData, attorneyData, getMemberPageParentKey } from '../data/members-data';
+import { attorneyData, studentData, getMemberPageParentKey } from '../data/members-data';
 
 const { Sider } = Layout;
 
@@ -45,8 +45,8 @@ const Members = ({ loggedIn }) => {
     let _data = {};
     if (!router.query.type || router.query.type === 'attorney') {
       _data = {...attorneyData};
-    } else if (router.query.type === 'anonymous') {
-      _data = {...anonymousData};
+    } else if (router.query.type === 'student') {
+      _data = {...studentData};
     }
     setData(_data);
     setSelectedKey(_data.options.defaultSelectedKeys[0]);
