@@ -40,7 +40,7 @@ const MemberMenu = ({
           disabled={item.disabled ? item.disabled : false}
           title={content}
         >
-          <li className="info-panel mb-2">{item.infopanel}</li>
+          <li className={`info-panel${item.heading ? ' info-panel-heading' : ''} mb-2`}>{item.infopanel}</li>
         </SubMenu>
       } else if (!item.children) {
 

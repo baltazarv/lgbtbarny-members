@@ -66,7 +66,7 @@ const LoginSignup = () => {
       >
         <Row className="mx-5 mb-2">
           <Col>
-            If you are already a member but this is your first time logging in to the new system, <a href=""><span className="font-italic">reset</span>&nbsp;password</a> to log in.</Col>
+            If you are already a member but this is your first time logging in to the new system, <a href="">reset your password</a> to log in.</Col>
         </Row>
         {contentList[key]}
       </Card>

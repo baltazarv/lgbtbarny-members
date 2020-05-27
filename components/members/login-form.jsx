@@ -30,7 +30,6 @@ const LoginForm = () => {
         className="mb-2"
         name="email"
         label="Email"
-        colon={false}
         rules={[
           {
             type: 'email',
@@ -50,7 +49,6 @@ const LoginForm = () => {
         className="mb-3"
         name="password"
         label="Password"
-        colon={false}
         rules={[
           {
             required: true,

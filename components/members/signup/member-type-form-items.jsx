@@ -122,7 +122,7 @@ const MemberTypeFormItems = ({
 
         </>
       } else if (type === 'student') {
-        title = 'First-time Student Membership';
+        title = 'Free Student Membership';
 
         typeSpecificFields = <>
           <Form.Item

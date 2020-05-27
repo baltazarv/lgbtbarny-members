@@ -18,12 +18,12 @@ const MenuIcon = ({
   </span>
 
 const anonPromoTxt = {
-  members: 'Join to get these member-only benefits...',
-  lawnotes: 'Access to Law Notes archives...',
-  clecenter: 'Access to CLE materials archives. Download CLE certificates for courses completed.',
-  discounts: 'Discounts for Annual Dinner, merchandise, National LGBT Bar Association, and third-party discounts.',
-  participate: '...',
+  members: 'Join to get these member benefits...',
   billing: 'Download tax deduction forms.',
+  participate: 'Join committees, Referral Service, Leadership Council, volunteering, Mentoring Program...',
+  lawnotes: 'Access to Law Notes current issue and archives...',
+  clecenter: 'Access to latest CLE materials and archives. Download CLE certificates for courses completed.',
+  discounts: 'Discounts for Annual Dinner, merchandise, National LGBT Bar Association, and third-party discounts.',
 };
 
 export const anonymousData = {
@@ -35,9 +35,22 @@ export const anonymousData = {
   members: {
     icon: <MenuIcon name="customer-profile" ariaLabel="profile" />,
     label: 'Membership',
-    disabled: true,
+    // disabled: true,
+    heading: true,
     tooltip: anonPromoTxt.members,
     infopanel: anonPromoTxt.members,
+  },
+  billing: {
+    icon: <MenuIcon name="annotate" ariaLabel="Billing" />,
+    label: 'Billing',
+    tooltip: anonPromoTxt.billing,
+    infopanel: anonPromoTxt.billing,
+  },
+  participate: {
+    icon: <MenuIcon name="people-group" ariaLabel="participate" />,
+    label: 'Participate',
+    tooltip: anonPromoTxt.participate,
+    infopanel: anonPromoTxt.participate,
   },
   lawnotes: {
     icon: <MenuIcon name="bookmark" ariaLabel="LGBT Law Notes" />,
@@ -57,22 +70,9 @@ export const anonymousData = {
     tooltip: anonPromoTxt.discounts,
     infopanel: anonPromoTxt.discounts,
   },
-  participate: {
-    icon: <MenuIcon name="people-group" ariaLabel="participate" />,
-    label: 'Participate',
-    tooltip: anonPromoTxt.participate,
-    infopanel: anonPromoTxt.participate,
-  },
-  billing: {
-    icon: <MenuIcon name="annotate" ariaLabel="Billing" />,
-    label: 'Billing',
-    tooltip: anonPromoTxt.billing,
-    infopanel: anonPromoTxt.billing,
-  },
 };
 
 const memberInfo = (memberType = 'attorney') => {
-  console.log(memberType)
   return {
     label: 'Member Info',
     title: 'Member Information',
@@ -105,6 +105,72 @@ const memberInfo = (memberType = 'attorney') => {
     links: ['logininfo', 'emailprefs'],
   }
 }
+
+const cleCurrent = () => ({
+  label: 'Current CLE',
+  title: 'Most Recent CLE Course Material',
+  content: <>
+    <div>Latest course material, available before course starts and afterwards.</div>
+  </>,
+  links: ['Current CLE Event', 'clecerts', 'clearchives'],
+});
+
+const cleCerts = () => ({
+  label: 'Certificates',
+  title: 'CLE Course Certifications',
+  content: <>
+    <div>Download course certificates. (Certificates generated on web server for relevant members.)</div>
+  </>,
+  links: ['Current CLE Event', 'clecurrent', 'clearchives'],
+})
+
+const cleArchives = () => ({
+  label: 'Archive',
+  title: 'Archived CLE Materials',
+  content: <>
+    <div>Courses members have attended will be marked as such.</div>
+    <ul>
+      <li>Oct. 10, 2019: <span className="font-italic">The Future of the Judiciary: Advancing Progressive Goals through New York State Courts.</span>.</li>
+      <li>Sept. 18, 2019: <span className="font-italic">Planning for Unmarried Couples LGBT and Others.</span>.</li>
+      <li>...</li>
+      <li>CLE Year in Review.</li>
+    </ul>
+  </>,
+  links: ['Current CLE Event', 'clecurrent', 'clecerts'],
+})
+
+const emailPrefs = (memberType = 'attorney') => ({
+  icon: <MenuIcon name="email-gear" ariaLabel="Email Preferences" fill="#415158" />,
+  label: 'Email prefs',
+  title: 'Email Preferences',
+  content: <>
+    <p>Choose the type of emails to opt out from receiving:</p>
+    <span className="font-weight-bold">Transactional notifications</span>
+    <ul>
+      <li>Transaction &amp; payment emails (donations, membership, paid events, merchandise).</li>
+      <li>Event registration confirmations.</li>
+    </ul>
+    <span className="font-weight-bold">LeGaL (promotional) emails</span>
+    <ul>
+      <li>Newsletter (events, podcasts, photos, etc...).</li>
+      <li>Event-specific promotions.</li>
+      {memberType === 'student' &&
+        <li>Law students-specific (career fair, mentoring, fellowship).</li>
+      }
+    </ul>
+    <span className="font-weight-bold">Law Notes emails</span>
+    <ul>
+      <li>New publication/podcast.</li>
+    </ul>
+    <span className="font-weight-bold">Emails focused on LGBT Pride and advocacy</span>
+    <ul>
+      <li>Special days (Trans Day of Remembrance, Bisexual Awareness Week).</li>
+      <li>Advocacy/Policy (news and call-to-action).</li>
+    </ul>
+    <p>This view will be available from link on emails.</p>
+  </>,
+  links: ['logininfo', 'memberinfo']
+})
 
 export const attorneyData = {
   options: {
@@ -265,36 +331,9 @@ export const attorneyData = {
     icon: <MenuIcon name="government" ariaLabel="CLE Center" />,
     label: 'CLE Center',
     children: {
-      clecurrent: {
-        label: 'Current CLE',
-        title: 'Most Recent CLE Course Material',
-        content: <>
-          <div>Latest course material, available before course starts and afterwards.</div>
-        </>,
-        links: ['Current CLE Event', 'clecerts', 'clearchives'],
-      },
-      clecerts: {
-        label: 'Certificates',
-        title: 'CLE Course Certifications',
-        content: <>
-          <div>Download course certificates. (Certificates generated on web server for relevant members.)</div>
-        </>,
-        links: ['Current CLE Event', 'clecurrent', 'clearchives'],
-      },
-      clearchives: {
-        label: 'Archive',
-        title: 'Archived CLE Materials',
-        content: <>
-          <div>Courses members have attended will be marked as such.</div>
-          <ul>
-            <li>Oct. 10, 2019: <span className="font-italic">The Future of the Judiciary: Advancing Progressive Goals through New York State Courts.</span>.</li>
-            <li>Sept. 18, 2019: <span className="font-italic">Planning for Unmarried Couples LGBT and Others.</span>.</li>
-            <li>...</li>
-            <li>CLE Year in Review.</li>
-          </ul>
-        </>,
-        links: ['Current CLE Event', 'clecurrent', 'clecerts'],
-      },
+      clecurrent: cleCurrent(),
+      clecerts: cleCerts(),
+      clearchives: cleArchives(),
     },
   },
   discounts: {
@@ -311,36 +350,7 @@ export const attorneyData = {
       </ul>
     </>
   },
-  emailprefs: {
-    icon: <MenuIcon name="email-gear" ariaLabel="Email Preferences" fill="#415158" />,
-    label: 'Email prefs',
-    title: 'Email Preferences',
-    content: <>
-      <p>Choose the type of emails to opt out from receiving:</p>
-      <span className="font-weight-bold">Transactional notifications</span>
-      <ul>
-        <li>Transaction &amp; payment emails (donations, membership, paid events, merchandise).</li>
-        <li>Event registration confirmations.</li>
-      </ul>
-      <span className="font-weight-bold">LeGaL (promotional) emails</span>
-      <ul>
-        <li>Newsletter (events, podcasts, photos, etc...).</li>
-        <li>Event-specific promotions.</li>
-        <li>Law students-specific (career fair, mentoring, fellowship).</li>
-      </ul>
-      <span className="font-weight-bold">Law Notes emails</span>
-      <ul>
-        <li>New publication/podcast.</li>
-      </ul>
-      <span className="font-weight-bold">Emails focused on LGBT Pride and advocacy</span>
-      <ul>
-        <li>Special days (Trans Day of Remembrance, Bisexual Awareness Week).</li>
-        <li>Advocacy/Policy (news and call-to-action).</li>
-      </ul>
-      <p>This view will be available from link on emails.</p>
-    </>,
-    links: ['logininfo', 'memberinfo']
-  },
+  emailprefs: emailPrefs(),
   logout: {
     icon: <MenuIcon name="logout" ariaLabel="Log Out" />,
     label: 'Log Out',
@@ -351,7 +361,7 @@ export const attorneyData = {
 export const studentData = {
   options: {
     defaultSelectedKeys: ['logininfo'],
-    defaultMenuOpenKeys: ['profile', 'donations' ], // , 'benefits'
+    defaultMenuOpenKeys: ['profile' ], //, 'billing', 'participate', 'lawnotes', 'clecenter'
     avatar: <Avatar
       src="/images/accounts/reese.jpg"
     />,
@@ -364,19 +374,7 @@ export const studentData = {
       memberinfo: memberInfo('student'),
     },
   },
-  donations: {
-    icon: <MenuIcon name="annotate" ariaLabel="Billing" />,
-    label: "Donations",
-    title: "Charitable Tax Contribution Deductions for Donations",
-    content: <>
-      <div>Download tax forms for contributions to Foundation. (Forms generated on web server.)</div>
-      <ul>
-        <li>2019 tax deductions</li>
-        <li>2018 tax deductions</li>
-        <li>...</li>
-      </ul>
-    </>,
-  },
+  billing: attorneyData.billing,
   participate: {
     icon: attorneyData.participate.icon,
     label: 'Participate',
@@ -389,12 +387,20 @@ export const studentData = {
         <li>Hank Henry Judicial Fellowship</li>
         <li>Leadership Summit</li>
         <li>Mentoring Program</li>
+        <li>Clinic Volunteer</li>
       </ul>
     </>,
   },
   lawnotes: attorneyData.lawnotes,
-  clecenter: attorneyData.clecenter,
-  emailprefs: attorneyData.emailprefs,
+  clecenter: {
+    icon: <MenuIcon name="government" ariaLabel="CLE Center" />,
+    label: 'CLE Center',
+    children: {
+      clecurrent: cleCurrent(),
+      clearchives: cleArchives(),
+    },
+  },
+  emailprefs: emailPrefs('student'),
   logout: attorneyData.logout,
 };
 

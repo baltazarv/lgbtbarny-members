@@ -82,7 +82,7 @@ const SignupForm = () => {
       <Form.Item
         className="text-left"
         name="certify"
-        label="I am"
+        label="I am applying as"
       >
         <Select
           style={{ width: '100%' }}
