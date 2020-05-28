@@ -8,6 +8,7 @@ import StarPaths from '../../assets/svgs/star-svg-paths.jsx';
 import BriefcasePaths from '../../assets/svgs/briefcase-svg-paths';
 import EmailGearPaths from '../../assets/svgs/email-gear-svg-paths.jsx';
 import LogoutPaths from '../../assets/svgs/logout-svg-paths.jsx';
+import LockPaths from '../../assets/svgs/lock-closed-svg-paths.jsx';
 
 import DownloadPaths from '../../assets/svgs/download-svg-paths.jsx';
 import UserAdminPaths from '../../assets/svgs/user-admin-svg-paths.jsx';
@@ -50,6 +51,9 @@ const getPath = (name, props) => {
       return <EmailGearPaths {...props} />
     case 'logout':
       return <LogoutPaths {...props} />
+    // locked items
+    case 'lock':
+      return <LockPaths {...props} />
 
     // not used
     case 'user-admin':

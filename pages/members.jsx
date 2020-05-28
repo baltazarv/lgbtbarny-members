@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/router'
 // import dynamic from "next/dynamic";
 // const Login = dynamic(() => import("./login"));
@@ -12,7 +12,7 @@ import MemberContent from '../components/members/member-content';
 import NewsNotification from '../components/utils/open-notification';
 import './members.less';
 // data
-import { attorneyData, studentData, getMemberPageParentKey } from '../data/members-data';
+import { attorneyData, studentData, nonMemberData, getMemberPageParentKey } from '../data/members-data';
 
 const { Sider } = Layout;
 
@@ -20,6 +20,7 @@ const menuKeys = ['profile', 'perks', 'account'];
 const notifThemeColor = '#BC1552';
 
 const Members = ({ loggedIn }) => {
+  const [memberType, setMemberType] = useState('');
   const [data, setData] = useState({});
   const [selectedKey, setSelectedKey] = useState('');
   const [menuOpenKeys, setMenuOpenKeys] = useState([]);
@@ -41,18 +42,25 @@ const Members = ({ loggedIn }) => {
 
   const router = useRouter();
 
+  // load data file based on query string
   useEffect(() => {
     let _data = {};
     if (!router.query.type || router.query.type === 'attorney') {
+      setMemberType('attorney');
       _data = {...attorneyData};
     } else if (router.query.type === 'student') {
+      setMemberType('student');
       _data = {...studentData};
+    } else if (router.query.type === 'non-member') {
+      setMemberType('non-member');
+      _data = {...nonMemberData};
     }
     setData(_data);
     setSelectedKey(_data.options.defaultSelectedKeys[0]);
     setMenuOpenKeys(_data.options.defaultMenuOpenKeys);
   }, [router.query]);
 
+  // build notifications
   useEffect(() => {
     NewsNotification(notification);
   }, [notification]);
@@ -107,9 +115,17 @@ const Members = ({ loggedIn }) => {
       <MainLayout
         subtitle="| Members"
       >
-        <Jumbotron fluid>
+        <Jumbotron fluid className={`${memberType}`}>
           <Container>
-            <h1 className="h1">MEMBERS <span className="subtitle">Dashboard</span></h1>
+            <h1 className="h1">
+              {
+                memberType !== 'non-member'
+                  ?
+                  <>MEMBERS <span className="subtitle">Dashboard</span></>
+                  :
+                  <>DASHBOARD</>
+              }
+            </h1>
           </Container>
         </Jumbotron>
 

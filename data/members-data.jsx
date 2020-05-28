@@ -19,7 +19,7 @@ const MenuIcon = ({
 
 const anonPromoTxt = {
   members: 'Join to get these member benefits...',
-  billing: 'Download tax deduction forms.',
+  billing: 'Download tax deduction forms. Payment history...',
   participate: 'Join committees, Referral Service, Leadership Council, volunteering, Mentoring Program...',
   lawnotes: 'Access to Law Notes current issue and archives...',
   clecenter: 'Access to latest CLE materials and archives. Download CLE certificates for courses completed.',
@@ -72,6 +72,22 @@ export const anonymousData = {
   },
 };
 
+const loginInfo = () => {
+  return {
+    label: 'Log-in Info',
+    title: 'Log-in Information',
+    content: <>
+      <span>Edit log-in info:</span>
+      <ul>
+        <li>Email address.</li>
+        <li>Alternate email address (optional), for account recovery.</li>
+        <li>Password.</li>
+      </ul>
+    </>,
+    links: ['emailprefs', 'memberinfo'],
+  }
+};
+
 const memberInfo = (memberType = 'attorney') => {
   return {
     label: 'Member Info',
@@ -79,8 +95,10 @@ const memberInfo = (memberType = 'attorney') => {
     content: <>
       <span>Edit member info, including some statistic &amp; demographic info:</span>
       <ul>
+        <li>Name.</li>
+        <li>Upload profile picture.</li>
         <li>Address (optional).</li>
-        <li>Telephone number (optional), cell phone for account recovery.</li>
+        <li>Cell phone number for account recovery (optional).</li>
         {memberType === 'attorney' &&
           <>
             <li>Attorney status (bar member, law graduate, retired attorney).</li>
@@ -105,6 +123,33 @@ const memberInfo = (memberType = 'attorney') => {
     links: ['logininfo', 'emailprefs'],
   }
 }
+
+const payments = (memberType = 'attorney') => ({
+  label: 'Payment History',
+  title: 'Payment History',
+  content: <>
+    <div>Payment receipts for:</div>
+    <ul>
+      <li>Events.</li>
+      {memberType !== 'non-member' && <li>Membership fees.</li>}
+      <li>Donations.</li>
+    </ul>
+  </>,
+  links: ['tax', 'autopay']
+});
+
+const taxForms = () => ({
+  label: 'Tax Deductions',
+  title: 'Charitable Tax Contribution Deductions',
+  content: <>
+    <div>Download tax forms for contributions to Foundation. (Forms generated on web server.)</div>
+    <ul>
+      <li>2019 tax deductions</li>
+      <li>2018 tax deductions</li>
+      <li>...</li>
+    </ul>
+  </>
+});
 
 const cleCurrent = () => ({
   label: 'Current CLE',
@@ -147,7 +192,7 @@ const emailPrefs = (memberType = 'attorney') => ({
     <p>Choose the type of emails to opt out from receiving:</p>
     <span className="font-weight-bold">Transactional notifications</span>
     <ul>
-      <li>Transaction &amp; payment emails (donations, membership, paid events, merchandise).</li>
+      <li>Transaction &amp; payment emails (donations{memberType !== 'non-member' ? `, membership` : ''}, paid events).</li>
       <li>Event registration confirmations.</li>
     </ul>
     <span className="font-weight-bold">LeGaL (promotional) emails</span>
@@ -158,9 +203,9 @@ const emailPrefs = (memberType = 'attorney') => ({
         <li>Law students-specific (career fair, mentoring, fellowship).</li>
       }
     </ul>
-    <span className="font-weight-bold">Law Notes emails</span>
+    <span className={`font-weight-bold${memberType === 'non-member' ? ' text-muted' : ''}`}>Law Notes emails</span>
     <ul>
-      <li>New publication/podcast.</li>
+      <li className={`${memberType === 'non-member' ? 'text-muted' : ''}`}>New publication/podcast.</li>
     </ul>
     <span className="font-weight-bold">Emails focused on LGBT Pride and advocacy</span>
     <ul>
@@ -184,19 +229,7 @@ export const attorneyData = {
     icon: <MenuIcon name="customer-profile" ariaLabel="Profile" />,
     label: 'Profile',
     children: {
-      logininfo: {
-        label: 'Log-in Info',
-        title: 'Log-in Information',
-        content: <>
-          <span>Edit log-in info:</span>
-          <ul>
-            <li>Email address.</li>
-            <li>Alternate email address (optional), for account recovery.</li>
-            <li>Password.</li>
-          </ul>
-        </>,
-        links: ['memberinfo', 'emailprefs']
-      },
+      logininfo: loginInfo('attorney'),
       memberinfo: memberInfo('attorney'),
     },
   },
@@ -205,35 +238,13 @@ export const attorneyData = {
     label: "Billing",
     title: "Billing",
     children: {
-      payments: {
-        label: 'Payment History',
-        title: 'Payment History',
-        content: <>
-          <div>Payment receipts for:</div>
-          <ul>
-            <li>Membership fees.</li>
-            <li>Donations.</li>
-          </ul>
-        </>,
-        links: ['tax', 'autopay']
-      },
+      payments: payments('attorney'),
       autopay: {
         label: 'Auto Payments',
         title: 'Auto Payment Settings',
         links: ['payments'],
       },
-      tax: {
-        label: 'Tax Deductions',
-        title: 'Charitable Tax Contribution Deductions',
-        content: <>
-          <div>Download tax forms for contributions to Foundation. (Forms generated on web server.)</div>
-          <ul>
-            <li>2019 tax deductions</li>
-            <li>2018 tax deductions</li>
-            <li>...</li>
-          </ul>
-        </>
-      },
+      taxForms: taxForms(),
     }
   },
   participate: {
@@ -281,8 +292,8 @@ export const attorneyData = {
         label: 'Volunteering',
         title: 'Volunteering',
         banner: <Banner
-          title="Volunteering (optional banner)"
-          text="Promote volunteering..."
+          title="Sign up for the next clinic"
+          text="Volunteering info..."
           colors={{ backgroundColor: '#f9f0ff', color: '#531dab' }}
         />,
         content: <>
@@ -358,6 +369,96 @@ export const attorneyData = {
   }
 }
 
+const lawNotesBanner = <Banner
+  title="Subscribe to Law Notes"
+  text="Why should you subscribe..."
+  colors={{ backgroundColor: '#f9f0ff', color: '#9e1068' }}
+/>;
+
+const lawNotesSubscribe = {
+  title: 'Subscribe to Law Notes',
+  content: <>
+    <p>Only online version of magazine available.</p>
+    <p>Subscription payment form...</p>
+  </>,
+};
+
+export const nonMemberData = {
+  options: {
+    defaultSelectedKeys: ['profile'],
+    defaultMenuOpenKeys: ['profile', 'lawnotes'], //, 'billing', 'participate', 'benefits'
+    avatar: <Avatar
+      src="/images/accounts/river.jpg"
+    />,
+  },
+  profile: {
+    icon: <MenuIcon name="customer-profile" ariaLabel="Profile" />,
+    label: 'Profile',
+    banner: lawNotesBanner,
+    title: 'Profile',
+    content: <>
+      <span>Edit account info:</span>
+      <ul>
+        <li>Name.</li>
+        <li>Upload profile picture.</li>
+        <li>Email address.</li>
+        <li>Alternate email address (optional), for account recovery.</li>
+        <li>Password.</li>
+        <li>Cell phone number for account recovery (optional).</li>
+        <li>Upload profile photo.</li>
+      </ul>
+    </>,
+    links: ['emailprefs'],
+
+  },
+  billing: {
+    icon: <MenuIcon name="annotate" ariaLabel="Billing" />,
+    label: "Billing",
+    title: "Billing",
+    banner: lawNotesBanner,
+    children: {
+      payments: payments('non-member'),
+      // autopay: // only when subscribed to Law Notes
+      taxForms: taxForms(),
+    }
+  },
+  lawnotes: {
+    icon: <MenuIcon name="bookmark" ariaLabel="LGBT Law Notes" />,
+    label: 'Law Notes',
+    title: 'LGBT Law Notes',
+    locked: true,
+    disabled: true,
+    tooltip: 'Subscribe to Law Notes...',
+    children: {
+      lncurrent: Object.assign({ ...lawNotesSubscribe }, {
+        label: 'Current Issue',
+        // disabled: true,
+      }),
+      lnarchive: Object.assign({ ...lawNotesSubscribe }, {
+        label: 'Archive',
+        // disabled: true,
+      }),
+    }
+  },
+  clecerts: Object.assign({ ...cleCerts() }, {
+    icon: <MenuIcon name="government" ariaLabel="CLE Center" />,
+    label: 'CLE Certificates',
+    banner: <Banner
+      title="CLE Event"
+      text="Sign up for current event..."
+      colors={{ backgroundColor: '#feffe6', color: '#ad8b00' }}
+    />,
+    links: ['Current CLE Event'],
+  }),
+  emailprefs: Object.assign({ ...emailPrefs('non-member') }, { banner: lawNotesBanner },
+  ),
+  logout: {
+    icon: <MenuIcon name="logout" ariaLabel="Log Out" />,
+    label: 'Log Out',
+    onClick: 'onClick',
+  }
+}
+
 export const studentData = {
   options: {
     defaultSelectedKeys: ['logininfo'],
@@ -407,7 +508,7 @@ export const studentData = {
 export const attorneyBackupData = {
   options: {
     defaultSelectedKeys: ['messages'],
-    defaultMenuOpenKeys: [], //'profile', 'billing', 'documents','participate', 'benefits'
+    defaultMenuOpenKeys: [],
     avatar: <Avatar
       src="/images/accounts/denzel.jpg"
     />,
@@ -420,7 +521,7 @@ export const attorneyBackupData = {
       title="Advertising Banner (Optional)"
       text="Release of the latest Law Notes edition, of this year's annual report, of a podcast episode... An event promotion... Reminder to renew membership. Encouragement to join a committee or section... Push to donate..."
       colors={{ backgroundColor: '#f9f0ff', color: '#9e1068' }}
-    />, // (To update this, admin would upload an image or edit text fields.)
+    />,
     title: 'Message Inbox',
     content: <>
       <div>An inbox of all kinds of notification. This could be a repository for all messaging, even if the member opts out from receiving email notifications:</div>

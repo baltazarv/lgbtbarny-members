@@ -60,8 +60,13 @@
         }
       }
 
-      .ant-menu-inline-collapsed > .ant-menu-item, .ant-menu-inline-collapsed > .ant-menu-submenu > .ant-menu-submenu-title {
-        padding-left: 26px;
+      /* lock icon when menu item is disabled */
+      .ant-menu-submenu, .ant-menu-submenu-disabled {
+        [aria-label="locked"] {
+          position: absolute;
+          top: 22%;
+          right: 6px;
+        }
       }
 
     } //@END .ant-layout-sider-children

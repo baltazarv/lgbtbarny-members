@@ -1,8 +1,19 @@
 import { useState, useEffect } from 'react';
 import { Menu, Badge, Tooltip } from 'antd';
 import './member-menu.less';
+import SvgIcon from '../utils/svg-icon';
 
 const { SubMenu } = Menu;
+
+const LockIcon = () =>
+  <span role="img" aria-label="locked" className="anticon">
+    <SvgIcon
+      name="lock"
+      width="1.0em"
+      height="1.0em"
+      fill="rgba(0, 0, 0, .5)"
+    />
+  </span>
 
 const MemberMenu = ({
     data,
@@ -15,6 +26,7 @@ const MemberMenu = ({
 
   const [menuChildren, setMenuChildren] = useState(null);
 
+  // build menu
   useEffect(() => {
     let items = [];
     for (const key in data) {
@@ -26,7 +38,7 @@ const MemberMenu = ({
     const _menuChildren = items.map(item => {
       if (item.infopanel) {
 
-        // info-only button/panel
+        /* member promo panel */
         let innerContent = <span>{item.icon}
         <span>{item.label}</span></span>;
         let content = null;
@@ -44,7 +56,7 @@ const MemberMenu = ({
         </SubMenu>
       } else if (!item.children) {
 
-        // menu category w/out subitems
+        /* menu category w/out subitems */
         let badge = null;
         if (item.badge) badge = <Badge count={item.badge} />;
         let content = <span>
@@ -62,7 +74,7 @@ const MemberMenu = ({
         </Menu.Item>
       } else {
 
-        // menu category w/ subitems
+        /* menu category w/ subitems */
         let subitems = [];
         for (const key in item.children) {
           const newObject = Object.assign({}, item.children[key], {key});
@@ -76,13 +88,18 @@ const MemberMenu = ({
         } else {
           content = innerContent;
         }
+        let arrowIcon = {};
+        if (item.locked) arrowIcon = { expandIcon: <LockIcon /> }
         return <SubMenu
           key={item.key}
           disabled={item.disabled ? item.disabled : false}
           title={content}
+          {... arrowIcon}
+          // onTitleClick={({ key, domEvent }) => setSelectedKey(key)}
         >
           {subitems.map(subitem => {
-            // menu subitems
+
+            /* menu subitems */
             let subContent = null;
             if (subitem.tooltip) {
               subContent = <Tooltip title={subitem.tooltip}>{subitem.label}</Tooltip>
@@ -91,7 +108,7 @@ const MemberMenu = ({
             }
             return <Menu.Item
               key={subitem.key}
-              disabled={item.disabled ? item.disabled : false}
+              disabled={subitem.disabled ? subitem.disabled : false}
             >
               {subContent}
             </Menu.Item>
