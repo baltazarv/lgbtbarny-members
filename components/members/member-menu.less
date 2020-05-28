@@ -61,10 +61,16 @@
       }
 
       /* lock icon when menu item is disabled */
-      .ant-menu-submenu, .ant-menu-submenu-disabled {
+      .ant-menu-item, .ant-menu-submenu, .ant-menu-submenu-disabled {
+
+        &.locked {
+          color: rgba(0, 0, 0, .4);
+        }
+
+        // only the second icon
         [aria-label="locked"] {
           position: absolute;
-          top: 22%;
+          top: 25%;
           right: 6px;
         }
       }

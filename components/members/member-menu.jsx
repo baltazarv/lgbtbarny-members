@@ -61,11 +61,12 @@ const MemberMenu = ({
         if (item.badge) badge = <Badge count={item.badge} />;
         let content = <span>
           {item.icon}
-          <span>{item.label} {badge}</span>
+          <span>{item.label} {badge} {item.locked && <LockIcon />}</span>
         </span>
         return <Menu.Item
           disabled={item.disabled ? item.disabled : false}
           key={item.key}
+          className={item.locked ? 'locked' : ''}
         >{item.tooltip ?
             <Tooltip title={item.tooltip}>{content}</Tooltip>
           :

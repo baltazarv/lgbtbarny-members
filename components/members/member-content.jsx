@@ -27,7 +27,7 @@ const MemberContent = ({
           const link = getMembersPageItem(data, key);
           const optionalPipe = index !== keys.length - 1 ? " | " : null;
           if (!link) {
-            return <span key={key}>{key}{optionalPipe}</span>;
+            return <span key={key}><u>{key}</u>{optionalPipe}</span>;
           }
           return <span key={key}>
             <Button type="link" onClick={() => onLinkClick(key)}>{link.title}</Button>{optionalPipe}
