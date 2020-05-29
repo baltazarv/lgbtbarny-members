@@ -12,7 +12,7 @@ import MemberContent from '../components/members/member-content';
 import NewsNotification from '../components/utils/open-notification';
 import './members.less';
 // data
-import { attorneyData, studentData, nonMemberData, getMemberPageParentKey } from '../data/members-data';
+import { anonData, attorneyData, studentData, nonMemberData, getMemberPageParentKey } from '../data/members-data';
 
 const { Sider } = Layout;
 
@@ -45,7 +45,10 @@ const Members = ({ loggedIn }) => {
   // load data file based on query string
   useEffect(() => {
     let _data = {};
-    if (!router.query.type || router.query.type === 'attorney') {
+    if (!router.query.type || router.query.type === 'anon' || router.query.type === 'anonymous') {
+      setMemberType('anon');
+      _data = {...anonData};
+    } else if (router.query.type === 'attorney') {
       setMemberType('attorney');
       _data = {...attorneyData};
     } else if (router.query.type === 'student') {

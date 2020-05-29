@@ -11,7 +11,7 @@ import './login.less'
 // import style from '../assets/global-styles.less' // With CSS Modules
 import './members.less';
 // data
-import { anonymousData, attorneyData } from '../data/members-data';
+import { loginData } from '../data/members-data';
 
 const { Sider } = Layout;
 
@@ -22,7 +22,7 @@ const Login = () => {
   const [menuCollapsed, setMenuCollapsed] = useState(false);
 
   useEffect(() => {
-    let _data = {...anonymousData}
+    let _data = {...loginData}
     setData(_data);
     setSelectedKey(_data.options.defaultSelectedKeys[0]);
     setMenuOpenKeys(_data.options.defaultMenuOpenKeys);

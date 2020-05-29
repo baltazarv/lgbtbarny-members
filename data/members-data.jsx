@@ -3,6 +3,8 @@ import Banner from '../components/utils/banner';
 import { UserOutlined } from '@ant-design/icons';
 import SvgIcon from '../components/utils/svg-icon';
 
+// data components
+
 const MenuIcon = ({
   name,
   ariaLabel,
@@ -14,6 +16,20 @@ const MenuIcon = ({
       width="1.6em"
       height="1.6em"
       fill={fill} // "#008cdb"
+    />
+  </span>
+
+const ContentIcon = ({
+  name,
+  ariaLabel,
+  fill='currentColor'
+}) =>
+  <span role="img" aria-label={ariaLabel}>
+    <SvgIcon
+      name={name}
+      width="1.4em"
+      height="1.4em"
+      fill={fill}
     />
   </span>
 
@@ -47,6 +63,14 @@ const banners = {
     text={<span><u>Sign up</u> for current event...</span>}
     colors={{ backgroundColor: '#fcffe6', color: '#3f6600' }}
   />,
+}
+
+const linkText = {
+  member: 'Member sign-up form',
+  nonMember: 'Non-member sign-up form',
+  currentCle: 'Current CLE registration',
+  newsletter: 'Newsletter sign-up',
+  lawnotes: 'Law Notes subscription form',
 }
 
 const loginInfo = () => {
@@ -129,13 +153,73 @@ const taxForms = () => ({
   links: ['payments']
 });
 
+const participate = (memberType) => ({
+  icon: <MenuIcon name="demographic" ariaLabel="Participate" />,
+  label: 'Participate',
+  title: 'Member Participation',
+  locked: true,
+  content: <>
+    {memberType === 'anon' &&
+      <div>Join groups:</div>
+    }
+    {memberType === 'non-member' &&
+      <div>If you're an attorney, <strong><u>become a member</u></strong>, and join these groups:</div>
+    }
+    <ul>
+      <li>Committees</li>
+      <li>Referral Service</li>
+      <li>Leadership Council</li>
+      <li>Volunteering</li>
+      <li>Mentoring Program</li>
+    </ul>
+    <p><strong><u>Join now!</u></strong></p>
+  </>,
+  links: [linkText.member],
+});
+
+// locked
+const lawNotes = (memberType) => ({
+  icon: <MenuIcon name="bookmark" ariaLabel="LGBT Law Notes" />,
+  label: 'Law Notes',
+  title: 'LGBT Law Notes',
+  banner: banners.lawnotes,
+  content: <>
+    {memberType === 'anon' &&
+      <p>Law Notes are included with membership. <strong><u>Join now!</u></strong></p>
+    }
+    {memberType === 'non-member' &&
+      <p>If you're an attorney, <strong><u>become a member</u></strong> and get Law Notes free. Otherwise, get a <u>Law Notes subscription</u>:</p>
+    }
+    <div>See what you get with Law Notes:</div>
+    <ul>
+      <li>Law Notes 1: current course (locked).</li>
+      <li>Law Notes 2: previous course (locked).</li>
+      <li>...</li>
+    </ul>
+
+    {memberType === 'anon' &&
+      <p>If you're not an attorney, get a <u>Law Notes subscription</u>, instead.</p>
+    }
+  </>,
+  links: [linkText.member, linkText.lawnotes],
+});
+
+// locked
+const cleCenter = (memberType) => ({
+  icon: <MenuIcon name="government" ariaLabel="CLE Center" />,
+  label: 'CLE Center',
+  banner: banners.clecurrent,
+  title: 'CLE Center',
+  links: [linkText.member, linkText.currentCle],
+});
+
 const cleCurrent = () => ({
   label: 'Current CLE',
   title: 'Most Recent CLE Course Material',
   content: <>
     <div>Latest course material, available before course starts and afterwards.</div>
   </>,
-  links: ['Current CLE Event', 'clecerts', 'clearchives'],
+  links: [linkText.currentCle, 'clecerts', 'clearchives'],
 });
 
 const cleCerts = () => ({
@@ -161,6 +245,29 @@ const cleArchives = () => ({
   </>,
   links: ['Current CLE Event', 'clecurrent', 'clecerts'],
 })
+
+const discounts = (memberType) => ({
+  icon: <MenuIcon name="star" ariaLabel="Discounts" />,
+  label: 'Discounts',
+  title: 'Discounts',
+  content: <>
+    {memberType === 'attorney' &&
+      <div>Discounts:</div>
+    }
+    {memberType === 'anon' &&
+      <div><strong><u>Become a member</u></strong> to get member discounts:</div>
+    }
+    {memberType === 'non-member' &&
+      <div>If you are an attorney, <strong><u>become a member</u></strong> to get member discounts:</div>
+    }
+    <ul>
+      <li>Annual Dinner.</li>
+      <li>Merchandise on Zazzle discount code.</li>
+      <li>National LGBT Bar Association discount code.</li>
+      <li>Third-party discounts.</li>
+    </ul>
+  </>
+});
 
 const emailPrefs = (memberType = 'attorney') => {
   const nonMemberClasses = memberType === 'non-member' ? 'text-muted line-through' : '';
@@ -200,7 +307,9 @@ const emailPrefs = (memberType = 'attorney') => {
   };
 }
 
-export const anonymousData = {
+// member type data
+
+export const loginData = {
   options: {
     defaultSelectedKeys: [],
     defaultMenuOpenKeys: ['members', 'lawnotes', 'clecenter', 'discounts', 'participate', 'billing'],
@@ -246,18 +355,10 @@ export const anonymousData = {
   },
 };
 
-const lawNotesSubscribe = {
-  title: 'Subscribe to Law Notes',
-  content: <>
-    <p>Only online version of magazine available.</p>
-    <p>Subscription payment form...</p>
-  </>,
-};
-
 export const attorneyData = {
   options: {
     defaultSelectedKeys: ['logininfo'],
-    defaultMenuOpenKeys: ['profile'], //, 'billing', 'participate', 'lawnotes', 'clecenter'
+    defaultMenuOpenKeys: ['profile'], // 'lawnotes',  //'profile', 'billing', 'participate',
     avatar: <Avatar
       src="/images/accounts/denzel.jpg"
     />,
@@ -343,10 +444,7 @@ export const attorneyData = {
       },
     }
   },
-  lawnotes: {
-    label: 'Law Notes',
-    icon: <MenuIcon name="bookmark" ariaLabel="LGBT Law Notes" />,
-    title: 'LGBT Law Notes',
+  lawnotes: Object.assign({ ...lawNotes('attorney')}, {
     children: {
       lncurrent: {
         label: 'Current Issue',
@@ -370,31 +468,16 @@ export const attorneyData = {
         links: ['lncurrent'],
       },
     }
-  },
-  clecenter: {
-    icon: <MenuIcon name="government" ariaLabel="CLE Center" />,
-    label: 'CLE Center',
+  }),
+  clecenter: Object.assign({ ...cleCenter('attorney') }, {
     children: {
       clecurrent: cleCurrent(),
       clecerts: cleCerts(),
       clearchives: cleArchives(),
-    },
-  },
-  discounts: {
-    icon: <MenuIcon name="star" ariaLabel="Benefits" />,
-    label: 'Discounts',
-    title: 'Discounts',
-    content: <>
-      <div>Discounts:</div>
-      <ul>
-        <li>Annual Dinner.</li>
-        <li>Merchandise on Zazzle discount code.</li>
-        <li>National LGBT Bar Association discount code.</li>
-        <li>Third-party discounts.</li>
-      </ul>
-    </>
-  },
-  emailprefs: emailPrefs(),
+    }
+  }),
+  discounts: discounts('attorney'),
+  emailprefs: emailPrefs('attorney'),
   logout: {
     icon: <MenuIcon name="logout" ariaLabel="Log Out" />,
     label: 'Log Out',
@@ -402,10 +485,78 @@ export const attorneyData = {
   }
 }
 
+export const anonData = {
+  options: {
+    defaultSelectedKeys: ['billing'],
+    defaultMenuOpenKeys: [],
+    avatar: <Avatar
+      icon={<SvgIcon
+        name="customer-profile"
+        width="2.2em"
+        height="2.2em"
+        fill="rgba(0, 0, 0, 0.65)"
+      />}
+      style={{ backgroundColor: 'rgba(0, 0, 0, 0)' }}
+    />,
+  },
+  billing: {
+    icon: <MenuIcon name="annotate" ariaLabel="Billing" />,
+    label: "Billing",
+    title: "Billing on Members Dashboard",
+    content: <>
+      <span>When you <strong><u>become a member</u></strong> you have access to the following from the <em>Members Dashboard:</em></span>
+      <ul>
+        <li><strong>View payment history</strong> for events that you have attended and donations that you have made. (By the way, membership offers <u>member discounts</u> on events, mainly the <em>Annual Dinner</em>.</li>
+        <li><strong>Download tax forms</strong> for any charitable tax contributions that you have made to the Foundation.</li>
+      </ul>
+
+      <p>If you're not an attorney you can still <u>sign up</u> for access to <em>Billing</em>.</p>
+    </>,
+    links: ['Member sign-up', 'discounts', 'Non-member sign-up'],
+  },
+  participate: participate('anon'),
+  lawnotes: Object.assign({ ...lawNotes('anon') }, {
+    banner: null,
+    locked: true,
+  }),
+  clecenter: Object.assign({ ...cleCenter('anon') }, {
+    locked: true,
+    content: <>
+      <p><strong><u>Become a member</u></strong> to get access to all CLE materials, current materials and the archive.</p>
+
+      <div>Course titles with descriptions:</div>
+      <ul>
+        <li>Course 1: <strong>current course</strong> (locked).</li>
+        <li>Course 2: <strong>previous course</strong> (locked).</li>
+        <li>...</li>
+      </ul>
+
+      <hr />
+
+      <p>You will be able to download CLE certificates on the <em>Members Dashboard</em> for courses that you have attended.</p>
+
+      <p>If you are not an attorney you can still <u>sign up</u> for access to <em>CLE certificates</em>.</p>
+    </>,
+  }),
+  discounts: Object.assign({ ...discounts('anon') }, {
+    title: 'Member Discounts',
+    locked: true,
+    links: ['Member sign-up form'],
+  }),
+  emailprefs: Object.assign({ ...emailPrefs('anon') }, {
+    content: <>
+      <p>When you <strong><u>sign up to our newsletter</u></strong> you can also manage your email preferences from the <em>Member Dashboard</em> when you <strong><u>join</u></strong>.</p>
+
+      <p>If you're not an attorney you can still <u>sign up</u> for access to <em>Email Preferences</em>.</p>
+    </>,
+    links: [linkText.member, linkText.newsletter, linkText.nonMember],
+  })
+};
+
 export const nonMemberData = {
   options: {
     defaultSelectedKeys: ['profile'],
-    defaultMenuOpenKeys: ['profile'], //, 'billing', 'lawnotes', 'clecenter'
+    defaultMenuOpenKeys: [], //, 'billing', 'lawnotes', 'clecenter'
     avatar: <Avatar
       src="/images/accounts/river.jpg"
     />,
@@ -427,7 +578,6 @@ export const nonMemberData = {
       </ul>
     </>,
     links: ['emailprefs'],
-
   },
   billing: {
     icon: <MenuIcon name="annotate" ariaLabel="Billing" />,
@@ -440,73 +590,28 @@ export const nonMemberData = {
       taxForms: taxForms(),
     }
   },
-  participate: {
-    icon: <MenuIcon name="demographic" ariaLabel="Participate" />,
-    label: 'Participate',
-    title: 'Member Participation',
+  participate: participate('non-member'),
+  lawnotes: Object.assign({ ...lawNotes('non-member') }, {
+    locked: true,
+  }),
+  clecenter: Object.assign({ ...cleCenter('non-member') }, {
     locked: true,
     content: <>
-      <div>If you're an attorney, <strong><u>become a member</u></strong> to join member groups:</div>
+      <p>If you are an attorney, <strong><u>become a member</u></strong> to get access to all CLE materials, current materials and the archive.</p>
+
+      <div>List of all course titles with descriptions + materials for courses taken:</div>
       <ul>
-        <li>Committees</li>
-        <li>Referral Service</li>
-        <li>Leadership Council</li>
-        <li>Volunteering</li>
-        <li>Mentoring Program</li>
-        <li>Committees</li>
-      </ul>
-    </>,
-    links: ['Member sign-up form'],
-  },
-  lawnotes: {
-    icon: <MenuIcon name="bookmark" ariaLabel="LGBT Law Notes" />,
-    label: 'Law Notes',
-    title: 'LGBT Law Notes',
-    locked: true,
-    banner: banners.lawnotes,
-    // tooltip: 'Subscribe to Law Notes...',
-    content: <>
-      <div>If you're an attorney, <strong><u>become a member</u></strong> and get Law Notes free. Otherwise, <u>get a subscription</u>:</div>
-      <div>List of Law Notes issue teasers:</div>
-      <ul>
-        <li>Law Notes 1: current course (locked)</li>
-        <li>Law Notes 2: previous course (locked).</li>
+        <li>Course 1 - <strong><em>current course:</em></strong> title, description, and link to <strong><u>event registration.</u></strong></li>
+        <li>Course 2 - <strong>previous course:</strong> title and description only.</li>
+        <li>Course 3 - <strong><em>registered course:</em></strong> title, description,and <strong><u>course material</u></strong>.</li>
+        <li>Course 4 - <strong><em>course registered and attended:</em></strong> title, description, <strong><u>course material,</u></strong> and <strong><u>certificate</u></strong>.</li>
         <li>...</li>
       </ul>
     </>,
-    links: ['Law Notes subscription form', 'Member sign-up form'],
-  },
-  clecenter: {
-    icon: <MenuIcon name="government" ariaLabel="CLE Center" />,
-    label: 'CLE Center',
-    locked: true,
-    banner: banners.clecurrent,
-    title: 'CLE Courses',
-    content: <>
-      <div>If you're an attorney, <strong><u>become a member</u></strong> to get access to all CLE materials, current materials and archive.</div>
-      <div>List of all course titles + materials for courses taken:</div>
-      <ul>
-        <li>Course 1 - <strong><em>current:</em></strong> course (title, description, and <strong><u>event registration</u></strong>)</li>
-        <li>Course 2 - previous course: title and description only.</li>
-        <li>Course 3 - <strong><em>registered:</em></strong> <strong><u>course material</u></strong>.</li>
-        <li>Course 4 - <strong><em>attended:</em></strong> <strong><u>course material</u></strong> and <strong><u>certificate</u></strong>.</li>
-        <li>...</li>
-      </ul>
-    </>,
-    links: ['Member sign-up form', 'Current CLE registration'],
-  },
-  discounts: Object.assign({ ...attorneyData.discounts }, {
+  }),
+  discounts: Object.assign({ ...discounts('non-member') }, {
     title: 'Member Discounts',
     locked: true,
-    content: <>
-      <div>If you're an attorney, <strong><u>become a member</u></strong> to get member discounts:</div>
-      <ul>
-        <li>Annual Dinner.</li>
-        <li>Merchandise on Zazzle discount code.</li>
-        <li>National LGBT Bar Association discount code.</li>
-        <li>Third-party discounts.</li>
-      </ul>
-    </>,
     links: ['Member sign-up form'],
   }),
   emailprefs: Object.assign({ ...emailPrefs('non-member') }, {
