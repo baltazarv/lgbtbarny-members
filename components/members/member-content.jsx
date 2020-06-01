@@ -1,14 +1,20 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Breadcrumb, Button } from 'antd';
 import { Container, Row, Col, Card } from 'react-bootstrap';
-import { useEffect } from 'react';
 // data
 import { getMemberPageParentKey, getMembersPageItem } from '../../data/members-data';
+import * as accounts from '../../data/members-users';
+
+const signupLinkText = {
+  [accounts.SIGNUP_MEMBER]: 'Member sign-up',
+  [accounts.SIGNUP_NON_MEMBER]: 'Non-member sign-up',
+  [accounts.SIGNUP_LAW_NOTES]: 'Law Notes subscription',
+}
 
 const MemberContent = ({
   data,
   dataKey,
-  onLinkClick
+  onLinkClick,
 }) => {
 
   const [banner, setBanner] = useState(null);
@@ -27,6 +33,11 @@ const MemberContent = ({
           const link = getMembersPageItem(data, key);
           const optionalPipe = index !== keys.length - 1 ? " | " : null;
           if (!link) {
+            if (key === accounts.SIGNUP_MEMBER || key === accounts.SIGNUP_NON_MEMBER || key === accounts.SIGNUP_LAW_NOTES) return <span key={key}>
+                <Button type="link" onClick={() => onLinkClick(key)}>
+                  {signupLinkText[key]}
+                </Button>{optionalPipe}
+              </span>
             return <span key={key}><u>{key}</u>{optionalPipe}</span>;
           }
           return <span key={key}>
@@ -70,7 +81,7 @@ const MemberContent = ({
       }
 
     }
-  }, [dataKey]);
+  }, [dataKey, data]);
 
   return <Container className="member-content">
     <Row>
@@ -93,12 +104,6 @@ const MemberContent = ({
         </Card>
       </Col>
     </Row>
-    <style global jsx>{`
-      .card-footer button {
-        margin: 0;
-        padding: 0;
-      }
-    `}</style>
   </Container>
 }
 

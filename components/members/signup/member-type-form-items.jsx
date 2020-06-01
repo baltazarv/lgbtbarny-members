@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Divider, Form, Input, InputNumber, Steps, Button, Row, Col, Select, Tooltip } from 'antd';
+import { Divider, Form, Input, InputNumber, Steps, Button, Row, Col, Select, Checkbox } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
-import { useEffect } from 'react';
+import { useMemo } from 'react';
+import * as accounts from '../../../data/members-users';
 
 const { Step } = Steps;
 const { Option } = Select;
@@ -12,21 +13,19 @@ const tailFormItemLayout = {
 };
 
 const MemberTypeFormItems = ({
-  type,
+  memberType,
+  signupType,
   salaries,
   suggestDonations,
   paySummList,
+  total,
 }) => {
 
   const [step, setStep] = useState(0);
-  const [output, setOutput] = useState(null);
-  const [salaryOptions, setSalaryOptions] = useState([]);
-  const [donationOptions, setDonationOptions] = useState([]);
-  const [gradYearOptions, setGradYearOptions] = useState([]);
   const [customDonationSelected, setCustomDonationSelected] = useState(false);
 
   const handleDonationChange = (value) => {
-    // value can be text 'Choose optional amount...'
+    // value can be "optional amount"
     if (typeof value === 'string' && value.toLowerCase().includes('custom')) {
       setCustomDonationSelected(true);
     } else {
@@ -35,7 +34,7 @@ const MemberTypeFormItems = ({
   }
 
   // build options for salary select component
-  useEffect(() => {
+  const salaryOptions = useMemo(() => {
     let options = [];
     for (const key in salaries) {
       const newObject = Object.assign({}, salaries[key], {key});
@@ -46,11 +45,11 @@ const MemberTypeFormItems = ({
           {salaries[key].label}
         </Option>)
     }
-    setSalaryOptions(options);
+    return options;
   }, [salaries]);
 
   // build options for donation select component
-  useEffect(() => {
+  const donationOptions = useMemo(() => {
     const options = suggestDonations.map((amt) => {
       let txt = amt;
       if (typeof amt === 'number') txt = `$${amt.toFixed(2)}`;
@@ -61,11 +60,11 @@ const MemberTypeFormItems = ({
           {txt}
       </Option>
     });
-    setDonationOptions(options);
+    return options;
   }, [suggestDonations])
 
   // build options for grad year select component
-  useEffect(() => {
+  const gradYearOptions = useMemo(() => {
     const thisYear = new Date().getFullYear();
     let years = [];
     for (let i = thisYear; i <= thisYear + 4; i++) {
@@ -77,19 +76,47 @@ const MemberTypeFormItems = ({
       >
         {year}
       </Option>);
-    setGradYearOptions(options);
-  }, [])
+    return options;
+  }, []);
 
-  // build all content - attorney & student
-  useEffect(() => {
+  // build all content
+  const output = useMemo(() => {
     let _output = null;
 
-    if (type) {
+    if (
+      (signupType === accounts.USER_MEMBER && memberType) ||
+      signupType !== accounts.USER_MEMBER
+    ) {
       let title = '';
       let typeSpecificFields = null;
 
-      // add type-specific fields
-      if (type === 'attorney') {
+      /**
+       * type-specific fields
+       */
+      if (signupType === accounts.USER_NON_MEMBER) {
+
+        // subscription checkbox
+        typeSpecificFields = <Form.Item
+          name="law-notes"
+          valuePropName="checked"
+          wrapperCol={{
+            xs: {
+              span: 24,
+              offset: 0,
+            },
+            sm: {
+              span: 16,
+              offset: 8,
+            },
+          }}
+          style={{ textAlign: 'left' }}
+        >
+          <Checkbox
+            checked={signupType === accounts.USER_LAW_NOTES ? true : false}
+          >Subscribe to <span className="font-italic">Law Notes.</span></Checkbox>
+        </Form.Item>
+
+      } else if (signupType === accounts.USER_MEMBER && memberType === accounts.USER_ATTORNEY) {
         title = 'First-time Attorney Membership';
         typeSpecificFields = <>
           <Form.Item
@@ -121,7 +148,7 @@ const MemberTypeFormItems = ({
           </Form.Item>
 
         </>
-      } else if (type === 'student') {
+      } else if (signupType === accounts.USER_MEMBER && memberType === accounts.USER_STUDENT) {
         title = 'Free Student Membership';
 
         typeSpecificFields = <>
@@ -165,15 +192,16 @@ const MemberTypeFormItems = ({
 
       // shared fields
       _output = <>
-        <Tooltip title="To renew membership, log in first">
-          <Divider>{title}</Divider>
-        </Tooltip>
+        <Divider>{title}</Divider>
 
+        {/* payment step if there is a total */}
         <div className="mb-4">
           <Steps size="small" current={0}>
             <Step title="Info Entry" />
             <Step title="Confirmation" />
-            <Step title="Payment" />
+            {(memberType === accounts.USER_ATTORNEY || signupType === accounts.USER_LAW_NOTES || total > 0) &&
+              <Step title="Payment" />
+            }
           </Steps>
         </div>
 
@@ -279,8 +307,9 @@ const MemberTypeFormItems = ({
 
         {typeSpecificFields}
 
-        {
-          customDonationSelected ?
+        {/* donation field repeated! */}
+        {customDonationSelected
+          ?
             <Form.Item label="Donation">
               <Input.Group compact>
                 <Form.Item
@@ -291,6 +320,7 @@ const MemberTypeFormItems = ({
                   <Select
                     style={{ width: '50%' }}
                     placeholder="Choose amount..."
+                    onChange={handleDonationChange}
                     allowClear
                   >
                     {donationOptions}
@@ -317,7 +347,6 @@ const MemberTypeFormItems = ({
               label="Donation"
               // TO-DO: restrict to number
               // rules={[{}]}
-              // hasFeedback
             >
               <Select
                 placeholder="Choose optional amount..."
@@ -329,7 +358,7 @@ const MemberTypeFormItems = ({
             </Form.Item>
         }
 
-        {type === 'attorney' &&
+        { memberType === accounts.USER_ATTORNEY &&
           <Row className="mb-2">
             <Col {...tailFormItemLayout}>
               50% discount for first-time membership!
@@ -362,8 +391,8 @@ const MemberTypeFormItems = ({
         </Form.Item>
       </>
     }
-    setOutput(_output);
-  }, [type, salaryOptions, donationOptions, gradYearOptions, customDonationSelected, paySummList]);
+    return _output;
+  }, [memberType, signupType, salaryOptions, donationOptions, gradYearOptions, customDonationSelected, paySummList]);
 
   return output;
 }

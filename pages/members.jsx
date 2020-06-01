@@ -4,15 +4,17 @@ import { useRouter } from 'next/router'
 // const Login = dynamic(() => import("./login"));
 import { Breakpoint } from 'react-socks';
 import { Jumbotron, Container } from 'react-bootstrap';
-import { Layout, Button, Tooltip } from 'antd';
+import { Layout, Button, Tooltip, Modal } from 'antd';
 import MainLayout from '../components/main-layout';
 import MemberMenu from '../components/members/member-menu';
 import MemberAccordion from '../components/members/member-accordion';
 import MemberContent from '../components/members/member-content';
+import LoginSignup from '../components/members/login-signup';
 import NewsNotification from '../components/utils/open-notification';
 import './members.less';
 // data
 import { anonData, attorneyData, studentData, nonMemberData, getMemberPageParentKey } from '../data/members-data';
+import * as accounts from '../data/members-users';
 
 const { Sider } = Layout;
 
@@ -25,6 +27,9 @@ const Members = ({ loggedIn }) => {
   const [selectedKey, setSelectedKey] = useState('');
   const [menuOpenKeys, setMenuOpenKeys] = useState([]);
   const [menuCollapsed, setMenuCollapsed] = useState(false);
+  const [loginSignupTab, setLoginSignupTab] = useState('login')
+  const [signUpVisible, setSignUpVisible] = useState(false); // modal
+  const [signupType, setSignupType] = useState('');
   const [notification, setNotification] = useState({
     message: 'What\'t New',
     description: 'There\'s some news for all members. Or a message just for you!',
@@ -46,17 +51,17 @@ const Members = ({ loggedIn }) => {
   useEffect(() => {
     let _data = {};
     if (!router.query.type || router.query.type === 'anon' || router.query.type === 'anonymous') {
-      setMemberType('anon');
-      _data = {...anonData};
+      setMemberType(accounts.USER_ANON);
+      _data = {...anonData(handleContentLink)};
     } else if (router.query.type === 'attorney') {
-      setMemberType('attorney');
-      _data = {...attorneyData};
+      setMemberType(accounts.USER_ATTORNEY);
+      _data = {...attorneyData(handleContentLink)};
     } else if (router.query.type === 'student') {
-      setMemberType('student');
-      _data = {...studentData};
+      setMemberType(accounts.USER_STUDENT);
+      _data = {...studentData(handleContentLink)};
     } else if (router.query.type === 'non-member') {
-      setMemberType('non-member');
-      _data = {...nonMemberData};
+      setMemberType(accounts.USER_NON_MEMBER);
+      _data = {...nonMemberData(handleContentLink)};
     }
     setData(_data);
     setSelectedKey(_data.options.defaultSelectedKeys[0]);
@@ -111,6 +116,31 @@ const Members = ({ loggedIn }) => {
       }
     }
   };
+
+  const handleContentLink = (key) => {
+    if (key === accounts.SIGNUP_MEMBER) {
+      setSignupType(accounts.USER_MEMBER);
+      handleSignUp(key);
+    } else if (key === accounts.SIGNUP_NON_MEMBER) {
+      setSignupType(accounts.USER_NON_MEMBER);
+      handleSignUp(key);
+    } else if (key === accounts.SIGNUP_LAW_NOTES) {
+      setSignupType(accounts.USER_LAW_NOTES);
+      handleSignUp(key);
+    } else {
+      selectItem(key);
+    }
+  }
+
+  const handleSignUp = (key) => {
+    // console.log('handleSignUp', key);
+    setLoginSignupTab('signup');
+    setSignUpVisible(true);
+  }
+
+  const handleSignUpCancel = () => {
+    setSignUpVisible(false);
+  }
 
   // if (!loggedIn) return <Login />;
   return (
@@ -174,13 +204,44 @@ const Members = ({ loggedIn }) => {
               <MemberContent
                 data={data}
                 dataKey={selectedKey}
-                onLinkClick={selectItem}
+                onLinkClick={handleContentLink}
               />
             </Layout>
           </Layout>
         </Breakpoint>
 
       </MainLayout>
+
+      <Modal
+        key="loginSignupModal"
+        title={null}
+        visible={signUpVisible}
+        onOk={handleSignUpCancel}
+        onCancel={handleSignUpCancel}
+        // centered={true} // vertically
+        // destroyOnClose={true}
+        // maskClosable={false}
+        footer={[
+          <Button
+            key="customCancel"
+            onClick={() => setSignUpVisible(false)}
+            type="danger"
+            ghost
+          >
+            Cancel
+          </Button>
+        ]}
+        width="88%"
+        style={{ maxWidth: '576px' }}
+      >
+        <LoginSignup
+          key="loginSignup"
+          tab={loginSignupTab}
+          setTab={setLoginSignupTab}
+          signupType={signupType}
+          setSignupType={setSignupType}
+        />
+      </Modal>
     </div>
   );
 };

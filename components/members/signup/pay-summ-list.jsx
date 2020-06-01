@@ -1,58 +1,73 @@
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { List, Row, Col } from 'antd';
 import './pay-summ-list.less';
+import * as account from '../../../data/members-users';
 
 const PaySummList = ({
+  userType,
   fee = 0,
   discount = 0,
   donation = 0,
   formItemLayout = {},
+  lawNotesAmt = 0,
 }) => {
 
-  const [paymentList, setPaymentList] = useState(null);
-
-  useEffect(() => {
+  const paymentList = useMemo(() => {
     let _paymentList = null;
     let paymentListData = [];
-    let total = 0; // number
+    let total = fee + lawNotesAmt + donation;
 
-    // no annual fee for students, set to null
-    if (fee !== null) {
-      let _fee = '';
+    // annual membership + discount
+    if (userType === account.USER_ATTORNEY) {
+      let feeText = '';
+
+      total-= discount;
+
       if (fee) {
-        _fee = `$${fee.toFixed(2)}`;
+        feeText = `$${fee.toFixed(2)}`;
       }
-      paymentListData.push(`Annual Membership Fee ... ${_fee}`);
+      paymentListData.push(`Annual Membership Fee ... ${feeText}`);
 
-      if (discount) {
+      if (fee) {
         paymentListData.push(`First-time Member Discount ... -$${discount.toFixed(2)}`);
       }
-
     }
 
-    if (donation || donation === 0) {
-      // if null or undefined don't show list, but if zero show
-      paymentListData.push(`Donation ... $${donation.toFixed(2)}`);
+    // + law notes subscription // LN subscriber always has
+    if (lawNotesAmt) {
+      paymentListData.push(`Law Notes Subscription ... $${lawNotesAmt.toFixed(2)}`);
     }
 
-    total = fee - discount + donation;
+    // + donation
+    if (
+      userType === account.USER_ATTORNEY ||
+      (userType !== account.USER_ATTORNEY && donation)
+    ) {
+      paymentListData.push(`Donation ... +$${donation.toFixed(2)}`);
+    }
 
+    if (
+      userType === account.USER_ATTORNEY ||
+      (userType !== account.USER_ATTORNEY && total) // LN subscriber always has balance
+    ) {
     _paymentList = <Row>
-      <Col {...formItemLayout}>
-        <List
-          size="small"
-          className="calcList"
-          // header={<div>Header</div>}
-          footer={<div>Total ...  ${total.toFixed(2)}</div>}
-          bordered
-          dataSource={paymentListData}
-          renderItem={item => <List.Item className="calcItem">{item}</List.Item>}
-        />
-      </Col>
-    </Row>
+        <Col {...formItemLayout}>
+          <List
+            size="small"
+            className="calcList"
+            // header={<div>Header</div>}
+            footer={<div>Total ... ${total.toFixed(2)}</div>}
+            bordered
+            dataSource={paymentListData}
+            renderItem={item => <List.Item className="calcItem">{item}</List.Item>}
+          />
+        </Col>
+      </Row>
+    }
 
-    setPaymentList(_paymentList);
-  }, [fee, discount, donation])
+    // setPaymentList(_paymentList);
+    return _paymentList;
+  }, [userType, fee, discount, donation, lawNotesAmt])
 
   return paymentList;
 }
