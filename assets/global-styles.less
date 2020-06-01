@@ -72,6 +72,12 @@ body {
     text-decoration: line-through;
   }
 
+  .nowrap {
+    white-space: nowrap;
+  }
+
+  // bootstrap
+
   .jumbotron {
     padding: 2.3rem 0;
     margin: 0;
@@ -99,6 +105,24 @@ body {
 
 // bootstrap re-writes
 
+// darken muted text
 .text-muted {
   color: rgba(0, 0, 0, 0.2)!important;
+}
+
+// antd re-writes
+
+// hyperlinks
+.ant-btn-link {
+  font-size: inherit;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  height: inherit;
+
+  span {
+    text-decoration: underline;
+    text-decoration-line: underline;
+    text-decoration-style: solid;
+  }
 }

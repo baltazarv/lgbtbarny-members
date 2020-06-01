@@ -21,8 +21,12 @@ const Login = () => {
   const [menuOpenKeys, setMenuOpenKeys] = useState([]);
   const [menuCollapsed, setMenuCollapsed] = useState(false);
 
+  const handleSignUp = (type) => {
+    alert('open modal', type);
+  }
+
   useEffect(() => {
-    let _data = {...loginData}
+    let _data = {...loginData(handleSignUp)}
     setData(_data);
     setSelectedKey(_data.options.defaultSelectedKeys[0]);
     setMenuOpenKeys(_data.options.defaultMenuOpenKeys);
