@@ -49,8 +49,14 @@ const LoginSignup = ({
   const router = useRouter();
 
   const title = useMemo(() => {
-    if (signupType === accounts.USER_MEMBER) return <>
+    if (
+      signupType === accounts.USER_MEMBER ||
+      signupType === accounts.USER_ATTORNEY ||
+      signupType === accounts.USER_STUDENT
+    ) return <>
       <div>
+        {/* TODO: change title for Attorney vs. Student Membership */}
+        {/* { signupType === accounts.USER_ATTORNEY && 'Attorney ' }{ signupType === accounts.USER_STUDENT && 'Law Student ' } */}
         <strong>Membership</strong>
       </div>
       <div>
@@ -67,7 +73,7 @@ const LoginSignup = ({
     </>;
     return <>
       <div>
-        <strong>Non-Attorney Account</strong>
+        <strong>Basic Account</strong>
       </div>
       <div>
         <TitleIcon name="annotate" ariaLabel="Billing" />&nbsp;&nbsp;<TitleIcon name="email-gear" ariaLabel="Email Preferences" />
@@ -89,11 +95,6 @@ const LoginSignup = ({
   };
 
   const onTabChange = (key) => {
-    // if (key === 'signup') {
-    //   router.push("/login", "/signup", { shallow: true });
-    // } else {
-    //   router.push("/signup", "/login", { shallow: true });
-    // }
     setTab(key);
   };
 

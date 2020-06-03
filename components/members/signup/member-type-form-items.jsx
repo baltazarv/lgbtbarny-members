@@ -116,7 +116,10 @@ const MemberTypeFormItems = ({
           >Subscribe to <span className="font-italic">Law Notes.</span></Checkbox>
         </Form.Item>
 
-      } else if (signupType === accounts.USER_MEMBER && memberType === accounts.USER_ATTORNEY) {
+      } else if (
+        (signupType === accounts.USER_MEMBER && memberType === accounts.USER_ATTORNEY) ||
+        signupType === accounts.USER_ATTORNEY
+      ) {
         title = 'First-time Attorney Membership';
         typeSpecificFields = <>
           <Form.Item
@@ -148,7 +151,10 @@ const MemberTypeFormItems = ({
           </Form.Item>
 
         </>
-      } else if (signupType === accounts.USER_MEMBER && memberType === accounts.USER_STUDENT) {
+      } else if (
+        (signupType === accounts.USER_MEMBER && memberType === accounts.USER_STUDENT) ||
+        signupType === accounts.USER_STUDENT
+      ) {
         title = 'Free Student Membership';
 
         typeSpecificFields = <>

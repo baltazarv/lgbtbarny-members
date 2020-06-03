@@ -20,6 +20,20 @@ const MenuIcon = ({
     />
   </span>
 
+const ContentIcon = ({
+  name,
+  ariaLabel,
+  fill='currentColor'
+}) =>
+  <span role="img" aria-label={ariaLabel}>
+    <SvgIcon
+      name={name}
+      width="1em"
+      height="1em"
+      fill={fill}
+    />
+  </span>
+
 const anonPromoTxt = {
   members: 'Join to get these member benefits...',
   billing: 'Download tax deduction forms. Payment history...',
@@ -165,9 +179,10 @@ const memberInfo = (memberType = accounts.USER_ATTORNEY) => {
  * billing
  ******************/
 
-const billing = (memberType = accounts.USER_ATTORNEY, onLink) => {
-  let title = 'Billing on Members Dashboard';
+const billing = (memberType = accounts.USER_ATTORNEY, onLink, previewUser) => {
+  let locked = false;
   let banner = null;
+  let title = 'Billing';
   let content = null;
 
   let children = {
@@ -186,14 +201,19 @@ const billing = (memberType = accounts.USER_ATTORNEY, onLink) => {
       taxForms: taxForms(memberType, onLink),
     };
   } else if (memberType === accounts.USER_ANON) {
+    locked = true;
     content = <>
-      <span>When you <Button type="link" onClick={() => onLink(accounts.SIGNUP_MEMBER)}>become a member</Button> you have access to the following from the <em>Members Dashboard:</em></span>
+      <div>{ previewUser === accounts.USER_ATTORNEY &&
+          <Button type="link" onClick={() => onLink(accounts.SIGNUP_ATTORNEY)}>Sign up as an Attorney Member</Button>
+        }{ previewUser === accounts.USER_STUDENT &&
+          <Button type="link" onClick={() => onLink(accounts.SIGNUP_STUDENT)}>Sign up as a Law Student Member</Button>
+        }{ previewUser === accounts.USER_NON_MEMBER &&
+          <Button type="link" onClick={() => onLink(accounts.SIGNUP_NON_MEMBER)}>Sign up to a Basic Account</Button>
+        } for the following</div>
       <ul>
-        <li><strong>View payment history</strong> for events that you have attended and donations that you have made. (By the way, membership offers <Button type="link" onClick={() => onLink('discounts')}>member discounts</Button> on events, mainly the <em>Annual Dinner</em>.</li>
-        <li><strong>Download tax forms</strong> for any charitable tax contributions that you have made to the Foundation.</li>
+        <li><strong>View payment history</strong> for events that you have attended and donations that you have made.</li>
+        <li><strong>Download tax forms</strong> for charitable tax contributions that you have made to the Foundation.</li>
       </ul>
-
-      <p>If you are not an attorney you can still <Button type="link" onClick={() => onLink(accounts.SIGNUP_NON_MEMBER)}>sign up</Button> for access to <em>Billing</em>.</p>
     </>;
     children = null;
   } else if (memberType === accounts.USER_NON_MEMBER) {
@@ -209,10 +229,10 @@ const billing = (memberType = accounts.USER_ATTORNEY, onLink) => {
   return {
     icon: <MenuIcon name="annotate" ariaLabel="Billing" />,
     label: "Billing",
+    locked,
     title,
     banner,
     content,
-    links: [linkText.member, 'discounts', linkText.nonMember],
     children,
   }
 }
@@ -249,11 +269,26 @@ const taxForms = (memberType, onLink) => ({
  * participate
  ******************/
 
-const participate = (memberType, onLink) => {
+const participate = (memberType, onLink, previewUser) => {
   let locked = false;
   let title = 'Member Participation';
   let content = null;
   let links = [];
+  const attorneyGroups = <ul>
+    <li>Committees</li>
+    <li>Referral Service</li>
+    <li>Leadership Council</li>
+    <li>Volunteering</li>
+    <li>Mentoring Program</li>
+  </ul>;
+  const studentGroups = <ul>
+    <li>Law Student Career Fair</li>
+    <li>Internship Program</li>
+    <li>Hank Henry Judicial Fellowship</li>
+    <li>Leadership Summit</li>
+    <li>Mentoring Program</li>
+    <li>Clinic Volunteer</li>
+  </ul>
   // attorney
   let children = {
     committees: committees(),
@@ -271,35 +306,41 @@ const participate = (memberType, onLink) => {
     title ='Law Student Programs';
     content = <>
       <div>Find out how to apply for the following:</div>
-      <ul>
-        <li>Law Student Career Fair (early access?)</li>
-        <li>Internship Program</li>
-        <li>Hank Henry Judicial Fellowship</li>
-        <li>Leadership Summit</li>
-        <li>Mentoring Program</li>
-        <li>Clinic Volunteer</li>
-      </ul>
+      {studentGroups}
     </>;
   }
 
-  if (memberType === accounts.USER_ANON || memberType === accounts.USER_NON_MEMBER) {
+  if (memberType === accounts.USER_NON_MEMBER){
     locked = true;
     content = <>
-      {memberType === accounts.USER_ANON &&
-        <div>Join groups:</div>
-      }
-      {memberType === accounts.USER_NON_MEMBER &&
-        <div>If you are an attorney, <Button type="link" onClick={() => onLink(accounts.SIGNUP_MEMBER)}>become a member</Button>, and join these groups:</div>
-      }
-      <ul>
-        <li>Committees</li>
-        <li>Referral Service</li>
-        <li>Leadership Council</li>
-        <li>Volunteering</li>
-        <li>Mentoring Program</li>
-      </ul>
-    </>;
-    links = [linkText.member];
+      If you are an attorney, <Button type="link" onClick={() => onLink(accounts.SIGNUP_MEMBER)}>become a member</Button> to join these groups:
+      {attorneyGroups}
+    </>
+  }
+
+  if (memberType === accounts.USER_ANON) {
+    locked = true;
+    if (previewUser === accounts.USER_ATTORNEY) {
+      title = 'Attorney Committees & Sections';
+      content = <>
+        <div>Groups to join:</div>
+        {attorneyGroups}
+      </>
+    };
+    if (previewUser === accounts.USER_STUDENT) {
+      title = 'Law Student Programs';
+      content = <>
+        <div>Programs:</div>
+        {studentGroups}
+      </>
+    };
+    if (previewUser === accounts.USER_NON_MEMBER) {
+      title = ' ';
+      content = <>
+        <div>Committee, section, and program participation is restricted to <Button type="link" onClick={() => onLink(accounts.TAB_ATTORNEY)}>Attorney Members</Button> and <Button type="link" onClick={() => onLink(accounts.TAB_STUDENT)}>Law Student Members.</Button></div>
+      </>
+    };
+    links = [accounts.SIGNUP_ATTORNEY, accounts.SIGNUP_STUDENT, accounts.SIGNUP_NON_MEMBER]
   }
 
   return {
@@ -390,7 +431,7 @@ const mentoring = (memberType, onLink) => {
  * law notes
  ******************/
 
-const lawNotes = (memberType, onLink) => {
+const lawNotes = (memberType, onLink, previewUser) => {
   let locked = null;
   let banner = null;
   // attorney & student
@@ -416,21 +457,27 @@ const lawNotes = (memberType, onLink) => {
     banner,
     content: <>
       {memberType === accounts.USER_ANON &&
-        <p>Law Notes are included with membership. <Button type="link" onClick={() => onLink(accounts.SIGNUP_MEMBER)}>Join now!</Button></p>
+        <p>Law Notes magazine issues are included with membership. {
+          previewUser === accounts.USER_ATTORNEY &&
+          <Button type="link" onClick={() => onLink(accounts.SIGNUP_ATTORNEY)}>Join now!</Button>
+        }{
+          previewUser === accounts.USER_STUDENT &&
+          <Button type="link" onClick={() => onLink(accounts.SIGNUP_STUDENT)}>Join now!</Button>
+        }{
+          previewUser === accounts.USER_NON_MEMBER &&
+          <span>But there is no need to be an attorney or law student. <Button type="link" onClick={() => onLink(accounts.SIGNUP_STUDENT)}>Subscribe to Law Notes.</Button></span>
+        }</p>
       }
       {memberType === accounts.USER_NON_MEMBER &&
-        <p>If you are an attorney, <Button type="link" onClick={() => onLink(accounts.SIGNUP_MEMBER)}>become a member</Button> and get Law Notes free. Otherwise, get a <Button type="link" onClick={() => onLink(accounts.SIGNUP_LAW_NOTES)}>Law Notes subscription</Button>:</p>
+        <p>If you are an attorney, <Button type="link" onClick={() => onLink(accounts.SIGNUP_MEMBER)}>become a member</Button> to get Law Notes. Otherwise, get a <Button type="link" onClick={() => onLink(accounts.SIGNUP_LAW_NOTES)}>Law Notes subscription</Button>:</p>
       }
       <div>See what you get with Law Notes:</div>
       <ul>
-        <li>Law Notes 1: current course (locked).</li>
-        <li>Law Notes 2: previous course (locked).</li>
-        <li>...</li>
+        <li><u><em>January teaser issue</em></u>.</li>
+        <li><em>Current issue</em> <ContentIcon name="lock" ariaLabel="Locked Law Notes issue" />.</li>
+        <li><em>Previous issue</em> <ContentIcon name="lock" ariaLabel="Locked Law Notes issue" />.</li>
+        <li>... <ContentIcon name="lock" ariaLabel="Locked Law Notes issue" /></li>
       </ul>
-
-      {memberType === accounts.USER_ANON &&
-        <p>If you are not an attorney, get a <Button type="link" onClick={() => onLink(accounts.SIGNUP_LAW_NOTES)}>Law Notes subscription</Button>, instead.</p>
-      }
     </>,
     links: [linkText.member, linkText.lawnotes],
     children,
@@ -470,7 +517,7 @@ const lnArchive = () => {
  * cle
  ******************/
 
-const cleCenter = (memberType = accounts.USER_ATTORNEY, onLink) => {
+const cleCenter = (memberType = accounts.USER_ATTORNEY, onLink, previewUser) => {
   let locked = false;
   let content = null;
   let children = {
@@ -478,6 +525,7 @@ const cleCenter = (memberType = accounts.USER_ATTORNEY, onLink) => {
     clecerts: cleCerts(memberType, onLink),
     clearchives: cleArchives(memberType, onLink),
   };
+  let links = [];
 
   if (memberType === accounts.USER_STUDENT) {
     children = {
@@ -486,39 +534,60 @@ const cleCenter = (memberType = accounts.USER_ATTORNEY, onLink) => {
     };
   } else if (memberType === accounts.USER_ANON) {
     locked = true;
-    content = <>
-      <p><Button type="link" onClick={() => onLink(accounts.SIGNUP_MEMBER)}>Become a member</Button> to get access to all CLE materials, current materials and the archive.</p>
-
-      <div>Course titles with descriptions:</div>
+    const courses = <>
+      <span>See what you get:</span>
       <ul>
-        <li>Course 1: <strong>current course</strong> (locked).</li>
-        <li>Course 2: <strong>previous course</strong> (locked).</li>
-        <li>...</li>
+        <li><u><em>Year in Review.</em></u></li>
+        <li><em>Current course</em>  <ContentIcon name="lock" ariaLabel="Locked Law Notes issue" />.</li>
+        <li><em>Previous course</em> <ContentIcon name="lock" ariaLabel="Locked Law Notes issue" />.</li>
+        <li>... <ContentIcon name="lock" ariaLabel="Locked Law Notes issue" /></li>
       </ul>
+    </>
 
-      <hr />
-
-      <span className="font-weight-bold">CLE Certificates</span>
-      <p>You will be able to download CLE certificates on the <em>Members Dashboard</em> for courses that you have attended.</p>
-
-      <p>If you are not an attorney you can still <Button type="link" onClick={() => onLink(accounts.SIGNUP_NON_MEMBER)}>sign up</Button> for access to <em>CLE certificates</em>.</p>
-    </>;
+    if (previewUser === accounts.USER_NON_MEMBER) {
+      content = <>
+        <p>If you are not an attorney you can still register for CLE courses.</p>
+        {courses}
+        <hr />
+        <span className="font-weight-bold">CLE Certificates</span>
+        <p>When you <Button type="link" onClick={() => onLink(accounts.SIGNUP_NON_MEMBER)}>sign up</Button> you get access to <em>CLE certificates</em> for courses, which you have attended.</p>
+      </>
+    } else {
+      content = <>
+        <p>{previewUser === accounts.USER_ATTORNEY &&
+            <Button type="link" onClick={() => onLink(accounts.SIGNUP_ATTORNEY)}>Become a member</Button>
+          }{previewUser === accounts.USER_STUDENT &&
+            <Button type="link" onClick={() => onLink(accounts.SIGNUP_STUDENT)}>Become a member</Button>
+          } to get access to all CLE materials, current materials and the archive.</p>
+        {courses}
+        {previewUser === accounts.USER_ATTORNEY &&
+          <>
+            <hr />
+            <span className="font-weight-bold">CLE Certificates</span>
+            <p>When you sign up, you will be able to download CLE certificates for courses which you have attended.</p>
+          </>
+        }
+      </>;
+    }
     children = null;
+    links = [linkText.member, linkText.currentCle, linkText.nonMember];
   } else if (memberType === accounts.USER_NON_MEMBER) {
     locked = true,
     content = <>
       <p>If you are an attorney, <Button type="link" onClick={() => onLink(accounts.SIGNUP_MEMBER)}>become a member</Button> to get access to all CLE materials, current materials and the archive.</p>
 
-      <div>List of all course titles with descriptions + materials for courses taken:</div>
+      <div>List of courses: titles with descriptions + materials for courses taken:</div>
       <ul>
-        <li>Course 1 - <strong><em>current course:</em></strong> title, description, and link to <strong><u>event registration.</u></strong></li>
-        <li>Course 2 - <strong>previous course:</strong> title and description only.</li>
-        <li>Course 3 - <strong><em>registered course:</em></strong> title, description,and <strong><u>course material</u></strong>.</li>
-        <li>Course 4 - <strong><em>course registered and attended:</em></strong> title, description, <strong><u>course material,</u></strong> and <strong><u>certificate</u></strong>.</li>
-        <li>...</li>
+        <li><u><em>Year in Review.</em></u></li>
+        <li><em>Current course material</em> <ContentIcon name="lock" ariaLabel="Locked CLE course material" /> - <u>event registration.</u></li>
+        <li><em>Previous course material</em> <ContentIcon name="lock" ariaLabel="Locked CLE course material" />.</li>
+        <li><em>Registered course (not attended)</em> <ContentIcon name="lock" ariaLabel="Locked CLE course material" />..</li>
+        <li><em><u>Course registered for and attended</u></em> - <u>certificate</u>.</li>
+        <li>... <ContentIcon name="lock" ariaLabel="Locked CLE course material" /></li>
       </ul>
     </>
     children = null;
+    links = [linkText.member, linkText.currentCle];
   };
 
   return {
@@ -528,7 +597,7 @@ const cleCenter = (memberType = accounts.USER_ATTORNEY, onLink) => {
     banner: banners('clecurrent', onLink),
     title: 'CLE Center',
     content,
-    links: [linkText.member, linkText.currentCle],
+    links,
     children,
   }
 };
@@ -582,16 +651,21 @@ const cleArchives = (memberType = accounts.USER_ATTORNEY) => {
  * discounts
  ******************/
 
-const discounts = (memberType, onLink) => {
+const discounts = (memberType, onLink, previewUser) => {
   let locked = false;
   let title = 'Discounts';
-  let links = [];
 
   if (memberType === accounts.USER_ANON || memberType === accounts.USER_NON_MEMBER) {
     locked = true;
     title = 'Member Discounts';
-    links = [linkText.member];
   }
+
+  const sampleDiscounts = <ul>
+    <li>Annual Dinner.</li>
+    <li>Merchandise on Zazzle discount code.</li>
+    <li>National LGBT Bar Association discount code.</li>
+    <li>Third-party discounts.</li>
+  </ul>
 
   return {
     icon: <MenuIcon name="star" ariaLabel="Discounts" />,
@@ -600,22 +674,30 @@ const discounts = (memberType, onLink) => {
     title,
     content: <>
       {memberType === accounts.USER_ATTORNEY &&
-        <div>Discounts:</div>
+        <>
+          <div>Discounts:</div>
+          {sampleDiscounts}
+        </>
       }
       {memberType === accounts.USER_ANON &&
-        <div><Button type="link" onClick={() => onLink(accounts.SIGNUP_MEMBER)}>Become a member</Button> to get member discounts:</div>
+        (previewUser === accounts.USER_ATTORNEY
+          ?
+          <>
+            <div><Button type="link" onClick={() => onLink(accounts.SIGNUP_ATTORNEY)}>Become a member</Button> to get member discounts:</div>
+            {sampleDiscounts}
+          </>
+          :
+          <>
+            Only attorney members are eligible for discounts.
+          </>)
       }
       {memberType === accounts.USER_NON_MEMBER &&
-        <div>If you are an attorney, <Button type="link" onClick={() => onLink(accounts.SIGNUP_MEMBER)}>become a member</Button> to get member discounts:</div>
+        <>
+          <div>If you are an attorney, <Button type="link" onClick={() => onLink(accounts.SIGNUP_MEMBER)}>become a member</Button> to get member discounts:</div>
+          {sampleDiscounts}
+        </>
       }
-      <ul>
-        <li>Annual Dinner.</li>
-        <li>Merchandise on Zazzle discount code.</li>
-        <li>National LGBT Bar Association discount code.</li>
-        <li>Third-party discounts.</li>
-      </ul>
     </>,
-    links,
   };
 };
 
@@ -623,9 +705,11 @@ const discounts = (memberType, onLink) => {
  * email prefs
  ******************/
 
-const emailPrefs = (memberType = accounts.USER_ATTORNEY, onLink) => {
+const emailPrefs = (memberType = accounts.USER_ATTORNEY, onLink, previewUser) => {
+  let icon = <MenuIcon name="email-gear" ariaLabel="Email Preferences" fill="#415158" />
   let banner = null;
   let nonMemberClasses = '';
+  let locked = false;
   let content = <>
     <span>Choose the type of emails to opt out from receiving:</span>
     <ul>
@@ -658,10 +742,14 @@ const emailPrefs = (memberType = accounts.USER_ATTORNEY, onLink) => {
 
   if (memberType === accounts.USER_ANON) {
     banner = banners('newsletter', onLink);
+    locked = true;
+    // fill needs to be hard-coded for 'email-gear' icon
+    icon = <MenuIcon name="email-gear" ariaLabel="Email Preferences" fill="rgba(0, 0, 0, 0.2" />
+    let signupLink = accounts.SIGNUP_ATTORNEY;
+    if (previewUser === accounts.USER_STUDENT) signupLink = accounts.SIGNUP_STUDENT;
+    if (previewUser === accounts.USER_NON_MEMBER) signupLink = accounts.SIGNUP_NON_MEMBER;
     content = <>
-      <p>When you <strong><u>sign up to our newsletter</u></strong> you can also manage your email preferences from the <em>Member Dashboard</em> when you <Button type="link" onClick={() => onLink(accounts.SIGNUP_MEMBER)}>join</Button>.</p>
-
-      <p>If you are not an attorney you can still <Button type="link" onClick={() => onLink(accounts.SIGNUP_NON_MEMBER)}>sign up</Button> for access to <em>Email Preferences</em>.</p>
+      <p>When you <strong><u>sign up to our newsletter</u></strong> you can also manage your email preferences from the <em>Dashboard</em> when you <Button type="link" onClick={() => onLink(signupLink)}>sign up</Button>.</p>
     </>;
     links = [linkText.member, linkText.newsletter, linkText.nonMember];
   } else if (memberType === accounts.USER_NON_MEMBER) {
@@ -671,9 +759,10 @@ const emailPrefs = (memberType = accounts.USER_ATTORNEY, onLink) => {
   }
 
   return {
-    icon: <MenuIcon name="email-gear" ariaLabel="Email Preferences" fill="#415158" />,
-    label: 'Email Preferences',
+    icon,
+    label: 'Email Prefs',
     banner,
+    locked,
     title: 'Email Preferences',
     content,
     links,
@@ -695,6 +784,8 @@ const logout = () => {
 /******************
  * data functions
  ******************/
+
+// TODO: replace onLink and previewUser functions for commands object with function name and vars
 
 // signature different from other data functions - no memberType, only `anon`
 export const loginData = (onLink) => {
@@ -766,28 +857,29 @@ export const attorneyData = (onLink) => {
   }
 }
 
-export const anonData = (onLink) => {
+export const anonData = (onLink, previewUser = accounts.USER_ATTORNEY) => {
+  const options = {
+    key: accounts.USER_ANON,
+    defaultSelectedKeys: ['billing'],
+    defaultMenuOpenKeys: [],
+    avatar: <Avatar
+      icon={<SvgIcon
+        name="customer-profile"
+        width="2.2em"
+        height="2.2em"
+        fill="rgba(0, 0, 0, 0.65)"
+      />}
+      style={{ backgroundColor: 'rgba(0, 0, 0, 0)' }}
+    />,
+  };
   return {
-    options: {
-      key: accounts.USER_ANON,
-      defaultSelectedKeys: ['billing'],
-      defaultMenuOpenKeys: [],
-      avatar: <Avatar
-        icon={<SvgIcon
-          name="customer-profile"
-          width="2.2em"
-          height="2.2em"
-          fill="rgba(0, 0, 0, 0.65)"
-        />}
-        style={{ backgroundColor: 'rgba(0, 0, 0, 0)' }}
-      />,
-    },
-    billing: billing(accounts.USER_ANON, onLink),
-    participate: participate(accounts.USER_ANON, onLink),
-    lawnotes: lawNotes(accounts.USER_ANON, onLink),
-    clecenter: cleCenter(accounts.USER_ANON, onLink),
-    discounts:discounts(accounts.USER_ANON, onLink),
-    emailprefs: emailPrefs(accounts.USER_ANON, onLink),
+    options,
+    billing: billing(accounts.USER_ANON, onLink, previewUser),
+    participate: participate(accounts.USER_ANON, onLink, previewUser),
+    lawnotes: lawNotes(accounts.USER_ANON, onLink, previewUser),
+    clecenter: cleCenter(accounts.USER_ANON, onLink, previewUser),
+    discounts:discounts(accounts.USER_ANON, onLink, previewUser),
+    emailprefs: emailPrefs(accounts.USER_ANON, onLink, previewUser),
   }
 };
 

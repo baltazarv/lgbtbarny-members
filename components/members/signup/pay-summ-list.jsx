@@ -4,7 +4,8 @@ import './pay-summ-list.less';
 import * as account from '../../../data/members-users';
 
 const PaySummList = ({
-  userType,
+  signupType,
+  memberType,
   fee = 0,
   discount = 0,
   donation = 0,
@@ -18,7 +19,7 @@ const PaySummList = ({
     let total = fee + lawNotesAmt + donation;
 
     // annual membership + discount
-    if (userType === account.USER_ATTORNEY) {
+    if (signupType === account.USER_ATTORNEY || memberType === account.USER_ATTORNEY) {
       let feeText = '';
 
       total-= discount;
@@ -40,15 +41,15 @@ const PaySummList = ({
 
     // + donation
     if (
-      userType === account.USER_ATTORNEY ||
-      (userType !== account.USER_ATTORNEY && donation)
+      signupType === account.USER_ATTORNEY ||
+      (signupType !== account.USER_ATTORNEY && donation)
     ) {
       paymentListData.push(`Donation ... +$${donation.toFixed(2)}`);
     }
 
     if (
-      userType === account.USER_ATTORNEY ||
-      (userType !== account.USER_ATTORNEY && total) // LN subscriber always has balance
+      (signupType === account.USER_ATTORNEY || memberType === account.USER_ATTORNEY) ||
+      ((signupType === account.USER_ATTORNEY || memberType === account.USER_ATTORNEY) && total) // LN subscriber always has balance
     ) {
     _paymentList = <Row>
         <Col {...formItemLayout}>
@@ -67,7 +68,7 @@ const PaySummList = ({
 
     // setPaymentList(_paymentList);
     return _paymentList;
-  }, [userType, fee, discount, donation, lawNotesAmt])
+  }, [signupType, memberType, fee, discount, donation, lawNotesAmt])
 
   return paymentList;
 }

@@ -22,14 +22,25 @@ const menuKeys = ['profile', 'perks', 'account'];
 const notifThemeColor = '#BC1552';
 
 const Members = ({ loggedIn }) => {
+  // TODO: rename memberType to userType
+  // TODO: get rid of previewUser for 'anon-attorney-user' vs 'anon-preview-attorney-user'
+  // set user and user content
   const [memberType, setMemberType] = useState('');
+  // when anon user, select tab to view preview content
+  const [previewUser, setPreviewUser] = useState(accounts.USER_ATTORNEY);
   const [data, setData] = useState({});
+
+  // menu and main content selections
   const [selectedKey, setSelectedKey] = useState('');
   const [menuOpenKeys, setMenuOpenKeys] = useState([]);
   const [menuCollapsed, setMenuCollapsed] = useState(false);
-  const [loginSignupTab, setLoginSignupTab] = useState('login')
-  const [signUpVisible, setSignUpVisible] = useState(false); // modal
+
+  // login / signup
+  const [loginSignupTab, setLoginSignupTab] = useState('login'); // login vs sign up selected
   const [signupType, setSignupType] = useState('');
+  // open/close modal
+  const [signUpVisible, setSignUpVisible] = useState(false); // modal
+
   const [notification, setNotification] = useState({
     message: 'What\'t New',
     description: 'There\'s some news for all members. Or a message just for you!',
@@ -120,22 +131,38 @@ const Members = ({ loggedIn }) => {
   const handleContentLink = (key) => {
     if (key === accounts.SIGNUP_MEMBER) {
       setSignupType(accounts.USER_MEMBER);
-      handleSignUp(key);
+      handleSignUp();
+    } else if (key === accounts.SIGNUP_ATTORNEY) {
+      setSignupType(accounts.USER_ATTORNEY);
+      handleSignUp();
+    } else if (key === accounts.SIGNUP_STUDENT) {
+      setSignupType(accounts.USER_STUDENT);
+      handleSignUp();
     } else if (key === accounts.SIGNUP_NON_MEMBER) {
       setSignupType(accounts.USER_NON_MEMBER);
-      handleSignUp(key);
+      handleSignUp();
     } else if (key === accounts.SIGNUP_LAW_NOTES) {
       setSignupType(accounts.USER_LAW_NOTES);
-      handleSignUp(key);
+      handleSignUp();
+    } else if (key === accounts.TAB_ATTORNEY) {
+      handleSelectPreviewUser(accounts.USER_ATTORNEY);
+    } else if (key === accounts.TAB_STUDENT) {
+      handleSelectPreviewUser(accounts.USER_STUDENT);
+    } else if (key === accounts.TAB_NON_MEMBER) {
+      handleSelectPreviewUser(accounts.USER_NON_MEMBER);
     } else {
       selectItem(key);
     }
   }
 
-  const handleSignUp = (key) => {
-    // console.log('handleSignUp', key);
+  const handleSignUp = () => {
     setLoginSignupTab('signup');
     setSignUpVisible(true);
+  }
+
+  const handleSelectPreviewUser = (user) => {
+    setPreviewUser(user);
+    setData({...anonData(handleContentLink, user)});
   }
 
   const handleSignUpCancel = () => {
@@ -152,7 +179,7 @@ const Members = ({ loggedIn }) => {
           <Container>
             <h1 className="h1">
               {
-                memberType !== 'non-member'
+                memberType !== accounts.USER_NON_MEMBER && previewUser !== accounts.USER_NON_MEMBER
                   ?
                   <>MEMBERS <span className="subtitle">Dashboard</span></>
                   :
@@ -205,6 +232,9 @@ const Members = ({ loggedIn }) => {
                 data={data}
                 dataKey={selectedKey}
                 onLinkClick={handleContentLink}
+                onTabClick={handleSelectPreviewUser}
+                tabKey={previewUser}
+                userType={memberType ? memberType : signupType}
               />
             </Layout>
           </Layout>

@@ -57,6 +57,7 @@ const MemberMenu = ({
       } else if (!item.children) {
 
         /* menu category w/out subitems */
+        if (item.hidden) return null;
         let badge = null;
         if (item.badge) badge = <Badge count={item.badge} />;
         let content = <span>

@@ -59,6 +59,14 @@ const SignupForm = ({
       setMemberType('');
     }
 
+    if (signupType === accounts.USER_ATTORNEY) {
+      form.setFieldsValue({ certify: 'bar' })
+      setMemberType(accounts.USER_ATTORNEY);
+    } else if (signupType === accounts.USER_STUDENT) {
+      form.setFieldsValue({ certify: 'student' })
+      setMemberType(accounts.USER_STUDENT);
+    }
+
     /* law notes */
     if (
       signupType === accounts.USER_LAW_NOTES ||
@@ -131,7 +139,11 @@ const SignupForm = ({
       scrollToFirstError
     >
     {
-      signupType === accounts.USER_MEMBER &&
+      (
+        signupType === accounts.USER_MEMBER ||
+        signupType === accounts.USER_ATTORNEY ||
+        signupType === accounts.USER_STUDENT
+      ) &&
       <Form.Item
         className="text-left"
         name="certify"
@@ -162,7 +174,8 @@ const SignupForm = ({
             xs: { span: 24, offset: 0 },
             sm: { span: 16, offset: 8 },
           }}
-          userType={memberType ? memberType : signupType}
+          memberType={memberType}
+          signupType={signupType}
           fee={memberFee}
           discount={discount}
           lawNotesAmt={lawNotesAmt}
