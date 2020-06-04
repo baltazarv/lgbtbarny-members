@@ -110,7 +110,7 @@ const Members = ({ loggedIn }) => {
   };
 
   const logOut = () => {
-    router.push('/login');
+    router.push('/');
     // setSelectedKey(data.options.defaultSelectedKeys[0])
     // setMenuOpenKeys([]);
     // alert('Log out!');

@@ -42,7 +42,7 @@ const LoginForm = () => {
         ]}
         hasFeedback
       >
-        <Input prefix="@" placeholder="Email Address" />
+        <Input prefix="@" placeholder="Email Address" autoFocus />
       </Form.Item>
 
       <Form.Item
