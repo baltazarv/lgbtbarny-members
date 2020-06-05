@@ -818,7 +818,7 @@ export const getDashboard = (userType, onLink, previewUser) => {
 }
 
 // signature different from other data functions - no memberType, only `anon`
-const loginData = (onLink) => {
+export const loginData = (onLink) => {
   return {
     options: {
       defaultSelectedKeys: [],

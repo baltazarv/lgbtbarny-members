@@ -5,10 +5,7 @@ import { Breakpoint } from 'react-socks';
 import { Jumbotron, Container } from 'react-bootstrap';
 import MainLayout from '../components/main-layout';
 import MemberMenu from '../components/members/member-menu';
-import Signup from '../components/members/signup';
-// Without CSS Modules
-import './login.less'
-// import style from '../assets/global-styles.less' // With CSS Modules
+import Signup from '../components/members/signup/signup';
 import './members.less';
 // data
 import { loginData } from '../data/members-data';
