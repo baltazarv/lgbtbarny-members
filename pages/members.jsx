@@ -1,19 +1,19 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router'
 // import dynamic from "next/dynamic";
 // const Login = dynamic(() => import("./login"));
 import { Breakpoint } from 'react-socks';
 import { Jumbotron, Container } from 'react-bootstrap';
-import { Layout, Button, Tooltip, Modal } from 'antd';
+import { Layout, Button, Tooltip } from 'antd';
 import MainLayout from '../components/main-layout';
 import MemberMenu from '../components/members/member-menu';
 import MemberAccordion from '../components/members/member-accordion';
 import MemberContent from '../components/members/member-content';
-import LoginSignup from '../components/members/login-signup';
+import MemberModal from '../components/members/member-modal';
 import NewsNotification from '../components/utils/open-notification';
 import './members.less';
 // data
-import { anonData, attorneyData, studentData, nonMemberData, getMemberPageParentKey } from '../data/members-data';
+import { getDashboard, getMemberPageParentKey } from '../data/members-data';
 import * as accounts from '../data/members-users';
 
 const { Sider } = Layout;
@@ -22,24 +22,21 @@ const menuKeys = ['profile', 'perks', 'account'];
 const notifThemeColor = '#BC1552';
 
 const Members = ({ loggedIn }) => {
-  // TODO: rename memberType to userType
-  // TODO: get rid of previewUser for 'anon-attorney-user' vs 'anon-preview-attorney-user'
-  // set user and user content
+  // menu and main content user views
   const [memberType, setMemberType] = useState('');
   // when anon user, select tab to view preview content
   const [previewUser, setPreviewUser] = useState(accounts.USER_ATTORNEY);
   const [data, setData] = useState({});
-
-  // menu and main content selections
+  // menu & main content page/section selections
   const [selectedKey, setSelectedKey] = useState('');
   const [menuOpenKeys, setMenuOpenKeys] = useState([]);
   const [menuCollapsed, setMenuCollapsed] = useState(false);
 
-  // login / signup
-  const [loginSignupTab, setLoginSignupTab] = useState('login'); // login vs sign up selected
+  // modals
+  const [modalType, setModalType] = useState('login');
+  const [modalVisible, setModalVisible] = useState(false); // modal
+  // when modalType is 'signup' signupType is a loginUser type
   const [signupType, setSignupType] = useState('');
-  // open/close modal
-  const [signUpVisible, setSignUpVisible] = useState(false); // modal
 
   const [notification, setNotification] = useState({
     message: 'What\'t New',
@@ -60,20 +57,22 @@ const Members = ({ loggedIn }) => {
 
   // load data file based on query string
   useEffect(() => {
+    console.log(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
+    let dashboardKey = '';
+    let previewUserKey = '';
     let _data = {};
     if (!router.query.type || router.query.type === 'anon' || router.query.type === 'anonymous') {
-      setMemberType(accounts.USER_ANON);
-      _data = {...anonData(handleContentLink)};
+      dashboardKey = accounts.USER_ANON;
+      previewUserKey = accounts.USER_ATTORNEY;
     } else if (router.query.type === 'attorney') {
-      setMemberType(accounts.USER_ATTORNEY);
-      _data = {...attorneyData(handleContentLink)};
+      dashboardKey = accounts.USER_ATTORNEY;
     } else if (router.query.type === 'student') {
-      setMemberType(accounts.USER_STUDENT);
-      _data = {...studentData(handleContentLink)};
+      dashboardKey = accounts.USER_STUDENT;
     } else if (router.query.type === 'non-member') {
-      setMemberType(accounts.USER_NON_MEMBER);
-      _data = {...nonMemberData(handleContentLink)};
+      dashboardKey = accounts.USER_NON_MEMBER;
     }
+    setMemberType(dashboardKey);
+    _data = {...getDashboard(dashboardKey, handleContentLink, previewUserKey)};
     setData(_data);
     setSelectedKey(_data.options.defaultSelectedKeys[0]);
     setMenuOpenKeys(_data.options.defaultMenuOpenKeys);
@@ -84,6 +83,7 @@ const Members = ({ loggedIn }) => {
     NewsNotification(notification);
   }, [notification]);
 
+  // select page/section from menu
   const selectItem = key => {
     setSelectedKey(key);
     const parent = getMemberPageParentKey(data, key);
@@ -100,6 +100,8 @@ const Members = ({ loggedIn }) => {
     // console.log('onMenuClick', item, key, keyPath, domEvent);
     if (key === 'logout') {
       logOut();
+    } else if (key === 'login') {
+      openModal('login');
     } else {
       setSelectedKey(key);
     }
@@ -111,9 +113,6 @@ const Members = ({ loggedIn }) => {
 
   const logOut = () => {
     router.push('/');
-    // setSelectedKey(data.options.defaultSelectedKeys[0])
-    // setMenuOpenKeys([]);
-    // alert('Log out!');
   };
 
   const toggleOpenMenuKeys = () => {
@@ -129,21 +128,25 @@ const Members = ({ loggedIn }) => {
   };
 
   const handleContentLink = (key) => {
-    if (key === accounts.SIGNUP_MEMBER) {
+    if (key === 'login') {
+      openModal(key);
+    } else if (key === accounts.SIGNUP_MEMBER) {
       setSignupType(accounts.USER_MEMBER);
-      handleSignUp();
+      openModal('signup');
     } else if (key === accounts.SIGNUP_ATTORNEY) {
       setSignupType(accounts.USER_ATTORNEY);
-      handleSignUp();
+      openModal('signup');
     } else if (key === accounts.SIGNUP_STUDENT) {
       setSignupType(accounts.USER_STUDENT);
-      handleSignUp();
+      openModal('signup');
     } else if (key === accounts.SIGNUP_NON_MEMBER) {
       setSignupType(accounts.USER_NON_MEMBER);
-      handleSignUp();
+      openModal('signup');
     } else if (key === accounts.SIGNUP_LAW_NOTES) {
       setSignupType(accounts.USER_LAW_NOTES);
-      handleSignUp();
+      openModal('signup');
+
+    // previewUser
     } else if (key === accounts.TAB_ATTORNEY) {
       handleSelectPreviewUser(accounts.USER_ATTORNEY);
     } else if (key === accounts.TAB_STUDENT) {
@@ -155,18 +158,14 @@ const Members = ({ loggedIn }) => {
     }
   }
 
-  const handleSignUp = () => {
-    setLoginSignupTab('signup');
-    setSignUpVisible(true);
+  const openModal = (type) => {
+    setModalType(type);
+    setModalVisible(true);
   }
 
   const handleSelectPreviewUser = (user) => {
     setPreviewUser(user);
-    setData({...anonData(handleContentLink, user)});
-  }
-
-  const handleSignUpCancel = () => {
-    setSignUpVisible(false);
+    setData({...getDashboard(accounts.USER_ANON, handleContentLink, user)});
   }
 
   // if (!loggedIn) return <Login />;
@@ -242,36 +241,16 @@ const Members = ({ loggedIn }) => {
 
       </MainLayout>
 
-      <Modal
-        key="loginSignupModal"
-        title={null}
-        visible={signUpVisible}
-        onOk={handleSignUpCancel}
-        onCancel={handleSignUpCancel}
-        // centered={true} // vertically
-        // destroyOnClose={true}
-        // maskClosable={false}
-        footer={[
-          <Button
-            key="customCancel"
-            onClick={() => setSignUpVisible(false)}
-            type="danger"
-            ghost
-          >
-            Cancel
-          </Button>
-        ]}
-        width="88%"
-        style={{ maxWidth: '576px' }}
-      >
-        <LoginSignup
-          key="loginSignup"
-          tab={loginSignupTab}
-          setTab={setLoginSignupTab}
-          signupType={signupType}
-          setSignupType={setSignupType}
-        />
-      </Modal>
+      <MemberModal
+        modalType={modalType}
+        setModalType={setModalType}
+        modalVisible={modalVisible}
+        setModalVisible={setModalVisible}
+        // for signup modal only
+        signupType={signupType}
+        setSignupType={setSignupType}
+      />
+
     </div>
   );
 };

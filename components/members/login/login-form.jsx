@@ -1,5 +1,5 @@
 import { Form, Input, Button } from 'antd';
-import { LockOutlined } from '@ant-design/icons';
+import { MailOutlined, LockOutlined } from '@ant-design/icons';
 
 const formItemLayout = {
   labelCol: {
@@ -27,7 +27,6 @@ const LoginForm = () => {
     >
 
       <Form.Item
-        className="mb-2"
         name="email"
         label="Email"
         rules={[
@@ -42,7 +41,7 @@ const LoginForm = () => {
         ]}
         hasFeedback
       >
-        <Input prefix="@" placeholder="Email Address" autoFocus />
+        <Input prefix={<MailOutlined />} placeholder="Email Address" autoFocus />
       </Form.Item>
 
       <Form.Item

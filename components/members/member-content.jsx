@@ -47,6 +47,9 @@ const MemberContent = ({
   const [usefulLinks, setUsefulLinks] = useState(null);
 
   useEffect(() => {
+    // do not replace content with login/logout calls
+    if (dataKey === 'login' || dataKey === 'logout') return;
+
     if (dataKey) {
       const pageData = getMembersPageItem(data, dataKey);
       const parentData = getMembersPageItem(data, getMemberPageParentKey(data, dataKey));

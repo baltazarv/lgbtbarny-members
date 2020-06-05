@@ -5,7 +5,7 @@ import { Breakpoint } from 'react-socks';
 import { Jumbotron, Container } from 'react-bootstrap';
 import MainLayout from '../components/main-layout';
 import MemberMenu from '../components/members/member-menu';
-import LoginSignup from '../components/members/login-signup';
+import Signup from '../components/members/signup';
 // Without CSS Modules
 import './login.less'
 // import style from '../assets/global-styles.less' // With CSS Modules
@@ -55,7 +55,7 @@ const Login = () => {
           </Jumbotron>
 
         <Breakpoint xs only>
-          <LoginSignup />
+          <Signup />
         </Breakpoint>
 
         <Breakpoint sm up>
@@ -73,7 +73,7 @@ const Login = () => {
               />
             </Sider>
             <Layout>
-              <LoginSignup />
+              <Signup />
             </Layout>
           </Layout>
         </Breakpoint>

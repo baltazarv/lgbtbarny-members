@@ -1,11 +1,10 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { List, Row, Col } from 'antd';
 import './pay-summ-list.less';
 import * as account from '../../../data/members-users';
 
 const PaySummList = ({
   signupType,
-  memberType,
   fee = 0,
   discount = 0,
   donation = 0,
@@ -19,7 +18,7 @@ const PaySummList = ({
     let total = fee + lawNotesAmt + donation;
 
     // annual membership + discount
-    if (signupType === account.USER_ATTORNEY || memberType === account.USER_ATTORNEY) {
+    if (signupType === account.USER_ATTORNEY) {
       let feeText = '';
 
       total-= discount;
@@ -48,8 +47,8 @@ const PaySummList = ({
     }
 
     if (
-      (signupType === account.USER_ATTORNEY || memberType === account.USER_ATTORNEY) ||
-      ((signupType === account.USER_ATTORNEY || memberType === account.USER_ATTORNEY) && total) // LN subscriber always has balance
+      signupType === account.USER_ATTORNEY ||
+      total
     ) {
     _paymentList = <Row>
         <Col {...formItemLayout}>
@@ -66,9 +65,8 @@ const PaySummList = ({
       </Row>
     }
 
-    // setPaymentList(_paymentList);
     return _paymentList;
-  }, [signupType, memberType, fee, discount, donation, lawNotesAmt])
+  }, [signupType, fee, discount, donation, lawNotesAmt]); //, memberType
 
   return paymentList;
 }

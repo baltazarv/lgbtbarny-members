@@ -21,7 +21,8 @@
     "react": "^16.7.0",
     "react-bootstrap": "^1.0.0",
     "react-dom": "^16.7.0",
-    "react-socks": "^2.1.0"
+    "react-socks": "^2.1.0",
+    "stripe": "^8.60.0"
   },
   "license": "ISC"
 }

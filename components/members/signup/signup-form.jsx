@@ -4,7 +4,9 @@ import { useState, useEffect, useMemo } from 'react';
 import { Form, Select, Button } from 'antd';
 import MemberTypeFormItems from './member-type-form-items';
 import PaySummList from './pay-summ-list';
+// data
 import * as accounts from '../../../data/members-users';
+import createAccount from '../../../pages/api/create-account';
 
 const { Option } = Select;
 
@@ -34,37 +36,42 @@ const DONATIONS_SUGGESTED = {
 const LAW_NOTES_PRICE = 100;
 
 const SignupForm = ({
-  onLogin,
   signupType,
+  setSignupType,
 }) => {
   const [form] = Form.useForm();
-  const [memberType, setMemberType] = useState(''); // attorney or student
   const [memberFee, setMemberFee] = useState(0);
   const [discount, setDiscount] = useState(0);
   const [donation, setDonation] = useState(0);
   const [lawNotesAmt, setLawNotesAmt] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState(0);
 
   const suggestDonations = useMemo(() => {
     let donations = [];
     // add custom amount line to donations list
-    if (memberType === accounts.USER_STUDENT || memberType === accounts.USER_ATTORNEY) donations = [...DONATIONS_SUGGESTED[memberType], 'Custom amount...'];
+    if (signupType === accounts.USER_STUDENT || signupType === accounts.USER_ATTORNEY) donations = [...DONATIONS_SUGGESTED[signupType], 'Custom amount...'];
     if (signupType === accounts.USER_NON_MEMBER || signupType === accounts.USER_LAW_NOTES) donations = [...DONATIONS_SUGGESTED[signupType], 'Custom amount...'];
     return donations;
-  }, [DONATIONS_SUGGESTED, signupType, memberType]);
+  }, [DONATIONS_SUGGESTED, signupType]);
 
   useEffect(() => {
-    // reset memberType when not a member signup
     if (signupType !== accounts.USER_MEMBER) {
-      form.setFieldsValue({ certify: null })
-      setMemberType('');
+      form.setFieldsValue({ certify: null });
     }
 
     if (signupType === accounts.USER_ATTORNEY) {
-      form.setFieldsValue({ certify: 'bar' })
-      setMemberType(accounts.USER_ATTORNEY);
+      form.setFieldsValue({ firstname: 'Joe' });
+      form.setFieldsValue({ lastname: 'Miller' });
+      form.setFieldsValue({ email: 'joe@miller.com' });
+      form.setFieldsValue({ password: 'rX@J88aD' });
+      form.setFieldsValue({ confirmpwd: 'rX@J88aD' });
+
+      form.setFieldsValue({ certify: 'bar' });
+      setSignupType(accounts.USER_ATTORNEY);
     } else if (signupType === accounts.USER_STUDENT) {
       form.setFieldsValue({ certify: 'student' })
-      setMemberType(accounts.USER_STUDENT);
+      setSignupType(accounts.USER_STUDENT);
     }
 
     /* law notes */
@@ -88,7 +95,7 @@ const SignupForm = ({
     } else {
       value = accounts.USER_ATTORNEY;
     }
-    setMemberType(value);
+    setSignupType(value);
     setLawNotesAmt(0);
   }
 
@@ -111,17 +118,28 @@ const SignupForm = ({
     }
   }
 
-  const onEnterInfoSubmit = values => {
-    console.log('Received values of form: ', values);
+  const onEnterInfoSubmit = async (values) => {
+    setLoading(true);
+    const user = await createAccount(values);
+    setStep(1);
+    setLoading(false);
   };
 
+  const paySummList = useMemo(() => {
+    return <PaySummList
+      formItemLayout={{
+        xs: { span: 24, offset: 0 },
+        sm: { span: 16, offset: 8 },
+      }}
+      signupType={signupType}
+      fee={memberFee}
+      discount={discount}
+      lawNotesAmt={lawNotesAmt}
+      donation={donation}
+    />
+  }, [signupType, memberFee, discount, lawNotesAmt, donation]);
+
   return <>
-    {signupType === accounts.USER_MEMBER
-      ?
-        <div className="mb-4">If you need to renew your membership please <Button type="link" onClick={onLogin}>log in</Button> first.</div>
-      :
-        <div className="mb-4">If you already have an account <Button type="link" onClick={onLogin}>log in</Button>.</div>
-    }
     <Form
       labelCol={{
         xs: { span: 24 },
@@ -140,9 +158,10 @@ const SignupForm = ({
     >
     {
       (
-        signupType === accounts.USER_MEMBER ||
+        (signupType === accounts.USER_MEMBER ||
         signupType === accounts.USER_ATTORNEY ||
-        signupType === accounts.USER_STUDENT
+        signupType === accounts.USER_STUDENT) &&
+        step === 0
       ) &&
       <Form.Item
         className="text-left"
@@ -156,6 +175,7 @@ const SignupForm = ({
           // allowClear
           autoFocus
           // suffixIcon={<UserOutlined/>}
+          disabled={loading}
         >
           <Option value="bar">{CERTIFY_OPTIONS.bar}</Option>
           <Option value="graduate">{CERTIFY_OPTIONS.graduate}</Option>
@@ -165,23 +185,14 @@ const SignupForm = ({
       </Form.Item>
     }
       <MemberTypeFormItems
-        memberType={memberType}
         signupType={signupType}
         salaries={SALARIES}
         suggestDonations={suggestDonations}
-        paySummList={<PaySummList
-          formItemLayout={{
-            xs: { span: 24, offset: 0 },
-            sm: { span: 16, offset: 8 },
-          }}
-          memberType={memberType}
-          signupType={signupType}
-          fee={memberFee}
-          discount={discount}
-          lawNotesAmt={lawNotesAmt}
-          donation={donation}
-        />}
+        paySummList={paySummList}
+        // what is the total for?
         total={(memberFee ? memberFee : 0) - (discount ? discount : 0) + (lawNotesAmt ? lawNotesAmt : 0) + (donation ? donation : 0)}
+        loading={loading}
+        step={step}
       />
 
       {/* <Form.Item

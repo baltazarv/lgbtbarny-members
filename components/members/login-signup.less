@@ -1,3 +1,5 @@
+@import '../../assets/global-styles.less';
+
 .login-signup {
 
   .ant-card-head {
@@ -23,5 +25,37 @@
 
   } // @END .ant-card-head
 
-
 } // @END .login-signup
+
+.login-signup-card {
+
+  .ant-card-head {
+    text-align: center;
+    font-size: 20px;
+  }
+
+  .ant-card-body {
+    text-align: center;
+  }
+
+  .ant-form-item {
+    margin-bottom: 1em;
+
+    @media @sm-up {
+      margin-bottom: 0.8em;
+    }
+  }
+
+  .ant-col-xs-24.ant-form-item-label {
+    padding: 0;
+  }
+
+  .ant-form-item-control {
+    line-height: 1.5;
+  }
+
+  .login-form-button {
+    width: 100%;
+  }
+
+} // @END .login-signup-card

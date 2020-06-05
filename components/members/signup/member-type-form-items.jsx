@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Divider, Form, Input, InputNumber, Steps, Button, Row, Col, Select, Checkbox } from 'antd';
-import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import { MailOutlined, UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useMemo } from 'react';
 import * as accounts from '../../../data/members-users';
 
@@ -13,15 +13,15 @@ const tailFormItemLayout = {
 };
 
 const MemberTypeFormItems = ({
-  memberType,
   signupType,
   salaries,
   suggestDonations,
   paySummList,
   total,
+  loading,
+  step,
 }) => {
 
-  const [step, setStep] = useState(0);
   const [customDonationSelected, setCustomDonationSelected] = useState(false);
 
   const handleDonationChange = (value) => {
@@ -79,15 +79,10 @@ const MemberTypeFormItems = ({
     return options;
   }, []);
 
-  // build all content
-  const output = useMemo(() => {
+  // create account fields
+  const userFields = useMemo(() => {
     let _output = null;
 
-    if (
-      (signupType === accounts.USER_MEMBER && memberType) ||
-      signupType !== accounts.USER_MEMBER
-    ) {
-      let title = '';
       let typeSpecificFields = null;
 
       /**
@@ -116,11 +111,7 @@ const MemberTypeFormItems = ({
           >Subscribe to <span className="font-italic">Law Notes.</span></Checkbox>
         </Form.Item>
 
-      } else if (
-        (signupType === accounts.USER_MEMBER && memberType === accounts.USER_ATTORNEY) ||
-        signupType === accounts.USER_ATTORNEY
-      ) {
-        title = 'First-time Attorney Membership';
+      } else if (signupType === accounts.USER_MEMBER) {
         typeSpecificFields = <>
           <Form.Item
             name="employer"
@@ -128,6 +119,7 @@ const MemberTypeFormItems = ({
           >
             <Input
               placeholder="Employer - if relevant"
+              disabled={loading}
             />
           </Form.Item>
 
@@ -145,17 +137,14 @@ const MemberTypeFormItems = ({
           >
             <Select
               placeholder="Choose salary to calculate fee..."
+              disabled={loading}
             >
               {salaryOptions}
             </Select>
           </Form.Item>
 
         </>
-      } else if (
-        (signupType === accounts.USER_MEMBER && memberType === accounts.USER_STUDENT) ||
-        signupType === accounts.USER_STUDENT
-      ) {
-        title = 'Free Student Membership';
+      } else if (signupType === accounts.USER_STUDENT) {
 
         typeSpecificFields = <>
           <Form.Item
@@ -171,6 +160,7 @@ const MemberTypeFormItems = ({
           >
             <Input
               placeholder="Law School"
+              disabled={loading}
             />
           </Form.Item>
 
@@ -198,18 +188,6 @@ const MemberTypeFormItems = ({
 
       // shared fields
       _output = <>
-        <Divider>{title}</Divider>
-
-        {/* payment step if there is a total */}
-        <div className="mb-4">
-          <Steps size="small" current={0}>
-            <Step title="Info Entry" />
-            <Step title="Confirmation" />
-            {(memberType === accounts.USER_ATTORNEY || signupType === accounts.USER_LAW_NOTES || total > 0) &&
-              <Step title="Payment" />
-            }
-          </Steps>
-        </div>
 
         <Form.Item
           name="firstname"
@@ -225,6 +203,7 @@ const MemberTypeFormItems = ({
           <Input
             prefix={<UserOutlined className="site-form-item-icon" />}
             placeholder="First Name"
+            disabled={loading}
           />
         </Form.Item>
 
@@ -242,6 +221,7 @@ const MemberTypeFormItems = ({
           <Input
             prefix={<UserOutlined className="site-form-item-icon" />}
             placeholder="Last Name"
+            disabled={loading}
           />
         </Form.Item>
 
@@ -260,8 +240,9 @@ const MemberTypeFormItems = ({
           ]}
         >
           <Input
-            prefix="@"
+            prefix={<MailOutlined />}
             placeholder="Email Address"
+            disabled={loading}
           />
         </Form.Item>
 
@@ -280,11 +261,12 @@ const MemberTypeFormItems = ({
             prefix={<LockOutlined className="site-form-item-icon" />}
             type="password"
             placeholder="Password"
+            disabled={loading}
           />
         </Form.Item>
 
         <Form.Item
-          name="confirm"
+          name="confirmpwd"
           label="Confirm Password"
           dependencies={['password']}
           hasFeedback
@@ -308,6 +290,7 @@ const MemberTypeFormItems = ({
             prefix={<LockOutlined className="site-form-item-icon" />}
             type="password"
             placeholder="Confirm Password"
+            disabled={loading}
           />
         </Form.Item>
 
@@ -328,6 +311,7 @@ const MemberTypeFormItems = ({
                     placeholder="Choose amount..."
                     onChange={handleDonationChange}
                     allowClear
+                    disabled={loading}
                   >
                     {donationOptions}
                   </Select>
@@ -342,6 +326,7 @@ const MemberTypeFormItems = ({
                     min={0}
                     formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                     parser={value => value.replace(/\$\s?|(,*)/g, '')}
+                    disabled={loading}
                   />
                 </Form.Item>
               </Input.Group>
@@ -358,13 +343,14 @@ const MemberTypeFormItems = ({
                 placeholder="Choose optional amount..."
                 onChange={handleDonationChange}
                 allowClear
+                disabled={loading}
               >
                 {donationOptions}
               </Select>
             </Form.Item>
         }
 
-        { memberType === accounts.USER_ATTORNEY &&
+        { signupType === accounts.USER_ATTORNEY &&
           <Row className="mb-2">
             <Col {...tailFormItemLayout}>
               50% discount for first-time membership!
@@ -373,6 +359,48 @@ const MemberTypeFormItems = ({
         }
 
         {paySummList}
+
+      </>
+    // }
+    return _output;
+  }, [signupType, salaryOptions, donationOptions, gradYearOptions, customDonationSelected, paySummList]); // memberType,
+
+  const output = useMemo(() => {
+    let _output = null;
+
+    if (signupType !== accounts.USER_MEMBER) {
+      let title = '';
+
+      /**
+       * type-specific fields
+       */
+      if (signupType === accounts.USER_ATTORNEY) {
+        title = 'First-time Attorney Membership';
+      } else if (signupType === accounts.USER_STUDENT) {
+        title = 'Free Student Membership';
+      }
+
+      // shared fields
+      _output = <>
+        <Divider>{title}</Divider>
+
+        <div className="mb-4">
+          <Steps size="small" current={step}>
+            <Step title="Create Account" />
+            <Step title="Validate" />
+            {(
+              signupType === accounts.USER_ATTORNEY ||
+              signupType === accounts.USER_LAW_NOTES || total > 0
+            ) &&
+              <Step title="Payment" />
+            }
+            {/* <Step title="Log In" /> */}
+          </Steps>
+        </div>
+
+        {step === 0 &&
+          userFields
+        }
 
         <Form.Item
           className="mt-3"
@@ -391,14 +419,15 @@ const MemberTypeFormItems = ({
             style={{ width: '100%' }}
             type="primary"
             htmlType="submit"
+            disabled={loading}
           >
-            Enter Information
+            Create Account
           </Button>
         </Form.Item>
       </>
     }
     return _output;
-  }, [memberType, signupType, salaryOptions, donationOptions, gradYearOptions, customDonationSelected, paySummList]);
+  }, [signupType, paySummList]);
 
   return output;
 }
