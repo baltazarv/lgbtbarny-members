@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Modal, Button } from 'antd';
 import Signup from './signup/signup';
 import Login from './login/login';
+import NewsletterSignup from '../newsletter-signup';
 
 const MemberModal = ({
   modalType,
@@ -28,8 +29,10 @@ const MemberModal = ({
         signupType={signupType}
         setSignupType={setSignupType}
       />
-    } else {
-
+    } else if (modalType === 'newsletter') {
+      return <NewsletterSignup
+        key="newsletter"
+      />
     }
   }, [modalType, signupType]);
 

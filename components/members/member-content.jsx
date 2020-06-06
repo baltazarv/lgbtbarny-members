@@ -29,6 +29,7 @@ const signupLinkText = {
   [accounts.SIGNUP_STUDENT]: 'Student Member Sign-up',
   [accounts.SIGNUP_NON_MEMBER]: 'Basic Account Sign-up',
   [accounts.SIGNUP_LAW_NOTES]: 'Law Notes Subscription',
+  'signup-newletter': 'Newsletter sign-up',
 }
 
 const MemberContent = ({
@@ -64,7 +65,8 @@ const MemberContent = ({
               key === accounts.SIGNUP_ATTORNEY ||
               key === accounts.SIGNUP_STUDENT ||
               key === accounts.SIGNUP_NON_MEMBER ||
-              key === accounts.SIGNUP_LAW_NOTES
+              key === accounts.SIGNUP_LAW_NOTES ||
+              key === 'signup-newletter'
             ) return <span key={key}>
                 <Button type="link" onClick={() => onLinkClick(key)}>
                   {signupLinkText[key]}

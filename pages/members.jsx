@@ -145,6 +145,8 @@ const Members = ({ loggedIn }) => {
     } else if (key === accounts.SIGNUP_LAW_NOTES) {
       setSignupType(accounts.USER_LAW_NOTES);
       openModal('signup');
+    } else if (key === 'signup-newletter') {
+      openModal('newsletter');
 
     // previewUser
     } else if (key === accounts.TAB_ATTORNEY) {

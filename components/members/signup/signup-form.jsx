@@ -1,7 +1,7 @@
 /** Controls values entered & conversion tables
  * pushes to payment */
 import { useState, useEffect, useMemo } from 'react';
-import { Form, Select, Button } from 'antd';
+import { Form, Select } from 'antd';
 import MemberTypeFormItems from './member-type-form-items';
 import PaySummList from './pay-summ-list';
 // data

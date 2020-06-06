@@ -67,7 +67,7 @@ const banners = (type, onLink) => {
   />;
   if (type === 'newsletter') return <Banner
     title="Newsletter"
-    text={<span><u>Sign up</u> for the newsletter...</span>}
+    text={<span><Button type="link" onClick={() => onLink('signup-newletter')}>Sign up</Button> for the newsletter...</span>}
     colors={{ backgroundColor: '#e6fffb', color: '#006d75' }} // cyan
   />;
   if (type === 'login') return <Banner
@@ -82,7 +82,7 @@ const linkText = {
   member: accounts.SIGNUP_MEMBER,
   nonMember: accounts.SIGNUP_NON_MEMBER,
   currentCle: 'Current CLE registration',
-  newsletter: 'Newsletter sign-up',
+  newsletter: 'signup-newletter',
   lawnotes: accounts.SIGNUP_LAW_NOTES,
 }
 
@@ -764,7 +764,7 @@ const emailPrefs = (memberType = accounts.USER_ATTORNEY, onLink, previewUser) =>
     if (previewUser === accounts.USER_STUDENT) signupLink = accounts.SIGNUP_STUDENT;
     if (previewUser === accounts.USER_NON_MEMBER) signupLink = accounts.SIGNUP_NON_MEMBER;
     content = <>
-      <p>When you <strong><u>sign up to our newsletter</u></strong> you can also manage your email preferences from the <em>Dashboard</em> when you <Button type="link" onClick={() => onLink(signupLink)}>sign up</Button>.</p>
+      <p>When you <Button type="link" onClick={() => onLink(linkText.newsletter)}>sign up to our newsletter</Button> you can also manage your email preferences from the <em>Dashboard</em> when you <Button type="link" onClick={() => onLink(signupLink)}>sign up</Button>.</p>
     </>;
     links = [linkText.member, linkText.newsletter, linkText.nonMember];
   } else if (memberType === accounts.USER_NON_MEMBER) {
