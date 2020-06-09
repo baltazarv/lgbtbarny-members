@@ -4,8 +4,8 @@ import { Container, Row, Col, Card } from 'react-bootstrap';
 import './member-content.less';
 import SvgIcon from '../utils/svg-icon';
 // data
-import { getMemberPageParentKey, getMembersPageItem } from '../../data/members-data';
-import * as accounts from '../../data/members-users';
+import { getMemberPageParentKey, getMembersPageItem } from '../../data/member-dashboards';
+import * as memberTypes from '../../data/member-types';
 
 const { TabPane } = Tabs;
 
@@ -24,11 +24,11 @@ const TabIcon = ({
   </span>
 
 const signupLinkText = {
-  [accounts.SIGNUP_MEMBER]: 'Member Sign-up',
-  [accounts.SIGNUP_ATTORNEY]: 'Attorney Member Sign-up',
-  [accounts.SIGNUP_STUDENT]: 'Student Member Sign-up',
-  [accounts.SIGNUP_NON_MEMBER]: 'Basic Account Sign-up',
-  [accounts.SIGNUP_LAW_NOTES]: 'Law Notes Subscription',
+  [memberTypes.SIGNUP_MEMBER]: 'Member Sign-up',
+  [memberTypes.SIGNUP_ATTORNEY]: 'Attorney Member Sign-up',
+  [memberTypes.SIGNUP_STUDENT]: 'Student Member Sign-up',
+  [memberTypes.SIGNUP_NON_MEMBER]: 'Basic Account Sign-up',
+  [memberTypes.SIGNUP_LAW_NOTES]: 'Law Notes Subscription',
   'signup-newletter': 'Newsletter sign-up',
 }
 
@@ -61,11 +61,11 @@ const MemberContent = ({
           const optionalPipe = index !== keys.length - 1 ? " | " : null;
           if (!link) {
             if (
-              key === accounts.SIGNUP_MEMBER ||
-              key === accounts.SIGNUP_ATTORNEY ||
-              key === accounts.SIGNUP_STUDENT ||
-              key === accounts.SIGNUP_NON_MEMBER ||
-              key === accounts.SIGNUP_LAW_NOTES ||
+              key === memberTypes.SIGNUP_MEMBER ||
+              key === memberTypes.SIGNUP_ATTORNEY ||
+              key === memberTypes.SIGNUP_STUDENT ||
+              key === memberTypes.SIGNUP_NON_MEMBER ||
+              key === memberTypes.SIGNUP_LAW_NOTES ||
               key === 'signup-newletter'
             ) return <span key={key}>
                 <Button type="link" onClick={() => onLinkClick(key)}>
@@ -124,7 +124,7 @@ const MemberContent = ({
   return <Container className="member-content">
     <Row>
       <Col className="pt-3">
-      { userType === accounts.USER_ANON &&
+      { userType === memberTypes.USER_ANON &&
           <Tabs
           onChange={onTabClick}
           activeKey={tabKey}
@@ -137,7 +137,7 @@ const MemberContent = ({
                   Attorney</div>
                 </>
               }
-              key={accounts.USER_ATTORNEY}
+              key={memberTypes.USER_ATTORNEY}
             />
             <TabPane
               tab={
@@ -147,7 +147,7 @@ const MemberContent = ({
                     Law Student</div>
                 </>
               }
-              key={accounts.USER_STUDENT}
+              key={memberTypes.USER_STUDENT}
             />
             <TabPane
               tab={
@@ -157,7 +157,7 @@ const MemberContent = ({
                     Account</div>
                 </>
               }
-              key={accounts.USER_NON_MEMBER}
+              key={memberTypes.USER_NON_MEMBER}
             />
           </Tabs>
         }

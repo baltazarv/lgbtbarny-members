@@ -1,6 +1,6 @@
 const getUser = (user) => {
-  let promise = new Promise((resolve, rejet) => {
-    setTimeout(() => resolve(user), 2000)
+  let promise = new Promise((resolve, reject) => {
+    setTimeout(() => resolve(user), 1500)
   });
   return promise;
 }

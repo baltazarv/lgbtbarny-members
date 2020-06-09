@@ -13,8 +13,8 @@ import MemberModal from '../components/members/member-modal';
 import NewsNotification from '../components/utils/open-notification';
 import './members.less';
 // data
-import { getDashboard, getMemberPageParentKey } from '../data/members-data';
-import * as accounts from '../data/members-users';
+import { getDashboard, getMemberPageParentKey } from '../data/member-dashboards';
+import * as memberTypes from '../data/member-types';
 
 const { Sider } = Layout;
 
@@ -25,7 +25,7 @@ const Members = ({ loggedIn }) => {
   // menu and main content user views
   const [memberType, setMemberType] = useState('');
   // when anon user, select tab to view preview content
-  const [previewUser, setPreviewUser] = useState(accounts.USER_ATTORNEY);
+  const [previewUser, setPreviewUser] = useState(memberTypes.USER_ATTORNEY);
   const [data, setData] = useState({});
   // menu & main content page/section selections
   const [selectedKey, setSelectedKey] = useState('');
@@ -57,19 +57,19 @@ const Members = ({ loggedIn }) => {
 
   // load data file based on query string
   useEffect(() => {
-    console.log(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
+    console.log('NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY', process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
     let dashboardKey = '';
     let previewUserKey = '';
     let _data = {};
     if (!router.query.type || router.query.type === 'anon' || router.query.type === 'anonymous') {
-      dashboardKey = accounts.USER_ANON;
-      previewUserKey = accounts.USER_ATTORNEY;
+      dashboardKey = memberTypes.USER_ANON;
+      previewUserKey = memberTypes.USER_ATTORNEY;
     } else if (router.query.type === 'attorney') {
-      dashboardKey = accounts.USER_ATTORNEY;
+      dashboardKey = memberTypes.USER_ATTORNEY;
     } else if (router.query.type === 'student') {
-      dashboardKey = accounts.USER_STUDENT;
+      dashboardKey = memberTypes.USER_STUDENT;
     } else if (router.query.type === 'non-member') {
-      dashboardKey = accounts.USER_NON_MEMBER;
+      dashboardKey = memberTypes.USER_NON_MEMBER;
     }
     setMemberType(dashboardKey);
     _data = {...getDashboard(dashboardKey, handleContentLink, previewUserKey)};
@@ -130,31 +130,31 @@ const Members = ({ loggedIn }) => {
   const handleContentLink = (key) => {
     if (key === 'login') {
       openModal(key);
-    } else if (key === accounts.SIGNUP_MEMBER) {
-      setSignupType(accounts.USER_MEMBER);
+    } else if (key === memberTypes.SIGNUP_MEMBER) {
+      setSignupType(memberTypes.USER_MEMBER);
       openModal('signup');
-    } else if (key === accounts.SIGNUP_ATTORNEY) {
-      setSignupType(accounts.USER_ATTORNEY);
+    } else if (key === memberTypes.SIGNUP_ATTORNEY) {
+      setSignupType(memberTypes.USER_ATTORNEY);
       openModal('signup');
-    } else if (key === accounts.SIGNUP_STUDENT) {
-      setSignupType(accounts.USER_STUDENT);
+    } else if (key === memberTypes.SIGNUP_STUDENT) {
+      setSignupType(memberTypes.USER_STUDENT);
       openModal('signup');
-    } else if (key === accounts.SIGNUP_NON_MEMBER) {
-      setSignupType(accounts.USER_NON_MEMBER);
+    } else if (key === memberTypes.SIGNUP_NON_MEMBER) {
+      setSignupType(memberTypes.USER_NON_MEMBER);
       openModal('signup');
-    } else if (key === accounts.SIGNUP_LAW_NOTES) {
-      setSignupType(accounts.USER_LAW_NOTES);
+    } else if (key === memberTypes.SIGNUP_LAW_NOTES) {
+      setSignupType(memberTypes.USER_LAW_NOTES);
       openModal('signup');
     } else if (key === 'signup-newletter') {
       openModal('newsletter');
 
     // previewUser
-    } else if (key === accounts.TAB_ATTORNEY) {
-      handleSelectPreviewUser(accounts.USER_ATTORNEY);
-    } else if (key === accounts.TAB_STUDENT) {
-      handleSelectPreviewUser(accounts.USER_STUDENT);
-    } else if (key === accounts.TAB_NON_MEMBER) {
-      handleSelectPreviewUser(accounts.USER_NON_MEMBER);
+    } else if (key === memberTypes.TAB_ATTORNEY) {
+      handleSelectPreviewUser(memberTypes.USER_ATTORNEY);
+    } else if (key === memberTypes.TAB_STUDENT) {
+      handleSelectPreviewUser(memberTypes.USER_STUDENT);
+    } else if (key === memberTypes.TAB_NON_MEMBER) {
+      handleSelectPreviewUser(memberTypes.USER_NON_MEMBER);
     } else {
       selectItem(key);
     }
@@ -167,7 +167,7 @@ const Members = ({ loggedIn }) => {
 
   const handleSelectPreviewUser = (user) => {
     setPreviewUser(user);
-    setData({...getDashboard(accounts.USER_ANON, handleContentLink, user)});
+    setData({...getDashboard(memberTypes.USER_ANON, handleContentLink, user)});
   }
 
   // if (!loggedIn) return <Login />;
@@ -180,7 +180,7 @@ const Members = ({ loggedIn }) => {
           <Container>
             <h1 className="h1">
               {
-                memberType !== accounts.USER_NON_MEMBER && previewUser !== accounts.USER_NON_MEMBER
+                memberType !== memberTypes.USER_NON_MEMBER && previewUser !== memberTypes.USER_NON_MEMBER
                   ?
                   <>MEMBERS <span className="subtitle">Dashboard</span></>
                   :
@@ -251,6 +251,7 @@ const Members = ({ loggedIn }) => {
         // for signup modal only
         signupType={signupType}
         setSignupType={setSignupType}
+        cancelLabel="Cancel"
       />
 
     </div>

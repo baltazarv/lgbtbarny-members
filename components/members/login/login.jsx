@@ -3,7 +3,7 @@ import { Card, Row, Col, Button } from 'antd';
 import { Container } from 'react-bootstrap';
 import { LoginOutlined } from '@ant-design/icons';
 import '../login-signup.less';
-import * as accounts from '../../../data/members-users';
+import * as memberTypes from '../../../data/member-types';
 
 const Login = ({
   setModalType,
@@ -33,7 +33,7 @@ const Login = ({
       >
         <Row className="mx-5 mb-2">
           <Col>
-            <p>If you are not a member yet, <Button type="link" onClick={() => openSignup(accounts.USER_MEMBER)}>join now</Button>!</p>
+            <p>If you are not a member yet, <Button type="link" onClick={() => openSignup(memberTypes.USER_MEMBER)}>join now</Button>!</p>
 
             <p>If you are already a member but this is your first time logging in to the new system, <Button type="link" onClick={() => console.log('RESET PASSWORD')}>get access</Button>.</p>
           </Col>

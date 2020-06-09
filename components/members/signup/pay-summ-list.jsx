@@ -1,24 +1,25 @@
-import { useMemo, useEffect } from 'react';
+import { useMemo } from 'react';
 import { List, Row, Col } from 'antd';
 import './pay-summ-list.less';
-import * as account from '../../../data/members-users';
+import * as memberTypes from '../../../data/member-types';
 
 const PaySummList = ({
   signupType,
   fee = 0,
   discount = 0,
   donation = 0,
-  formItemLayout = {},
   lawNotesAmt = 0,
+  formItemLayout = {},
 }) => {
 
   const paymentList = useMemo(() => {
+    // console.log('fee', fee, 'discount', discount, 'lawNotesAmt', lawNotesAmt, 'donation', donation);
     let _paymentList = null;
     let paymentListData = [];
     let total = fee + lawNotesAmt + donation;
 
     // annual membership + discount
-    if (signupType === account.USER_ATTORNEY) {
+    if (signupType === memberTypes.USER_ATTORNEY) {
       let feeText = '';
 
       total-= discount;
@@ -40,14 +41,14 @@ const PaySummList = ({
 
     // + donation
     if (
-      signupType === account.USER_ATTORNEY ||
-      (signupType !== account.USER_ATTORNEY && donation)
+      signupType === memberTypes.USER_ATTORNEY ||
+      (signupType !== memberTypes.USER_ATTORNEY && donation)
     ) {
       paymentListData.push(`Donation ... +$${donation.toFixed(2)}`);
     }
 
     if (
-      signupType === account.USER_ATTORNEY ||
+      signupType === memberTypes.USER_ATTORNEY ||
       total
     ) {
     _paymentList = <Row>

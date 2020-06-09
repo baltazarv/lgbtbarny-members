@@ -16,7 +16,6 @@ const NewsletterSignup = ({
   const [contMemberSignup, setContMemberSignup] = useState(false);
 
   const onValuesChange = (changedValues, allValues) => {
-    console.log(changedValues, allValues);
     if (form.getFieldValue('cont-member-signup')) {
       setContMemberSignup(true);
     } else {

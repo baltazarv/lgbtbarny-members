@@ -12,6 +12,7 @@ const MemberModal = ({
   // for signup modal type only
   signupType,
   setSignupType,
+  cancelLabel,
 }) => {
   const content = useMemo(() => {
     if (modalType === 'login') {
@@ -52,7 +53,7 @@ const MemberModal = ({
         type="danger"
         ghost
       >
-        Cancel
+        {cancelLabel}
       </Button>
     ]}
     width="88%"
