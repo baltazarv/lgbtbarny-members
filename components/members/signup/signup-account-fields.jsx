@@ -1,12 +1,11 @@
 // TODO: move into SignupCreateAccount?
 
-import { useState } from 'react';
-import { Divider, Form, Input, InputNumber, Row, Col, Select, Checkbox } from 'antd';
-import { MailOutlined, UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useMemo } from 'react';
+import { Form, Input, Row, Col, Select, Checkbox } from 'antd';
+import { MailOutlined, UserOutlined, LockOutlined } from '@ant-design/icons';
 // data
 import * as memberTypes from '../../../data/member-types';
-import { CREATE_ACCT_FORM_FIELDS } from '../../../data/member-data';
+import { SIGNUP_FORM_FIELDS } from '../../../data/member-data';
 
 const { Option } = Select;
 
@@ -18,20 +17,9 @@ const tailFormItemLayout = {
 const SignupAccountFields = ({
   signupType,
   salaries,
-  suggestDonations,
+  donationFields,
   loading,
 }) => {
-
-  const [customDonationSelected, setCustomDonationSelected] = useState(false);
-
-  const handleDonationChange = (value) => {
-    // value can be "optional amount"
-    if (typeof value === 'string' && value.toLowerCase().includes('custom')) {
-      setCustomDonationSelected(true);
-    } else {
-      setCustomDonationSelected(false);
-    }
-  }
 
   // build options for salary select component
   const salaryOptions = useMemo(() => {
@@ -47,21 +35,6 @@ const SignupAccountFields = ({
     }
     return options;
   }, [salaries]);
-
-  // build options for donation select component
-  const donationOptions = useMemo(() => {
-    const options = suggestDonations.map((amt) => {
-      let txt = amt;
-      if (typeof amt === 'number') txt = `$${amt.toFixed(2)}`;
-      return <Option
-          key={amt}
-          value={amt}
-        >
-          {txt}
-      </Option>
-    });
-    return options;
-  }, [suggestDonations])
 
   // build options for grad year select component
   const gradYearOptions = useMemo(() => {
@@ -91,7 +64,7 @@ const SignupAccountFields = ({
 
       // subscription checkbox
       typeSpecificFields = <Form.Item
-        name={CREATE_ACCT_FORM_FIELDS.lawNotes}
+        name={SIGNUP_FORM_FIELDS.lawNotes}
         valuePropName="checked"
         wrapperCol={{
           xs: {
@@ -124,7 +97,7 @@ const SignupAccountFields = ({
 
         <Form.Item
           className="text-left"
-          name={CREATE_ACCT_FORM_FIELDS.salary}
+          name={SIGNUP_FORM_FIELDS.salary}
           label="Salary Range"
           rules={[
             {
@@ -295,59 +268,7 @@ const SignupAccountFields = ({
 
       {typeSpecificFields}
 
-      {/* donation field repeated! */}
-      {customDonationSelected
-        ?
-          <Form.Item label="Donation">
-            <Input.Group compact>
-              <Form.Item
-                className="text-center"
-                name={CREATE_ACCT_FORM_FIELDS.donation}
-                noStyle
-              >
-                <Select
-                  style={{ width: '50%' }}
-                  placeholder="Choose amount..."
-                  onChange={handleDonationChange}
-                  allowClear
-                  disabled={loading}
-                >
-                  {donationOptions}
-                </Select>
-              </Form.Item>
-              <Form.Item
-                name="customdonation"
-                noStyle
-              >
-                <InputNumber
-                  style={{ width: '50%' }}
-                  placeholder="Enter amount..."
-                  min={0}
-                  formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                  parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                  disabled={loading}
-                />
-              </Form.Item>
-            </Input.Group>
-          </Form.Item>
-        :
-          <Form.Item
-            className="text-left"
-            name="donation"
-            label="Donation"
-            // TO-DO: restrict to number
-            // rules={[{}]}
-          >
-            <Select
-              placeholder="Choose optional amount..."
-              onChange={handleDonationChange}
-              allowClear
-              disabled={loading}
-            >
-              {donationOptions}
-            </Select>
-          </Form.Item>
-      }
+      {donationFields}
 
       { signupType === memberTypes.USER_ATTORNEY &&
         <Row className="mb-2">
@@ -358,20 +279,9 @@ const SignupAccountFields = ({
       }
     </>
     return _output;
-  }, [signupType, salaryOptions, donationOptions, gradYearOptions, customDonationSelected]); // memberType,
-
-  const title = useMemo(() => {
-    if (signupType !== memberTypes.USER_MEMBER) {
-      if (signupType === memberTypes.USER_ATTORNEY) {
-        return 'First-time Attorney Membership';
-      } else if (signupType === memberTypes.USER_STUDENT) {
-        return 'Free Student Membership';
-      }
-    }
-  }, [signupType]);
+  }, [signupType, salaryOptions, gradYearOptions, donationFields]);
 
   return <>
-    <Divider>{title}</Divider>
     {userFields}
   </>;
 }

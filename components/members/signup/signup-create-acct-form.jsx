@@ -1,39 +1,32 @@
 /** Controls values entered & conversion tables
  * pushes to payment */
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { Form, Select, Button } from 'antd';
 import SignupAccountFields from './signup-account-fields';
 // data
 import * as memberTypes from '../../../data/member-types';
 import users from '../../../data/users';
-import { CERTIFY_OPTIONS, SALARIES, LAW_NOTES_PRICE, DONATIONS_SUGGESTED, CREATE_ACCT_FORM_FIELDS } from '../../../data/member-data';
+import { CERTIFY_OPTIONS, SALARIES, LAW_NOTES_PRICE, FORMS,SIGNUP_FORM_FIELDS } from '../../../data/member-data';
 
 const { Option } = Select;
 
 const SignupCreateAcctForm = ({
   signupType,
   setSignupType,
+  donationFields,
   setPaySummValue,
   paySummList,
   loading,
 }) => {
   const [form] = Form.useForm();
 
-  const donationValues = useMemo(() => {
-    let donations = [];
-    // add custom amount line to donations list
-    if (signupType === memberTypes.USER_STUDENT || signupType === memberTypes.USER_ATTORNEY) donations = [...DONATIONS_SUGGESTED[signupType], 'Custom amount...'];
-    if (signupType === memberTypes.USER_NON_MEMBER || signupType === memberTypes.USER_LAW_NOTES) donations = [...DONATIONS_SUGGESTED[signupType], 'Custom amount...'];
-    return donations;
-  }, [DONATIONS_SUGGESTED, signupType]);
-
   const setMemberFee = () => {
     // member and discount fee
     if (
       signupType === memberTypes.USER_ATTORNEY &&
-      form.getFieldValue(CREATE_ACCT_FORM_FIELDS.salary)
+      form.getFieldValue(SIGNUP_FORM_FIELDS.salary)
     ) {
-      const fee = SALARIES[form.getFieldValue(CREATE_ACCT_FORM_FIELDS.salary)].fee;
+      const fee = SALARIES[form.getFieldValue(SIGNUP_FORM_FIELDS.salary)].fee;
       setPaySummValue({
         memberFee: fee,
         discount: fee/2,
@@ -57,12 +50,6 @@ const SignupCreateAcctForm = ({
       setPaySummValue({ lawNotesAmt: 0 });
     }
   };
-
-  const setDonation = () => {
-    const donationVal = form.getFieldValue(CREATE_ACCT_FORM_FIELDS.donation);
-    let donation = typeof donationVal === 'string' && donationVal.toLowerCase().includes('custom') ? form.getFieldValue(CREATE_ACCT_FORM_FIELDS.customDonation) : donationVal;
-    setPaySummValue({ donation });
-  }
 
   // populate test user: choose 'bar' for attorney or 'student'
   // when switch between account types, save values
@@ -88,7 +75,6 @@ const SignupCreateAcctForm = ({
 
     setLawNotesAmt();
     setMemberFee();
-    setDonation();
   }, [signupType]);
 
   // choose between attorney and student membership
@@ -105,19 +91,15 @@ const SignupCreateAcctForm = ({
   }
 
   const onValuesChange = (changedFields, allFields) => {
-    if (changedFields[CREATE_ACCT_FORM_FIELDS.salary]) setMemberFee();
-    if (
-      changedFields.hasOwnProperty(CREATE_ACCT_FORM_FIELDS.donation) ||
-      changedFields.hasOwnProperty(CREATE_ACCT_FORM_FIELDS.customDonation)
-    ) setDonation();
-    if (changedFields.hasOwnProperty(CREATE_ACCT_FORM_FIELDS.lawNotes)) setLawNotesAmt();
+    if (changedFields[SIGNUP_FORM_FIELDS.salary]) setMemberFee();
+    if (changedFields.hasOwnProperty(SIGNUP_FORM_FIELDS.lawNotes)) setLawNotesAmt();
   }
 
   return <>
     <Form
       labelCol={{ xs: { span: 24 }, sm: { span: 8 } }}
       wrapperCol={{ xs: { span: 24 }, sm: { span: 16 } }}
-      name="create-account"
+      name={FORMS.createAccount}
       form={form}
       // initialValues={{}}
       scrollToFirstError
@@ -156,7 +138,7 @@ const SignupCreateAcctForm = ({
       <SignupAccountFields
         signupType={signupType}
         salaries={SALARIES}
-        suggestDonations={donationValues}
+        donationFields={donationFields}
         loading={loading}
       />
 

@@ -5,6 +5,10 @@ import { useRouter } from 'next/router'
 import { Breakpoint } from 'react-socks';
 import { Jumbotron, Container } from 'react-bootstrap';
 import { Layout, Button, Tooltip } from 'antd';
+
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+
 import MainLayout from '../components/main-layout';
 import MemberMenu from '../components/members/member-menu';
 import MemberAccordion from '../components/members/member-accordion';
@@ -17,6 +21,8 @@ import { getDashboard, getMemberPageParentKey } from '../data/member-dashboards'
 import * as memberTypes from '../data/member-types';
 
 const { Sider } = Layout;
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 
 const menuKeys = ['profile', 'perks', 'account'];
 const notifThemeColor = '#BC1552';
@@ -170,91 +176,94 @@ const Members = ({ loggedIn }) => {
     setData({...getDashboard(memberTypes.USER_ANON, handleContentLink, user)});
   }
 
-  // if (!loggedIn) return <Login />;
   return (
-    <div className="members-page">
-      <MainLayout
-        subtitle="| Members"
-      >
-        <Jumbotron fluid className={`${memberType}`}>
-          <Container>
-            <h1 className="h1">
-              {
-                memberType !== memberTypes.USER_NON_MEMBER && previewUser !== memberTypes.USER_NON_MEMBER
-                  ?
-                  <>MEMBERS <span className="subtitle">Dashboard</span></>
-                  :
-                  <>DASHBOARD</>
-              }
-            </h1>
-          </Container>
-        </Jumbotron>
+    <Elements stripe={stripePromise}>
 
-        <Breakpoint xs only>
-          <MemberAccordion
-            data={data}
-            logout={logOut}
-            activeKey={selectedKey}
-            setActiveKey={selectItem}
-          />
-        </Breakpoint>
+      <div className="members-page">
+        <MainLayout
+          subtitle="| Members"
+        >
+          <Jumbotron fluid className={`${memberType}`}>
+            <Container>
+              <h1 className="h1">
+                {
+                  memberType !== memberTypes.USER_NON_MEMBER && previewUser !== memberTypes.USER_NON_MEMBER
+                    ?
+                    <>MEMBERS <span className="subtitle">Dashboard</span></>
+                    :
+                    <>DASHBOARD</>
+                }
+              </h1>
+            </Container>
+          </Jumbotron>
 
-        <Breakpoint sm up>
-          <Layout
-              className="member-page-layout"
-            >
-            <Sider
-              collapsible
-              collapsed={menuCollapsed}
-              onCollapse={onMenuCollapse}
-              theme="light"
-            >
-              {
-                data.options && data.options.avatar ?
-                <Tooltip title="toggle opening menu">
-                  <div className="avatar-box" onClick={toggleOpenMenuKeys}>
-                    {data.options.avatar}
-                  </div>
-                </Tooltip>
-              :
-                null
-              }
-              <MemberMenu
-                data={data}
-                selectedKeys={selectedKey}
-                setSelectedKey={setSelectedKey}
-                onMenuClick={onMenuClick}
-                menuOpenKeys={menuOpenKeys}
-                onMenuOpenChange={onMenuOpenChange}
-              />
-            </Sider>
-            <Layout className="site-layout">
-              <MemberContent
-                data={data}
-                dataKey={selectedKey}
-                onLinkClick={handleContentLink}
-                onTabClick={handleSelectPreviewUser}
-                tabKey={previewUser}
-                userType={memberType ? memberType : signupType}
-              />
+          <Breakpoint xs only>
+            <MemberAccordion
+              data={data}
+              logout={logOut}
+              activeKey={selectedKey}
+              setActiveKey={selectItem}
+            />
+          </Breakpoint>
+
+          <Breakpoint sm up>
+            <Layout
+                className="member-page-layout"
+              >
+              <Sider
+                collapsible
+                collapsed={menuCollapsed}
+                onCollapse={onMenuCollapse}
+                theme="light"
+              >
+                {
+                  data.options && data.options.avatar ?
+                  <Tooltip title="toggle opening menu">
+                    <div className="avatar-box" onClick={toggleOpenMenuKeys}>
+                      {data.options.avatar}
+                    </div>
+                  </Tooltip>
+                :
+                  null
+                }
+                <MemberMenu
+                  data={data}
+                  selectedKeys={selectedKey}
+                  setSelectedKey={setSelectedKey}
+                  onMenuClick={onMenuClick}
+                  menuOpenKeys={menuOpenKeys}
+                  onMenuOpenChange={onMenuOpenChange}
+                />
+              </Sider>
+              <Layout className="site-layout">
+                <MemberContent
+                  data={data}
+                  dataKey={selectedKey}
+                  onLinkClick={handleContentLink}
+                  onTabClick={handleSelectPreviewUser}
+                  tabKey={previewUser}
+                  userType={memberType ? memberType : signupType}
+                />
+              </Layout>
             </Layout>
-          </Layout>
-        </Breakpoint>
+          </Breakpoint>
 
-      </MainLayout>
+        </MainLayout>
 
-      <MemberModal
-        modalType={modalType}
-        setModalType={setModalType}
-        modalVisible={modalVisible}
-        setModalVisible={setModalVisible}
-        // for signup modal only
-        signupType={signupType}
-        setSignupType={setSignupType}
-        cancelLabel="Cancel"
-      />
+        <MemberModal
+          modalType={modalType}
+          setModalType={setModalType}
+          modalVisible={modalVisible}
+          setModalVisible={setModalVisible}
+          // for signup modal only
+          signupType={signupType}
+          setSignupType={setSignupType}
+          cancelLabel="Cancel"
+        />
 
-    </div>
+      </div>
+
+    </Elements>
   );
 };
 

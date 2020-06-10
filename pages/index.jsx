@@ -24,10 +24,6 @@ const Home = () => {
         <Container>
           <Skeleton active />
         </Container>
-
-        {/* <div style={{ width: 600, height: 600 }}>
-          &nbsp;
-        </div> */}
       </MainLayout>
     </>
   );

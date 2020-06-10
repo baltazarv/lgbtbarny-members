@@ -873,7 +873,7 @@ const attorneyData = (userType, onLink) => {
       defaultSelectedKeys: ['logininfo'],
       defaultMenuOpenKeys: ['profile'], //, 'billing', 'participate', 'lawnotes'
       avatar: <Avatar
-        src="/images/memberTypes/denzel.jpg"
+        src="/images/users/denzel.jpg"
       />,
     },
     profile: profile(userType, onLink),
@@ -921,7 +921,7 @@ const nonMemberData = (userType, onLink) => {
     defaultSelectedKeys: ['profile'],
     defaultMenuOpenKeys: [], //, 'billing', 'lawnotes', 'clecenter'
     avatar: <Avatar
-      src="/images/memberTypes/river.jpg"
+      src="/images/users/river.jpg"
     />,
   },
   profile: profile(userType, onLink),
@@ -942,7 +942,7 @@ const studentData = (userType, onLink) => {
       defaultSelectedKeys: ['logininfo'],
       defaultMenuOpenKeys: ['profile' ], //, 'billing', 'participate', 'lawnotes', 'clecenter'
       avatar: <Avatar
-        src="/images/memberTypes/reese.jpg"
+        src="/images/users/reese.jpg"
       />,
     },
     profile: profile(userType, onLink),

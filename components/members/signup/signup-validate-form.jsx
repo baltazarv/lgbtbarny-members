@@ -1,20 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Form, Input, Button } from 'antd';
+import { FORMS } from '../../../data/member-data';
 
 const SignupValidateForm = ({
 }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
 
-  // useEffect(() => {
-  //   console.log(form, acctForm);
-  // }, []);
-
   return <>
     <Form
       labelCol={{ xs: { span: 24 }, sm: { span: 8 } }}
       wrapperCol={{ xs: { span: 24 }, sm: { span: 16 } }}
-      name="code"
+      name={FORMS.validate}
       form={form}
       scrollToFirstError
     >

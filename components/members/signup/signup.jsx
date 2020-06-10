@@ -1,18 +1,19 @@
-import { useState, useMemo, useEffect, useReducer } from 'react';
-import { Card, Row, Col, Steps, Form, Button } from 'antd';
+import { useState, useMemo, useReducer, useEffect } from 'react';
+import { Card, Row, Col, Steps, Divider, Form, Button } from 'antd';
 import { Container } from 'react-bootstrap';
-import PaySummList from './pay-summ-list';
 import SignupCreateAcctForm from './signup-create-acct-form';
 import SignupValidateForm from './signup-validate-form';
+import SignupPaymentForm from './signup-payment-form';
+import DonationFields from './donation-fields';
+import PaySummList from './pay-summ-list';
 import '../login-signup.less';
 import { TitleIcon } from '../../utils/icons';
 // data
 import * as memberTypes from '../../../data/member-types';
+import { FORMS, SIGNUP_FORM_FIELDS } from '../../../data/member-data';
 import createAccount from '../../../pages/api/create-account';
 
 const { Step } = Steps;
-
-const CREATE_ACCOUNT_FORM = 'create-account';
 
 const Signup = ({
   setModalType,
@@ -21,6 +22,10 @@ const Signup = ({
 }) => {
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
+  // donation fields
+  const [donation, setDonation] = useState(0);
+  const [customDonation, setCustomDonation] = useState(0);
+  const [customDonationSelected, setCustomDonationSelected] = useState(false);
 
   const paySummReducer = (state, action) => {
     switch (action.type) {
@@ -44,6 +49,12 @@ const Signup = ({
       value,
     });
   };
+
+  // when donation fields selections change, change donation value
+  useEffect(() => {
+    const donationValue = typeof donation === 'string' && donation.toLowerCase().includes('custom') ? customDonation : donation;
+    setPaySummValue({ donation: donationValue });
+  }, [donation, customDonation]); // , customDonationSelected
 
   const [user, setUser] = useState({});
 
@@ -90,52 +101,101 @@ const Signup = ({
     </>;
   }, [signupType]);
 
+  const memberHeading = useMemo(() => {
+    if (signupType !== memberTypes.USER_MEMBER) {
+      if (signupType === memberTypes.USER_ATTORNEY) {
+        return 'First-time Attorney Membership';
+      } else if (signupType === memberTypes.USER_STUDENT) {
+        return 'Free Student Membership';
+      }
+    }
+  }, [signupType]);
+
+  const donationFields = useMemo(() => {
+    return <DonationFields
+      signupType={signupType}
+      label='Donation'
+      customSelected={customDonationSelected}
+      setCustomSelected={setCustomDonationSelected}
+      loading={loading}
+    />
+  }, [signupType, customDonationSelected, loading]);
+
   const paySummList = useMemo(() => {
+    let formItemLayout = {
+      xs: { span: 24, offset: 0 },
+      sm: { span: 16, offset: 8 },
+    }
+    // if (step === 2) formItemLayout.sm = { span: 16, offset: 4 };
     return <PaySummList
-      formItemLayout={{
-        xs: { span: 24, offset: 0 },
-        sm: { span: 16, offset: 8 },
-      }}
+      formItemLayout={formItemLayout}
       signupType={signupType}
       fee={paySummValues.memberFee}
       discount={paySummValues.discount}
       lawNotesAmt={paySummValues.lawNotesAmt}
       donation={paySummValues.donation}
     />
-  }, [signupType, paySummValues]);
+  }, [signupType, paySummValues, step]);
 
   const total = useMemo(() => {
     return (paySummValues.memberFee ? paySummValues.memberFee : 0) - (paySummValues.discount ? paySummValues.discount : 0) + (paySummValues.lawNotesAmt ? paySummValues.lawNotesAmt : 0) + (paySummValues.donation ? paySummValues.donation : 0);
   }, [paySummValues]);
 
   const content = useMemo(() => {
+    // console.log(customDonationSelected, 'step', step);
     if (step === 0) return <SignupCreateAcctForm
       signupType={signupType}
       setSignupType={setSignupType}
       setPaySummValue={setPaySummValue}
+      donationFields={donationFields}
       paySummList={paySummList}
       loading={loading}
     />
-    if (step === 1) return <SignupValidateForm
-      />
-  }, [step, signupType, paySummList]);
+    if (step === 1) return <SignupValidateForm />
+    if (step === 2) return <SignupPaymentForm
+      donationFields={donationFields}
+      paySummList={paySummList}
+      loading={loading}
+      initialValues={{
+        [SIGNUP_FORM_FIELDS.donation]: donation,
+        [SIGNUP_FORM_FIELDS.customDonation]: customDonation,
+        [SIGNUP_FORM_FIELDS.subscribe]: true,
+      }}
+    />
+  }, [step, signupType, donationFields, paySummList]);
 
   // handle change of values on forms
   const onFormChange = (formName, info) => {
-    const values = info.forms[formName].getFieldsValue();
+    // formName: string, info: { changedFields, forms }
+    if (
+      formName === FORMS.createAccount ||
+      formName === FORMS.pay
+    ) {
+      // save user
+      if (info.changedFields.length > 0) {
+        const fieldName = info.changedFields[0].name[0];
+        const fieldValue = info.changedFields[0].value;
+        if (fieldName === SIGNUP_FORM_FIELDS.donation) setDonation(fieldValue);
+        if (fieldName === SIGNUP_FORM_FIELDS.customDonation) setCustomDonation(fieldValue);
+      };
+    }
   }
 
   const onFormFinish = async (formName, info) => {
     // formName: string, info: { values, forms })
-    if (formName === CREATE_ACCOUNT_FORM) {
+    if (formName === FORMS.createAccount) {
       // save user
       setLoading(true);
+      console.log(info, info.values);
       const user = await createAccount(info.values);
       setStep(step + 1);
       setLoading(false);
     }
-    if (formName === 'code') {
-      // console.log(name, user);
+    if (formName === FORMS.validate) {
+      setStep(step + 1);
+    }
+    if (formName === FORMS.pay) {
+      alert('MAKE PAYMENT');
     }
   };
 
@@ -189,6 +249,7 @@ const Signup = ({
               {/* <Step title="Log In" /> */}
             </Steps>
           </div>
+          <Divider>{memberHeading}</Divider>
           {content}
         </Form.Provider>
       </Card>
