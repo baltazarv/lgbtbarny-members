@@ -170,7 +170,7 @@ const Signup = ({
 
   // handle change of values on forms
   const onFormChange = (formName, info) => {
-    // console.log(formName, info.changedFields, info.forms);
+    // console.log(formName, info.changedFields);
     // capture donation fields from two forms
     if (
       formName === FORMS.createAccount ||

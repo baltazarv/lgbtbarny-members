@@ -176,13 +176,16 @@ const SignupPaymentForm = ({
           </Form.Item>
         }
 
-        <Radio.Group
-          className="mt-2"
-          name={SIGNUP_FORM_FIELDS.renewChargeOptions}
+        <Form.Item
+            name={SIGNUP_FORM_FIELDS.renewChargeOptions}
         >
-          <Radio value={SIGNUP_FORM_FIELDS.renewAutoCharge}>Charge to payment method.</Radio>
-          <Radio value={SIGNUP_FORM_FIELDS.renewEmailInvoice}>Email invoice.</Radio>
-        </Radio.Group>
+          <Radio.Group
+            className="mt-2"
+          >
+            <Radio value={SIGNUP_FORM_FIELDS.renewAutoCharge}>Charge my credit card.</Radio>
+            <Radio value={SIGNUP_FORM_FIELDS.renewEmailInvoice}>Email me an invoice.</Radio>
+          </Radio.Group>
+        </Form.Item>
 
         <Row justify="center" className="mb-0">
           <Col sm={18} className="mt-3" style={{ fontSize: '0.8em', lineHeight: 1.5 }}>* You will be able to update your subscription settings at any point after signing up.</Col>
