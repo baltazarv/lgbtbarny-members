@@ -5,10 +5,9 @@ import { useRouter } from 'next/router'
 import { Breakpoint } from 'react-socks';
 import { Jumbotron, Container } from 'react-bootstrap';
 import { Layout, Button, Tooltip } from 'antd';
-
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-
+// custom components
 import MainLayout from '../components/main-layout';
 import MemberMenu from '../components/members/member-menu';
 import MemberAccordion from '../components/members/member-accordion';
@@ -27,7 +26,10 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
 const menuKeys = ['profile', 'perks', 'account'];
 const notifThemeColor = '#BC1552';
 
-const Members = ({ loggedIn }) => {
+const Members = (props) => {
+
+  const { loggedIn } = props;
+
   // menu and main content user views
   const [memberType, setMemberType] = useState('');
   // when anon user, select tab to view preview content
@@ -63,7 +65,6 @@ const Members = ({ loggedIn }) => {
 
   // load data file based on query string
   useEffect(() => {
-    console.log('NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY', process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
     let dashboardKey = '';
     let previewUserKey = '';
     let _data = {};

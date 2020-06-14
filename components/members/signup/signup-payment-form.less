@@ -2,6 +2,24 @@
 
 .signup-payment-form {
 
+  .card-element-error {
+    color: #ff4d4f;
+  }
+
+  // name field to match stripe element
+  .ant-form-item-has-error .ant-input:not([disabled]):hover,
+  .ant-form-item-has-error .ant-input:focus {
+    border-color: rgba(0, 0, 0, 0.2);
+    box-shadow: none;
+  }
+
+  .billing-name-input {
+    input {
+      padding: 4px;
+      border-color: rgba(0, 0, 0, 0.2);
+    }
+  }
+
   .StripeElement {
     height: 40px;
     padding: 10px 12px;
@@ -27,6 +45,13 @@
 
   .StripeElement--webkit-autofill {
     background-color: #fefde5 !important;
+  }
+
+  .renewal-card {
+
+    .ant-card-body {
+      padding: 16px;
+    }
   }
 
 } // @END .signup-payment-form

@@ -1,19 +1,11 @@
 import * as memberTypes from './member-types';
+import { SALARIES } from './member-plans';
 
 export const CERTIFY_OPTIONS = {
   bar: 'A member of the bar in good standing',
   graduate: 'A law graduate who intends to be admitted',
   retired: 'An attorney retired from the practice of law',
   student: 'A law student',
-}
-
-export const SALARIES = {
-  upTo30K: { label: 'Income Up to $30,000', fee: 40 },
-  upTo50K: { label: 'Income Up to $50,000', fee: 55 },
-  upTo75K: { label: 'Income Up to $75,000', fee: 80 },
-  upTo100K: { label: 'Income Up to $100,000', fee: 120 },
-  upTo150K: { label: 'Income Up to $150,000', fee: 150 },
-  over150K: { label: 'Income Over $150,000', fee: 175 },
 }
 
 export const DONATIONS_SUGGESTED = {
@@ -45,4 +37,9 @@ export const SIGNUP_FORM_FIELDS = {
   donation: 'donation',
   customDonation: 'customdonation',
   subscribe: 'subscribe',
+  billingname: 'billingfullname',
+  renewDonation: 'renewdonation',
+  renewChargeOptions: 'renewchargeoptions',
+  renewAutoCharge: 'renewAutoCharge',
+  renewEmailInvoice: 'renewEmailInvoice',
 }

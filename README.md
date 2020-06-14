@@ -33,3 +33,14 @@ https://www.npmjs.com/package/next-images
 
 ## SASS
 [Next-sass Plugin](https://github.com/zeit/next-plugins/tree/master/packages/next-sass)
+
+## Stripe
+
+### For reference
+* [Stripe.js Reference](https://stripe.com/docs/js)
+* [React Stripe.js reference](https://stripe.com/docs/stripe-js/react)
+* [How Subscriptions Work](https://stripe.com/docs/billing/subscriptions/overview#how-payments-work-subscriptions)
+
+### Examples
+* [Create fixed-price subscriptions with Elements](https://stripe.com/docs/billing/subscriptions/fixed-price): Docs that show how to use React Stripe Elements with `subscription-use-cases` sample:
+  * [stripe-samples / subscription-use-cases](https://github.com/stripe-samples/subscription-use-cases)

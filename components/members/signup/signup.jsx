@@ -22,10 +22,13 @@ const Signup = ({
 }) => {
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
+  // saved data
+  const [salary, setSalary] = useState('');
   // donation fields
   const [donation, setDonation] = useState(0);
   const [customDonation, setCustomDonation] = useState(0);
   const [customDonationSelected, setCustomDonationSelected] = useState(false);
+  const [user, setUser] = useState({});
 
   const paySummReducer = (state, action) => {
     switch (action.type) {
@@ -55,12 +58,6 @@ const Signup = ({
     const donationValue = typeof donation === 'string' && donation.toLowerCase().includes('custom') ? customDonation : donation;
     setPaySummValue({ donation: donationValue });
   }, [donation, customDonation]); // , customDonationSelected
-
-  const [user, setUser] = useState({});
-
-  // do not have access to form values: handle values on forms
-  // useEffect(() => {
-  // }, [signupType]);
 
   const title = useMemo(() => {
     if (
@@ -142,11 +139,11 @@ const Signup = ({
   }, [paySummValues]);
 
   const content = useMemo(() => {
-    // console.log(customDonationSelected, 'step', step);
     if (step === 0) return <SignupCreateAcctForm
       signupType={signupType}
       setSignupType={setSignupType}
       setPaySummValue={setPaySummValue}
+      setSalary={setSalary}
       donationFields={donationFields}
       paySummList={paySummList}
       loading={loading}
@@ -155,39 +152,48 @@ const Signup = ({
     if (step === 2) return <SignupPaymentForm
       donationFields={donationFields}
       paySummList={paySummList}
-      loading={loading}
+      salary={salary}
       initialValues={{
-        [SIGNUP_FORM_FIELDS.donation]: donation,
+        [SIGNUP_FORM_FIELDS.donation]: donation === 0 ? null : donation,
         [SIGNUP_FORM_FIELDS.customDonation]: customDonation,
         [SIGNUP_FORM_FIELDS.subscribe]: true,
+        [SIGNUP_FORM_FIELDS.billingname]: `${user.firstname} ${user.lastname}`,
+        [SIGNUP_FORM_FIELDS.renewDonation]: true,
+        [SIGNUP_FORM_FIELDS.renewChargeOptions]: SIGNUP_FORM_FIELDS.renewAutoCharge,
       }}
+      donation={donation}
+      total={total}
+      user={user}
+      loading={loading}
     />
   }, [step, signupType, donationFields, paySummList]);
 
   // handle change of values on forms
   const onFormChange = (formName, info) => {
-    // formName: string, info: { changedFields, forms }
+    // console.log(formName, info.changedFields, info.forms);
+    // capture donation fields from two forms
     if (
       formName === FORMS.createAccount ||
       formName === FORMS.pay
     ) {
-      // save user
       if (info.changedFields.length > 0) {
         const fieldName = info.changedFields[0].name[0];
         const fieldValue = info.changedFields[0].value;
         if (fieldName === SIGNUP_FORM_FIELDS.donation) setDonation(fieldValue);
         if (fieldName === SIGNUP_FORM_FIELDS.customDonation) setCustomDonation(fieldValue);
       };
-    }
+    };
+
+    // `setSalary` used by `createAccount` form to push `salary` to `pay` form
   }
 
   const onFormFinish = async (formName, info) => {
     // formName: string, info: { values, forms })
     if (formName === FORMS.createAccount) {
-      // save user
+      // create user on stripe and contentful
       setLoading(true);
-      console.log(info, info.values);
-      const user = await createAccount(info.values);
+      const userData = await createAccount(info.values, signupType);
+      setUser(userData)
       setStep(step + 1);
       setLoading(false);
     }
@@ -195,7 +201,7 @@ const Signup = ({
       setStep(step + 1);
     }
     if (formName === FORMS.pay) {
-      alert('MAKE PAYMENT');
+      // handled on form
     }
   };
 

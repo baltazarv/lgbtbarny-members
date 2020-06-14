@@ -6,13 +6,15 @@ import SignupAccountFields from './signup-account-fields';
 // data
 import * as memberTypes from '../../../data/member-types';
 import users from '../../../data/users';
-import { CERTIFY_OPTIONS, SALARIES, LAW_NOTES_PRICE, FORMS,SIGNUP_FORM_FIELDS } from '../../../data/member-data';
+import { CERTIFY_OPTIONS, LAW_NOTES_PRICE, FORMS,SIGNUP_FORM_FIELDS } from '../../../data/member-data';
+import { SALARIES } from '../../../data/member-plans';
 
 const { Option } = Select;
 
 const SignupCreateAcctForm = ({
   signupType,
   setSignupType,
+  setSalary,
   donationFields,
   setPaySummValue,
   paySummList,
@@ -31,11 +33,13 @@ const SignupCreateAcctForm = ({
         memberFee: fee,
         discount: fee/2,
       });
+      setSalary(form.getFieldValue(SIGNUP_FORM_FIELDS.salary))
     } else {
       setPaySummValue({
         memberFee: 0,
         discount: 0,
       });
+      setSalary(null);
     }
   };
 
@@ -121,7 +125,6 @@ const SignupCreateAcctForm = ({
             style={{ width: '100%' }}
             placeholder="Choose one..."
             onChange={handleCertifyChange}
-            // onChange={(memberType) => setSignupType(memberType)}
             // allowClear
             autoFocus
             // suffixIcon={<UserOutlined/>}
