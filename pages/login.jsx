@@ -49,7 +49,7 @@ const Login = () => {
             <Container>
               <h1 className="h1">MEMBERS <span className="subtitle">Dashboard</span></h1>
             </Container>
-          </Jumbotron>
+        </Jumbotron>
 
         <Breakpoint xs only>
           <Signup />

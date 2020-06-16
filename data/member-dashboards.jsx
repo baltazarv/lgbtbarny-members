@@ -1,5 +1,6 @@
 import { Avatar, Button } from 'antd';
 import { LoginOutlined } from '@ant-design/icons';
+import MemberGroups from '../components/members/groups/member-groups';
 import Banner from '../components/utils/banner';
 import SvgIcon from '../components/utils/svg-icon';
 
@@ -281,76 +282,34 @@ const participate = (memberType, onLink, previewUser) => {
   let locked = false;
   let banner = null;
   let title = 'Member Participation';
-  let content = null;
-  let links = [];
-  const attorneyGroups = <ul>
-    <li>Committees</li>
-    <li>Referral Service</li>
-    <li>Leadership Council</li>
-    <li>Volunteering</li>
-    <li>Mentoring Program</li>
-  </ul>;
-  const studentGroups = <ul>
-    <li>Law Student Career Fair</li>
-    <li>Internship Program</li>
-    <li>Hank Henry Judicial Fellowship</li>
-    <li>Leadership Summit</li>
-    <li>Mentoring Program</li>
-    <li>Clinic Volunteer</li>
-  </ul>
-  // attorney
-  let children = {
-    committees: committees(),
-    referralsvs: referralsvs(),
-    leadership: leadership(),
-    volunteer: volunteer(),
-    mentoring: mentoring(),
-  };
-
-  if (memberType !== memberTypes.USER_ATTORNEY) {
-    children = null;
-  };
-
+  // let children = {
+  //   committees: committees(),
+  //   referralsvs: referralsvs(),
+  //   leadership: leadership(),
+  //   volunteer: volunteer(),
+  //   mentoring: mentoring(),
+  // };
+  // if (memberType !== memberTypes.USER_ATTORNEY) {
+  //   children = null;
+  // };
   if (memberType === memberTypes.USER_STUDENT) {
-    title ='Law Student Programs';
-    content = <>
-      <div>Find out how to apply for the following:</div>
-      {studentGroups}
-    </>;
+    title ='Law Student Programs & Events';
   }
-
   if (memberType === memberTypes.USER_NON_MEMBER){
     locked = true;
-    content = <>
-      If you are an attorney, <Button type="link" onClick={() => onLink(memberTypes.SIGNUP_MEMBER)}>become a member</Button> to join these groups:
-      {attorneyGroups}
-    </>
   }
-
   if (memberType === memberTypes.USER_ANON) {
     locked = true;
     banner = banners('login', onLink);
     if (previewUser === memberTypes.USER_ATTORNEY) {
-      title = 'Attorney Committees & Sections';
-      content = <>
-        <div>Groups to join:</div>
-        {attorneyGroups}
-      </>
+      title = 'Attorney Member Participation';
     };
     if (previewUser === memberTypes.USER_STUDENT) {
-      title = 'Law Student Programs';
-      content = <>
-        <div>Programs:</div>
-        {studentGroups}
-      </>
+      title = 'Law Student Programs & Events';
     };
     if (previewUser === memberTypes.USER_NON_MEMBER) {
       title = ' ';
-      content = <>
-        <div>Committee, section, and program participation is restricted to <Button type="link" onClick={() => onLink(memberTypes.TAB_ATTORNEY)}>Attorney Members</Button> and <Button type="link" onClick={() => onLink(memberTypes.TAB_STUDENT)}>Law Student Members.</Button></div>
-      </>
     };
-    links = [memberTypes.SIGNUP_ATTORNEY, memberTypes.SIGNUP_STUDENT, memberTypes.SIGNUP_NON_MEMBER]
   }
 
   return {
@@ -359,84 +318,14 @@ const participate = (memberType, onLink, previewUser) => {
     banner,
     title,
     locked,
-    content,
-    links,
-    children,
+    content: <MemberGroups
+      memberType={memberType}
+      onLink={onLink}
+      previewUser={previewUser}
+    />,
+    // children,
   }
 };
-
-// attorney only
-const committees = (memberType, onLink) => {
-  return {
-    label: 'Committees',
-    title: 'Committees & Sections',
-    content: <>
-      <div>Find out how to apply for the following:</div>
-      <ul>
-        <li>Diversity Committee</li>
-        <li>Family &amp; Matrimonial Law Section</li>
-        <li>In-House Corporate Counsel Committee</li>
-        <li>Judiciary Committee</li>
-          <ul>
-          <li>Judicial Screening Panel</li>
-          </ul>
-        <li>Networking &amp; Social Events Committee</li>
-        <li>Solo &amp; Small Law Firm Practitioners Committee</li>
-        <li>Partners Group</li>
-        <li>Solutions for Legislative Advocacy and Policy ("SLAP")</li>
-      </ul>
-    </>,
-  }
-}
-
-// attorney only
-const referralsvs = (memberType, onLink) => {
-  return {
-    label: 'Referral Service',
-    title: 'Referral Service',
-    content: <>
-      <ul>
-        <li>Lawyer Referral Network</li>
-        <li>Pro Bono Panel</li>
-      </ul>
-    </>,
-  }
-}
-
-// attorney only
-const leadership = (memberType, onLink) => {
-  return {
-    label: 'Leadership Council',
-    title: 'Leadership Council',
-    content: <>
-      <div>Information on <span className="font-weight-bold">Leadership Council</span> and on <span className="font-weight-bold">Steering Committee</span>.</div>
-    </>
-  }
-}
-
-// attorney only
-const volunteer = (memberType, onLink) => {
-  return {
-    label: 'Volunteering',
-    title: 'Volunteering',
-    banner: banners('clinicnext', onLink),
-    content: <>
-      <ul>
-        <li>Walk-in Legal Clinics.</li>
-        <li>Legal Helpline.</li>
-      </ul>
-    </>,
-    links: ['committees'],
-  }
-}
-
-// attorney only
-const mentoring = (memberType, onLink) => {
-  return {
-    label: 'Mentoring Program',
-    title: 'Mentoring Program',
-  }
-}
 
 /******************
  * law notes

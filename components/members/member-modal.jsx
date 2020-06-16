@@ -41,14 +41,13 @@ const MemberModal = ({
     key="member-modal"
     title={null}
     visible={modalVisible}
-    onOk={() => setModalVisible(false)}
     onCancel={() => setModalVisible(false)}
     // centered={true} // vertically
     // destroyOnClose={true}
     // maskClosable={false}
     footer={[
       <Button
-        key="customCancel"
+        key="custom-cancel"
         onClick={() => setModalVisible(false)}
         type="danger"
         ghost

@@ -210,7 +210,7 @@ const Signup = ({
       className="login-signup"
     >
       <Card
-        className="mt-3 mb-2 login-signup-card"
+        className="mt-4 mb-2 login-signup-card"
         style={{ width: '100%' }}
         title={title}
       >
