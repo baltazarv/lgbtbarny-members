@@ -8,6 +8,7 @@ import Banner from '../components/utils/banner';
 import SvgIcon from '../components/utils/svg-icon';
 // data
 import * as memberTypes from './member-types';
+import lawNotesData from '../data/law-notes-data';
 
 const MenuIcon = ({
   name,
@@ -332,84 +333,13 @@ const participate = (memberType, onLink, previewUser) => {
  * law notes
  ******************/
 
-const latestLnData = {
-  // key: '',
-  title: 'Detainees at Risk for COVID-19 Seek Relief',
-  month: 'May',
-  year: '2020',
-  // issue: ''May 2020,
-  // chapters: [],
-  url: '/pdfs/law-notes/LawNotes-May-2020.pdf',
-};
-
-const lnArchiveData = [
-  {
-    key: '1',
-    title: 'Court of Appeals Grants Asylum for Gay Man From Ghana',
-    issue: 'April 2020',
-    chapters: [
-      '3rd Circuit Court of Appeals Orders Asylum for Gay Man from Ghana',
-      'New York Fourth Department Refuses to Extend Brooke S.B. to Tri-Custodial Arrangements',
-      'Alaska Federal Court Says Employer’s Denial of Insurance Coverage for Sex-Reassignment Surgery Violates Federal Law',
-      'North Carolina Federal Court Refuses to Dismiss Challenge to North Carolina’s Exclusion of Coverage for Gender Transition from State Employee Medical Plan',
-      'Ohio Appeals Court Holds Misgendering Defendant During Trial is Not Grounds for Reversal',
-    ],
-    url: '/pdfs/law-notes/LawNotes-April-2020.pdf',
-  },
-  {
-    key: '2',
-    title: 'SCOTUS to Review Catholic Foster Care Agency\'s Claimed Right to Reject Same-Sex Couples',
-    issue: 'March 2020',
-    chapters: [
-      'Supreme Court Agrees to Review Catholic Foster Care Agency\'s Claimed Right to Discriminate against SameSex Couples',
-      'Ninth Circuit Denies En Banc Rehearing in Idaho Inmate\'s Gender Confirmation Surgery Case; Circuit Split Possible; Many Judges Dissent',
-      'Eleventh Circuit Relaxes Standards for Inmate Victims of Sexual Acts',
-      '11th Circuit Grants Gay Guinean\'s Petition to Vacate BIA\'s Denial of Asylum, Based on Ineffective Assistance of Counsel',
-      'Federal Court Refuses Further Delay in Trans Military Ban Discovery',
-    ],
-    url: '/pdfs/law-notes/LawNotes-March-2020.pdf',
-  },
-  {
-    key: '3',
-    title: 'New York Takes on Trump\'s Religious Refusal Rule',
-    issue: 'December 2019',
-    chapters: [
-      'New York Federal Judge Vacates Trump Administration "Conscience" Regulation',
-      '11th Circuit Finds Transgender Woman from Honduras Ineligible for Relief from CAT Relief Based on Improved Country Conditions',
-      '6th Circuit Refuses to Grant Asylum Application to Gay Albanian Refuge',
-      'Illinois Federal District Judge Remands Board of Immigration Appeals\' Decision Involving the Denial of a Married Same-Sex Couple\'s I-130 Petition',
-      'New York Federal Court Rules on Contested Admissibility of HIV-Expert\'s Testimony in Public Accommodations Discrimination Case',
-    ],
-    url: '/pdfs/law-notes/LawNotes-December-2019.pdf',
-  },
-  {
-    key: '4',
-    title: 'Trump\'s Trans Military Ban to SCOTUS?',
-    issue: 'December 2018',
-    chapters: [
-      'Federal Judge Issues Nationwide Injunction to Screen ICE Detainees at High Risk for COVID-19; ICE Detainee Released in Ohio; Plaintiffs Fail in Georgia and Kansas',
-      'Massachusetts SJC Rules Probate Court Has Jurisdiction Over Complex Gestational Surrogacy Petition',
-      'Court of Appeals of Michigan Decrees New Trial in Custody and Visitation Dispute Between Lesbian Mothers',
-      'Transgender Man in the U.K. Cannot Be Listed as Father on Child’s Birth Certificate',
-      'Idaho Federal Judge Rejects Transgender Inmate’s Medical and Other Claims, Despite Ninth Circuit Ruling in Edmo v. Corizon',
-    ],
-    url: '/pdfs/law-notes/LawNotes-December-2018.pdf',
-  },
-  {
-    key: '4',
-    title: 'G’DAY: Results of Australian Postal Survey Are Overwhelming and Parliament Moves Quickly to Enact Marriage Equality',
-    issue: 'December 2017',
-    url: '/pdfs/law-notes/LawNotes-December-2017.pdf',
-  },
-];
-
-const lawNotes = (memberType, onLink, previewUser) => {
+ const lawNotes = (memberType, onLink, previewUser) => {
   let locked = null;
   let banner = null;
   // attorney & student
   let children = {
-    lnLatest: lnLatest(memberType, onLink),
-    lnarchive: lnArchive(memberType, onLink),
+    lnLatest: lnLatest(), // memberType, onLink, previewUser
+    lnarchive: lnArchive(memberType, onLink, previewUser),
   };
 
   if (memberType === memberTypes.USER_ANON) {
@@ -428,53 +358,52 @@ const lawNotes = (memberType, onLink, previewUser) => {
     locked,
     title: 'LGBT Law Notes',
     banner,
-    content: <>
-      {memberType === memberTypes.USER_ANON &&
-        <p>Law Notes magazine issues are included with membership. {
-          previewUser === memberTypes.USER_ATTORNEY &&
-          <Button type="link" onClick={() => onLink(memberTypes.SIGNUP_ATTORNEY)}>Join now!</Button>
-        }{
-          previewUser === memberTypes.USER_STUDENT &&
-          <Button type="link" onClick={() => onLink(memberTypes.SIGNUP_STUDENT)}>Join now!</Button>
-        }{
-          previewUser === memberTypes.USER_NON_MEMBER &&
-          <span>But there is no need to be an attorney or law student. <Button type="link" onClick={() => onLink(memberTypes.SIGNUP_LAW_NOTES)}>Subscribe to Law Notes.</Button></span>
-        }</p>
-      }
-      {memberType === memberTypes.USER_NON_MEMBER &&
-        <p>If you are an attorney, <Button type="link" onClick={() => onLink(memberTypes.SIGNUP_MEMBER)}>become a member</Button> to get Law Notes. Otherwise, get a <Button type="link" onClick={() => onLink(memberTypes.SIGNUP_LAW_NOTES)}>Law Notes subscription</Button>:</p>
-      }
-      <div>See what you get with Law Notes:</div>
-      <ul>
-        <li><u><em>January teaser issue</em></u>.</li>
-        <li><em>Current issue</em> <ContentIcon name="lock" ariaLabel="Locked Law Notes issue" />.</li>
-        <li><em>Previous issue</em> <ContentIcon name="lock" ariaLabel="Locked Law Notes issue" />.</li>
-        <li>... <ContentIcon name="lock" ariaLabel="Locked Law Notes issue" /></li>
-      </ul>
-    </>,
+    content: <LawNotesArchive
+      data={lawNotesData}
+      memberType={memberType}
+      previewUser={previewUser}
+      onLink={onLink}
+    />,
     links: [linkText.member, linkText.lawnotes],
     children,
   }
 };
 
 // attorney only
-const lnLatest = (memberType, onLink) => {
-  const data = latestLnData;
-  const title = `${data.month} ${data.year}`;
-  return {
-    label: title,
-    title: title,
-    content: <LawNotesLatest data={data} />,
+const lnLatest = () => { // memberType, onLink, previewUser
+  const data = lawNotesData.find((item) => item.latest === true);
+  let title = "Latest Law Notes";
+  let label = "Latest";
+  let content = <div>Error loading latest Law Notes.</div>
+  if (data) {
+    title = `${data.month} ${data.year}`;
+    label = title;
+    content = <LawNotesLatest
+      data={data}
+      // memberType={memberType}
+      // previewUser={previewUser}
+      // onLink={onLink}
+    />;
     // links: ['lnarchive'],
-  }
+  };
+  return {
+    title,
+    label,
+    content,
+  };
 }
 
 // attorney only
-const lnArchive = () => {
+const lnArchive = (memberType, onLink, previewUser) => {
   return {
     label: 'Archive',
     title: 'Law Notes Archive',
-    content: <LawNotesArchive data={lnArchiveData} />,
+    content: <LawNotesArchive
+      data={lawNotesData}
+      memberType={memberType}
+      previewUser={previewUser}
+      onLink={onLink}
+    />,
     links: ['lnLatest'],
   }
 }
@@ -825,7 +754,7 @@ const attorneyData = (userType, onLink) => {
     options: {
       key: userType,
       defaultSelectedKeys: ['logininfo'],
-      defaultMenuOpenKeys: ['profile'], //, 'billing', 'participate', 'lawnotes'
+      defaultMenuOpenKeys: ['profile'],
       avatar: <Avatar
         src="/images/users/denzel.jpg"
       />,
@@ -873,7 +802,7 @@ const nonMemberData = (userType, onLink) => {
   options: {
     key: userType,
     defaultSelectedKeys: ['profile'],
-    defaultMenuOpenKeys: [], //, 'billing', 'lawnotes', 'clecenter'
+    defaultMenuOpenKeys: [],
     avatar: <Avatar
       src="/images/users/river.jpg"
     />,

@@ -1,11 +1,15 @@
 import { useState, useMemo, useRef } from 'react';
-import { Table, Input, Button, Space, Tooltip, Modal } from 'antd';
+import { Table, Input, Button, Space, Tooltip, Modal, Typography } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
 // custom components
 import LawNotesPdfViewer from './law-notes-pdf-viewer';
 import SvgIcon from '../../utils/svg-icon';
 import './law-notes.less';
+// data
+import * as memberTypes from '../../../data/member-types';
+
+const { Link } = Typography;
 
 const BorderIcon = () =>
   <span role="img" aria-label="Open Law Notes issue on modal window" className="anticon">
@@ -27,9 +31,24 @@ const LinkOutIcon = () =>
     />
   </span>
 
+const LockIcon = () =>
+  <span role="img" aria-label="locked" className="anticon">
+    <SvgIcon
+      name="lock"
+      width="1.2em"
+      height="1.2em"
+      fill="rgba(0, 0, 0, .5)"
+    />
+  </span>
+
 const HIGHLIGHT_COLOR = '#ffd6e7';
 
-const LawNotesArchives = ({data}) => {
+const LawNotesArchives = ({
+  data,
+  memberType,
+  previewUser,
+  onLink,
+}) => {
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
   const [issueKey, setIssueKey] = useState('');
@@ -98,36 +117,60 @@ const LawNotesArchives = ({data}) => {
         title: 'Title',
         dataIndex: 'title',
         key: 'title',
-        width: '80%',
+        width: '65%',
         ...getColumnSearchProps('title'),
-        render: text => <strong><em>{text}</em></strong>,
+        render: (text, record) => {
+          if (
+            record.sample ||
+            memberTypes === memberTypes.USER_ATTORNEY ||
+            memberTypes === memberTypes.USER_STUDENT
+          ) {
+            return <Tooltip title="open in this window">
+            <Link
+              onClick={() => handleOpenModal(record.key)}
+            >
+              {text}
+            </Link>
+          </Tooltip>;
+          } else {
+            return <em>{text}</em>;
+          }
+        }
       },
       {
         title: 'Issue',
-        dataIndex: 'issue',
         key: 'issue',
-        width: '20%',
+        width: '25%',
         ...getColumnSearchProps('issue'),
-        // render: text => <strong>{text}</strong>,
+        render: (text, record) => <strong>{record.month} {record.year}</strong>,
       },
       {
-        title: 'Action',
-        key: 'action',
-        render: (text, record) => (
-          <Space size="small">
-            <Tooltip title="open in this window">
-              <Button
-                onClick={() => handleOpenModal(record.key)}
-                type="link"
-                icon={<BorderIcon />}
-              />
-              {/* <Button onClick={() => alert('hey')}><BorderIcon /></Button> */}
-            </Tooltip>
-            <Tooltip title="open in new tab">
-              <a href={record.url} target="_blank"><LinkOutIcon /></a>
-            </Tooltip>
-          </Space>
-        ),
+        title: 'Open',
+        key: 'open',
+        width: '10%',
+        className: 'col-icon',
+        render: (text, record) => {
+          if (
+            record.sample ||
+            memberTypes === memberTypes.USER_ATTORNEY ||
+            memberTypes === memberTypes.USER_STUDENT
+          ) {
+            return <Space size="small">
+              <Tooltip title="open in this window">
+                <Button
+                  onClick={() => handleOpenModal(record.key)}
+                  type="link"
+                  icon={<BorderIcon />}
+                />
+              </Tooltip>
+              <Tooltip title="open in new tab">
+                <a href={record.url} target="_blank"><LinkOutIcon /></a>
+              </Tooltip>
+            </Space>;
+          } else {
+            return <LockIcon />;
+          }
+        },
       },
     ]
   });
@@ -146,7 +189,33 @@ const LawNotesArchives = ({data}) => {
   const handleOpenModal = (key) => {
     setIssueKey(key);
     setPdfModalVisible(true);
-  }
+  };
+
+  const introText = useMemo(() => {
+    let text = null
+    if (memberType === memberTypes.USER_NON_MEMBER) {
+      text = <>
+        <p>If you are an attorney, <Button type="link" onClick={() => onLink(memberTypes.SIGNUP_MEMBER)}>become a member</Button> to get Law Notes. Otherwise, get a <Button type="link" onClick={() => onLink(memberTypes.SIGNUP_LAW_NOTES)}>Law Notes subscription</Button>:</p>
+
+      </>;
+    } else if (memberType === memberTypes.USER_ANON) {
+      text = <p>The Law Notes magazine is included with membership. {
+        previewUser === memberTypes.USER_ATTORNEY &&
+        <Button type="link" onClick={() => onLink(memberTypes.SIGNUP_ATTORNEY)}>Become an attorney member!</Button>
+      }{
+        previewUser === memberTypes.USER_STUDENT &&
+        <Button type="link" onClick={() => onLink(memberTypes.SIGNUP_STUDENT)}>Become a student member!</Button>
+      }{
+        previewUser === memberTypes.USER_NON_MEMBER &&
+        <span>But there is no need to be an attorney or law student. You can <Button type="link" onClick={() => onLink(memberTypes.SIGNUP_LAW_NOTES)}>subscribe to Law Notes.</Button></span>
+      }</p>
+    };
+    text = <>
+      {text}
+      <p>See what you get with Law Notes:</p>
+    </>;
+    return text;
+  }, [memberType, previewUser]);
 
   const pdfModal = useMemo(() => {
     let modal = null;
@@ -161,7 +230,7 @@ const LawNotesArchives = ({data}) => {
         onOk={() => setPdfModalVisible(false)}
       >
         <LawNotesPdfViewer
-          title={`${issue.issue} - ${issue.title}`}
+          title={`${issue.month} ${issue.year} - ${issue.title}`}
           url={issue.url}
         />
       </Modal>
@@ -170,6 +239,7 @@ const LawNotesArchives = ({data}) => {
   }, [issueKey, data, pdfModalVisible]);
 
   return <div className="law-notes law-notes-archive">
+    {introText}
     <Table
       // className="law-notes-table"
       columns={columns}

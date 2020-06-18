@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Card, Button, Tooltip } from 'antd';
 import SvgIcon from '../../utils/svg-icon';
 import './law-notes-pdf-viewer.less';
@@ -12,30 +13,33 @@ const LinkOutIcon = () =>
     />
   </span>
 
-const pdf = (url) => {
-  return <object
-    data={`${url}#view=FitBH`}
-    type="application/pdf"
-    width="100%"
-    height="100%"
-  >
-  <iframe
-    src={`${url}#view=FitBH`}
-    width="100%"
-    height="100%"
-    style={{
-      border: 'none',
-    }}>
-    <p>Your browser does not support PDFs.
-      <a href={url} target="_blank">Download the PDF</a>.</p>
-  </iframe>
-</object>
-};
-
 const LawNotesPdfViewer = ({
   title,
   url,
 }) => {
+
+  const pdf = useMemo(() => {
+    return <object
+      key={url}
+      data={`${url}#view=FitBH`}
+      type="application/pdf"
+      width="100%"
+      height="100%"
+      >
+    <iframe
+      key={url}
+      src={`${url}#view=FitBH`}
+      width="100%"
+      height="100%"
+      style={{
+        border: 'none',
+      }}>
+      <p>Your browser does not support PDFs.
+        <a href={`${url}#view=FitBH`} target="_blank">Download the PDF</a>.</p>
+    </iframe>
+  </object>
+  }, [title, url]);
+
   return <Card
     className="pdf-viewer"
     title={title}
@@ -43,7 +47,7 @@ const LawNotesPdfViewer = ({
       <Button href={url} target="_blank" type="link" icon={<LinkOutIcon />}>open in tab</Button>
     </Tooltip>}
   >
-    {pdf(url)}
+    {pdf}
   </Card>
 }
 
