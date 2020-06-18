@@ -1,0 +1,36 @@
+@import '../../../assets/global-styles.less';
+
+@table-border-color: rgb(240, 240, 240);
+
+.law-notes {
+
+  .ant-table-content {
+    border-top: 1px solid @table-border-color;
+    border-right: 1px solid @table-border-color;
+    border-left: 1px solid @table-border-color;
+  }
+
+  // remove bold, blue outline
+  .ant-table-row-expand-icon:focus, .ant-table-row-expand-icon:hover, .ant-table-row-expand-icon:active {
+    outline: @link-blue;
+  }
+
+  .ant-table-expanded-row {
+    .ant-table-cell {
+      background-color: white;
+    }
+  }
+
+  .anticon {
+    vertical-align: 0;
+  }
+
+} // @END .law-notes
+
+// absolute positioning
+.law-notes-search-filter {
+  // search button icon
+  .anticon {
+    vertical-align: 0;
+  }
+}

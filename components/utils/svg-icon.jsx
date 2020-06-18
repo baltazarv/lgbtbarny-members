@@ -16,6 +16,8 @@ import UserAdminPaths from '../../assets/svgs/user-admin-svg-paths.jsx';
 import DelegatePaths from '../../assets/svgs/delegate-svg-paths.jsx';
 import GiftPaths from '../../assets/svgs/gift-svg-paths.jsx';
 import PeopleGroupPaths from '../../assets/svgs/people-group-svg-paths.jsx';
+import LinkOut from '../../assets/svgs/link-out-svg-paths';
+import Border from '../../assets/svgs/border-svg-paths';
 
 const getPath = (name, props) => {
   switch(name) {
@@ -58,6 +60,11 @@ const getPath = (name, props) => {
     // newsletter modal icon
     case 'email':
       return <EmailPaths {...props} />
+    // law-notes pdfs
+    case 'link-out':
+      return <LinkOut {...props} />
+    case 'border':
+      return <Border {...props} />
 
     // not used
     case 'user-admin':

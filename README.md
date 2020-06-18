@@ -44,3 +44,7 @@ https://www.npmjs.com/package/next-images
 ### Examples
 * [Create fixed-price subscriptions with Elements](https://stripe.com/docs/billing/subscriptions/fixed-price): Docs that show how to use React Stripe Elements with `subscription-use-cases` sample:
   * [stripe-samples / subscription-use-cases](https://github.com/stripe-samples/subscription-use-cases)
+
+# PDFs
+
+[Parameters for Opening PDF Files](https://www.adobe.com/content/dam/acom/en/devnet/acrobat/pdfs/pdf_open_parameters.pdf)

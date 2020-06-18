@@ -1,15 +1,14 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Row, Col, Select, Card, Button, Typography, Radio, Modal } from 'antd';
-import { Jumbotron, Container } from 'react-bootstrap';
-// data
-import * as memberTypes from '../../../data/member-types';
+import { Container } from 'react-bootstrap';
 import './member-groups.less';
 // data
+import * as memberTypes from '../../../data/member-types';
 import { ATTORNEY_GROUPS, STUDENT_GROUPS } from '../../../data/member-groups';
 
 const { Option } = Select;
 const { Meta } = Card;
-const { Text, Title, Paragraph, Link } = Typography;
+const { Paragraph, Link } = Typography;
 
 const groupCategories = {
   committees: 'Committees & Sections',
@@ -153,6 +152,7 @@ const MemberGroups = ({
 
     }
     return <>
+      {/* TODO: use antd List with grid, dataSource, and renderItem attributes */}
       <Row
         gutter={16}
         className="group-cards"
