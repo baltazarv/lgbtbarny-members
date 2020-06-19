@@ -1,4 +1,4 @@
-const lawNotesData = [
+const lawNotesDataRaw = [
   {
     key: '32863bbf-b4c2-40dc-97ba-e8e2e5efd794',
     title: 'Detainees at Risk for COVID-19 Seek Relief',
@@ -94,5 +94,11 @@ const lawNotesData = [
     url: '/pdfs/law-notes/LawNotes-December-2017.pdf',
   },
 ];
+
+// issue = calculation field
+const lawNotesData = lawNotesDataRaw.map(item => {
+  const issue = `${item.month} ${item.year}`;
+  return {...item, issue};
+});
 
 export default lawNotesData;

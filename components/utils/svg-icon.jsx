@@ -18,6 +18,7 @@ import GiftPaths from '../../assets/svgs/gift-svg-paths.jsx';
 import PeopleGroupPaths from '../../assets/svgs/people-group-svg-paths.jsx';
 import LinkOut from '../../assets/svgs/link-out-svg-paths';
 import Border from '../../assets/svgs/border-svg-paths';
+import ModalWindow from '../../assets/svgs/modal-window-svg-paths';
 
 const getPath = (name, props) => {
   switch(name) {
@@ -63,10 +64,12 @@ const getPath = (name, props) => {
     // law-notes pdfs
     case 'link-out':
       return <LinkOut {...props} />
-    case 'border':
-      return <Border {...props} />
+    case 'modal-window':
+      return <ModalWindow {...props} />
 
     // not used
+    case 'border':
+      return <Border {...props} />
     case 'user-admin':
       return <UserAdminPaths {...props} />
     case 'delegate':

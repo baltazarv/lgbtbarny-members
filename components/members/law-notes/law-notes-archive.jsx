@@ -11,12 +11,12 @@ import * as memberTypes from '../../../data/member-types';
 
 const { Link } = Typography;
 
-const BorderIcon = () =>
+const ModalWinIcon = () =>
   <span role="img" aria-label="Open Law Notes issue on modal window" className="anticon">
     <SvgIcon
-      name="border"
-      width="1.5em"
-      height="1.5em"
+      name="modal-window"
+      width="1.1em"
+      height="1.1em"
       fill="currentColor"
     />
   </span>
@@ -40,8 +40,6 @@ const LockIcon = () =>
       fill="rgba(0, 0, 0, .5)"
     />
   </span>
-
-const HIGHLIGHT_COLOR = '#ffd6e7';
 
 const LawNotesArchives = ({
   data,
@@ -98,18 +96,16 @@ const LawNotesArchives = ({
         setTimeout(() => searchInput.current.select());
       }
     },
-    render: text =>
-      searchedColumn === dataIndex ? (
-        <Highlighter
-          highlightStyle={{ backgroundColor: HIGHLIGHT_COLOR, padding: 0 }}
-          searchWords={[searchText]}
-          autoEscape
-          textToHighlight={text.toString()}
-        />
-      ) : (
-        text
-      ),
   });
+
+  const highlightText = (text) => {
+    return <Highlighter
+      highlightStyle={{ backgroundColor: '#ffd6e7', padding: 0 }}
+      searchWords={[searchText]}
+      autoEscape
+      textToHighlight={text.toString()}
+    />
+  }
 
   const columns = useMemo(() => {
     return [
@@ -120,29 +116,36 @@ const LawNotesArchives = ({
         width: '65%',
         ...getColumnSearchProps('title'),
         render: (text, record) => {
+          let _text = text;
+          if (searchedColumn === 'title') _text = highlightText(text);
           if (
             record.sample ||
-            memberTypes === memberTypes.USER_ATTORNEY ||
-            memberTypes === memberTypes.USER_STUDENT
+            memberType === memberTypes.USER_ATTORNEY ||
+            memberType === memberTypes.USER_STUDENT
           ) {
             return <Tooltip title="open in this window">
             <Link
               onClick={() => handleOpenModal(record.key)}
             >
-              {text}
+              <em>{_text}</em>
             </Link>
           </Tooltip>;
           } else {
-            return <em>{text}</em>;
+            return <em>{_text}</em>;
           }
         }
       },
       {
         title: 'Issue',
+        dataIndex: 'issue',
         key: 'issue',
         width: '25%',
         ...getColumnSearchProps('issue'),
-        render: (text, record) => <strong>{record.month} {record.year}</strong>,
+        render: (text, record) => {
+          let _text = text;
+          if (searchedColumn === 'issue') _text = highlightText(text);
+          return <strong>{_text}</strong>;
+        }
       },
       {
         title: 'Open',
@@ -152,15 +155,15 @@ const LawNotesArchives = ({
         render: (text, record) => {
           if (
             record.sample ||
-            memberTypes === memberTypes.USER_ATTORNEY ||
-            memberTypes === memberTypes.USER_STUDENT
+            memberType === memberTypes.USER_ATTORNEY ||
+            memberType === memberTypes.USER_STUDENT
           ) {
             return <Space size="small">
               <Tooltip title="open in this window">
                 <Button
                   onClick={() => handleOpenModal(record.key)}
                   type="link"
-                  icon={<BorderIcon />}
+                  icon={<ModalWinIcon />}
                 />
               </Tooltip>
               <Tooltip title="open in new tab">
@@ -173,7 +176,7 @@ const LawNotesArchives = ({
         },
       },
     ]
-  });
+  }, [memberTypes, searchedColumn, searchText]);
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
@@ -212,7 +215,7 @@ const LawNotesArchives = ({
     };
     text = <>
       {text}
-      <p>See what you get with Law Notes:</p>
+      <p>See what you get with Law Notes &mdash; review a list of the top Law Notes article titles and view the entire January issue below:</p>
     </>;
     return text;
   }, [memberType, previewUser]);
@@ -223,7 +226,6 @@ const LawNotesArchives = ({
       const issue = data.find(item => item.key == issueKey);
       modal = <Modal
         title={null}
-        // style={{ width: '98%' }}
         width="92%"
         visible={pdfModalVisible}
         onCancel={() => setPdfModalVisible(false)}
@@ -247,7 +249,9 @@ const LawNotesArchives = ({
       size="small"
       expandable={{
         expandedRowRender: record => <ul>{record.chapters && record.chapters.length > 0 &&
-          record.chapters.map((chapter, index) => <li key={index}>{chapter}</li>)
+          record.chapters.map((chapter, index) => {
+            return <li key={index}>{chapter}{index === record.chapters.length -1 && "..."}</li>
+          })
         }</ul>,
         rowExpandable: record => record.chapters,
       }}
