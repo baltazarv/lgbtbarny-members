@@ -1,6 +1,21 @@
 const lawNotesDataRaw = [
   {
     key: '32863bbf-b4c2-40dc-97ba-e8e2e5efd794',
+    title: 'Accurate Passports for Intersex Individuals',
+    month: 'June',
+    year: '2020',
+    latest: true,
+    chapters: [
+      '10th Circuit Orders State Department to Reconsider Denial of Accurate Passport to Intersex Plaintiff',
+      'U.S. Supreme Court Denies Stay of Idaho Prisoner\'s Transgender Confirmation Surgery Case',
+      'Ninth Circuit Allows State Law Claims to Proceed Against Corrections Officer for Sexual Assault',
+      'Two Federal District Courts Rule on Social Security Survivor Benefits for Same-Sex Spouses Whose Marriages Occurred Fewer Than Nine Months Before the Death of Their Spouse',
+      'Tennessee Appeals Court Rejects Lesbian Partner\'s Standing to Seek Parental Rights',
+    ],
+    url: '/pdfs/law-notes/LawNotes-June-2020.pdf',
+  },
+  {
+    key: '32863bbf-b4c2-40dc-97ba-e8e2e5efd794',
     title: 'Detainees at Risk for COVID-19 Seek Relief',
     month: 'May',
     year: '2020',
