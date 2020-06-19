@@ -210,7 +210,7 @@ const MemberGroups = ({
   const cardModal = useMemo(() => {
     let _cardModal = null;
 
-    if (modalKey) {
+    if (modalKey && cardModalVisible) {
       const data = groupsData[modalKey];
 
       const getItemLine = (item, singPluralLabel) => {

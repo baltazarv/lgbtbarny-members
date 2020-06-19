@@ -219,8 +219,8 @@ const billing = (memberType = memberTypes.USER_ATTORNEY, onLink, previewUser) =>
         }{ previewUser === memberTypes.USER_STUDENT &&
           <Button type="link" onClick={() => onLink(memberTypes.SIGNUP_STUDENT)}>Sign up as a Law Student Member</Button>
         }{ previewUser === memberTypes.USER_NON_MEMBER &&
-          <Button type="link" onClick={() => onLink(memberTypes.SIGNUP_NON_MEMBER)}>Sign up to a Basic Account</Button>
-        } for the following</div>
+          <Button type="link" onClick={() => onLink(memberTypes.SIGNUP_NON_MEMBER)}>Sign up for a Basic Account</Button>
+        } to do the following:</div>
       <ul>
         <li><strong>View payment history</strong> for events that you have attended and donations that you have made.</li>
         <li><strong>Download tax forms</strong> for charitable tax contributions that you have made to the Foundation.</li>

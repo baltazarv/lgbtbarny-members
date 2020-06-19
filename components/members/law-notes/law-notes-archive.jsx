@@ -215,7 +215,7 @@ const LawNotesArchives = ({
     };
     text = <>
       {text}
-      <p>See what you get with Law Notes &mdash; review a list of the top Law Notes article titles and view the entire January issue below:</p>
+      <p>See what you get with Law Notes &mdash; review a list of the top Law Notes article titles and view the entire January edition below:</p>
     </>;
     return text;
   }, [memberType, previewUser]);
