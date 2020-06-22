@@ -10,15 +10,16 @@ import EmailGearPaths from '../../assets/svgs/email-gear-svg-paths.jsx';
 import LogoutPaths from '../../assets/svgs/logout-svg-paths.jsx';
 import LockPaths from '../../assets/svgs/lock-closed-svg-paths.jsx';
 import EmailPaths from '../../assets/svgs/email-svg-paths.jsx';
+import RibbonPaths from '../../assets/svgs/ribbon-svg-paths.jsx';
+import ModalWindowPaths from '../../assets/svgs/modal-window-svg-paths';
 
 import DownloadPaths from '../../assets/svgs/download-svg-paths.jsx';
 import UserAdminPaths from '../../assets/svgs/user-admin-svg-paths.jsx';
 import DelegatePaths from '../../assets/svgs/delegate-svg-paths.jsx';
 import GiftPaths from '../../assets/svgs/gift-svg-paths.jsx';
 import PeopleGroupPaths from '../../assets/svgs/people-group-svg-paths.jsx';
-import LinkOut from '../../assets/svgs/link-out-svg-paths';
-import Border from '../../assets/svgs/border-svg-paths';
-import ModalWindow from '../../assets/svgs/modal-window-svg-paths';
+import LinkOutPaths from '../../assets/svgs/link-out-svg-paths';
+import BorderPaths from '../../assets/svgs/border-svg-paths';
 
 const getPath = (name, props) => {
   switch(name) {
@@ -63,13 +64,16 @@ const getPath = (name, props) => {
       return <EmailPaths {...props} />
     // law-notes pdfs
     case 'link-out':
-      return <LinkOut {...props} />
+      return <LinkOutPaths {...props} />
     case 'modal-window':
-      return <ModalWindow {...props} />
+      return <ModalWindowPaths {...props} />
+    // cle
+    case 'ribbon':
+      return <RibbonPaths {...props} />
 
     // not used
     case 'border':
-      return <Border {...props} />
+      return <BorderPaths {...props} />
     case 'user-admin':
       return <UserAdminPaths {...props} />
     case 'delegate':

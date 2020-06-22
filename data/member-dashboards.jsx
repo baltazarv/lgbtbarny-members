@@ -1,14 +1,17 @@
-import { Avatar, Button } from 'antd';
+import { Avatar, Button, Typography } from 'antd';
 import { LoginOutlined } from '@ant-design/icons';
 // custom components
 import MemberGroups from '../components/members/groups/member-groups';
 import LawNotesLatest from '../components/members/law-notes/law-notes-latest';
 import LawNotesArchive from '../components/members/law-notes/law-notes-archive';
+import CleCurrent from '../components/members/cle/cle-current';
+import CleArchive from '../components/members/cle/cle-archive';
 import Banner from '../components/utils/banner';
 import SvgIcon from '../components/utils/svg-icon';
 // data
 import * as memberTypes from './member-types';
 import lawNotesData from '../data/law-notes-data';
+import cleData from '../data/cle-data';
 
 const MenuIcon = ({
   name,
@@ -24,19 +27,19 @@ const MenuIcon = ({
     />
   </span>
 
-const ContentIcon = ({
-  name,
-  ariaLabel,
-  fill='currentColor'
-}) =>
-  <span role="img" aria-label={ariaLabel}>
-    <SvgIcon
-      name={name}
-      width="1em"
-      height="1em"
-      fill={fill}
-    />
-  </span>
+// const ContentIcon = ({
+//   name,
+//   ariaLabel,
+//   fill='currentColor'
+// }) =>
+//   <span role="img" aria-label={ariaLabel}>
+//     <SvgIcon
+//       name={name}
+//       width="1em"
+//       height="1em"
+//       fill={fill}
+//     />
+//   </span>
 
 const anonPromoTxt = {
   members: 'Join to get these member benefits...',
@@ -369,15 +372,14 @@ const participate = (memberType, onLink, previewUser) => {
   }
 };
 
-// attorney only
 const lnLatest = () => { // memberType, onLink, previewUser
   const data = lawNotesData.find((item) => item.latest === true);
-  let title = "Latest Law Notes";
-  let label = "Latest";
+  let title = 'Latest Law Notes';
+  let label = 'Latest';
   let content = <div>Error loading latest Law Notes.</div>
   if (data) {
-    title = `${data.month} ${data.year}`;
-    label = title;
+    label = `${data.month} ${data.year}`;
+    title = <span><em>{data.month} {data.year}</em> Edition</span>;
     content = <LawNotesLatest
       data={data}
       // memberType={memberType}
@@ -393,7 +395,6 @@ const lnLatest = () => { // memberType, onLink, previewUser
   };
 }
 
-// attorney only
 const lnArchive = (memberType, onLink, previewUser) => {
   return {
     label: 'Archive',
@@ -414,75 +415,28 @@ const lnArchive = (memberType, onLink, previewUser) => {
 
 const cleCenter = (memberType = memberTypes.USER_ATTORNEY, onLink, previewUser) => {
   let locked = false;
-  let content = null;
-  let children = {
-    clecurrent: cleCurrent(memberType, onLink),
-    clecerts: cleCerts(memberType, onLink),
-    clearchives: cleArchives(memberType, onLink),
+  let children = null;
+  if (memberType === memberTypes.USER_ATTORNEY) {
+    children = {
+      clecurrent: cleCurrent(memberType, onLink),
+      clecerts: cleCerts(memberType, onLink),
+      clearchives: cleArchives(memberType, onLink, previewUser),
+    };
+  } else if (memberType === memberTypes.USER_STUDENT) {
+    children = {
+      clecurrent: cleCurrent(memberType, onLink),
+      clearchives: cleArchives(memberType, onLink, previewUser),
+    };
   };
   let links = [];
 
-  if (memberType === memberTypes.USER_STUDENT) {
+  if (memberType === memberTypes.USER_ANON || memberType === memberTypes.USER_NON_MEMBER) {
     children = {
+      clearchives: cleArchives(memberType, onLink, previewUser),
       clecurrent: cleCurrent(memberType, onLink),
-      clearchives: cleArchives(memberType, onLink),
     };
-  } else if (memberType === memberTypes.USER_ANON) {
     locked = true;
-    const courses = <>
-      <span>See what you get:</span>
-      <ul>
-        <li><u><em>Year in Review.</em></u></li>
-        <li><em>Current course</em>  <ContentIcon name="lock" ariaLabel="Locked Law Notes issue" />.</li>
-        <li><em>Previous course</em> <ContentIcon name="lock" ariaLabel="Locked Law Notes issue" />.</li>
-        <li>... <ContentIcon name="lock" ariaLabel="Locked Law Notes issue" /></li>
-      </ul>
-    </>
-
-    if (previewUser === memberTypes.USER_NON_MEMBER) {
-      content = <>
-        <p>If you are not an attorney you can still register for CLE courses.</p>
-        {courses}
-        <hr />
-        <span className="font-weight-bold">CLE Certificates</span>
-        <p>When you <Button type="link" onClick={() => onLink(memberTypes.SIGNUP_NON_MEMBER)}>sign up</Button> you get access to <em>CLE certificates</em> for courses, which you have attended.</p>
-      </>
-    } else {
-      content = <>
-        <p>{previewUser === memberTypes.USER_ATTORNEY &&
-            <Button type="link" onClick={() => onLink(memberTypes.SIGNUP_ATTORNEY)}>Become a member</Button>
-          }{previewUser === memberTypes.USER_STUDENT &&
-            <Button type="link" onClick={() => onLink(memberTypes.SIGNUP_STUDENT)}>Become a member</Button>
-          } to get access to all CLE materials, current materials and the archive.</p>
-        {courses}
-        {previewUser === memberTypes.USER_ATTORNEY &&
-          <>
-            <hr />
-            <span className="font-weight-bold">CLE Certificates</span>
-            <p>When you sign up, you will be able to download CLE certificates for courses which you have attended.</p>
-          </>
-        }
-      </>;
-    }
-    children = null;
     links = [linkText.member, linkText.currentCle, linkText.nonMember];
-  } else if (memberType === memberTypes.USER_NON_MEMBER) {
-    locked = true,
-    content = <>
-      <p>If you are an attorney, <Button type="link" onClick={() => onLink(memberTypes.SIGNUP_MEMBER)}>become a member</Button> to get access to all CLE materials, current materials and the archive.</p>
-
-      <div>List of courses: titles with descriptions + materials for courses taken:</div>
-      <ul>
-        <li><u><em>Year in Review.</em></u></li>
-        <li><em>Current course material</em> <ContentIcon name="lock" ariaLabel="Locked CLE course material" /> - <u>event registration.</u></li>
-        <li><em>Previous course material</em> <ContentIcon name="lock" ariaLabel="Locked CLE course material" />.</li>
-        <li><em>Registered course (not attended)</em> <ContentIcon name="lock" ariaLabel="Locked CLE course material" />..</li>
-        <li><em><u>Course registered for and attended</u></em> - <u>certificate</u>.</li>
-        <li>... <ContentIcon name="lock" ariaLabel="Locked CLE course material" /></li>
-      </ul>
-    </>
-    children = null;
-    links = [linkText.member, linkText.currentCle];
   };
 
   return {
@@ -491,23 +445,37 @@ const cleCenter = (memberType = memberTypes.USER_ATTORNEY, onLink, previewUser) 
     locked,
     banner: banners('clecurrent', onLink),
     title: 'CLE Center',
-    content,
+    content: <CleArchive
+      data={cleData}
+      memberType={memberType}
+      previewUser={previewUser}
+      onLink={onLink}
+    />,
     links,
     children,
   }
 };
 
-const cleCurrent = (memberType = memberTypes.USER_ATTORNEY) => {
+const cleCurrent = (memberType = memberTypes.USER_ATTORNEY, onLink) => {
+  const data = cleData.find((item) => item.current === true);
+  let title = 'Most Recent CLE Course Material';
+  let label = 'Current CLE';
+  if (memberType === memberTypes.USER_ANON || memberType === memberTypes.USER_NON_MEMBER) {
+    label = 'Year in Review';
+    title = <span><em>Year in Review</em> Edition</span>;
+  }
   let links = [linkText.currentCle, 'clecerts', 'clearchives'];
-
   if (memberType === memberTypes.USER_STUDENT) links = [linkText.currentCle, 'clearchives'];
 
   return {
-    label: 'Current CLE',
-    title: 'Most Recent CLE Course Material',
-    content: <>
-      <div>Latest course material, available before course starts and afterwards.</div>
-    </>,
+    label,
+    title,
+    content: <CleCurrent
+      data={data}
+      memberType={memberType}
+      onLink={onLink}
+      // previewUser={previewUser}
+    />,
     links,
   }
 };
@@ -521,23 +489,18 @@ const cleCerts = () => ({
   links: ['Current CLE Event', 'clecurrent', 'clearchives'],
 })
 
-const cleArchives = (memberType = memberTypes.USER_ATTORNEY) => {
+const cleArchives = (memberType = memberTypes.USER_ATTORNEY, onLink, previewUser) => {
   let links = ['Current CLE Event', 'clecurrent', 'clecerts'];
-
   if (memberType === memberTypes.USER_STUDENT) links = ['Current CLE Event', 'clecurrent'];
-
   return {
     label: 'Archive',
-    title: 'Archived CLE Materials',
-    content: <>
-      <div>Courses members have attended will be marked as such.</div>
-      <ul>
-        <li>Oct. 10, 2019: <span className="font-italic">The Future of the Judiciary: Advancing Progressive Goals through New York State Courts.</span>.</li>
-        <li>Sept. 18, 2019: <span className="font-italic">Planning for Unmarried Couples LGBT and Others.</span>.</li>
-        <li>...</li>
-        <li>CLE Year in Review.</li>
-      </ul>
-    </>,
+    title: 'CLE Materials Archive',
+    content: <CleArchive
+      data={cleData}
+      memberType={memberType}
+      previewUser={previewUser}
+      onLink={onLink}
+    />,
     links,
   }
 }
@@ -753,8 +716,8 @@ const attorneyData = (userType, onLink) => {
   return {
     options: {
       key: userType,
-      defaultSelectedKeys: ['logininfo'],
-      defaultMenuOpenKeys: ['profile'],
+      defaultSelectedKeys: ['logininfo'], //
+      defaultMenuOpenKeys: ['profile'], //
       avatar: <Avatar
         src="/images/users/denzel.jpg"
       />,
@@ -773,7 +736,7 @@ const attorneyData = (userType, onLink) => {
 const anonDashboard = (userType, onLink, previewUser = memberTypes.USER_ATTORNEY) => {
   const options = {
     key: userType,
-    defaultSelectedKeys: ['billing'],
+    defaultSelectedKeys: ['billing'], //
     defaultMenuOpenKeys: [],
     avatar: <Avatar
       icon={<SvgIcon
@@ -801,7 +764,7 @@ const nonMemberData = (userType, onLink) => {
   return {
   options: {
     key: userType,
-    defaultSelectedKeys: ['profile'],
+    defaultSelectedKeys: ['profile'], //
     defaultMenuOpenKeys: [],
     avatar: <Avatar
       src="/images/users/river.jpg"
@@ -822,8 +785,8 @@ const studentData = (userType, onLink) => {
   return {
     options: {
       key: userType,
-      defaultSelectedKeys: ['logininfo'],
-      defaultMenuOpenKeys: ['profile' ], //, 'billing', 'participate', 'lawnotes', 'clecenter'
+      defaultSelectedKeys: ['logininfo'], //
+      defaultMenuOpenKeys: ['profile'], //
       avatar: <Avatar
         src="/images/users/reese.jpg"
       />,

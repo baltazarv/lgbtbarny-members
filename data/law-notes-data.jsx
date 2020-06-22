@@ -1,6 +1,6 @@
-const lawNotesDataRaw = [
+const lawNotesData = [
   {
-    key: '32863bbf-b4c2-40dc-97ba-e8e2e5efd794',
+    key: 'dab5b8f1-459f-469a-b6b8-507ba757d4e7',
     title: 'Accurate Passports for Intersex Individuals',
     month: 'June',
     year: '2020',
@@ -109,11 +109,5 @@ const lawNotesDataRaw = [
     url: '/pdfs/law-notes/LawNotes-December-2017.pdf',
   },
 ];
-
-// issue = calculation field
-const lawNotesData = lawNotesDataRaw.map(item => {
-  const issue = `${item.month} ${item.year}`;
-  return {...item, issue};
-});
 
 export default lawNotesData;

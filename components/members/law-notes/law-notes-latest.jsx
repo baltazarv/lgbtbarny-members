@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import './law-notes.less';
-import LawNotesPdfViewer from './law-notes-pdf-viewer';
+import PdfViewer from '../../pdf-viewer';
 
 const LawNotesLatest = ({data}) => {
   // const data = useMemo(() => {
@@ -14,7 +14,7 @@ const LawNotesLatest = ({data}) => {
   });
 
   return <div className="law-notes law-notes-latest">
-    <LawNotesPdfViewer title={title} url={data.url} />
+    <PdfViewer title={title} url={data.url} />
   </div>
 }
 

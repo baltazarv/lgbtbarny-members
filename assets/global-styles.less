@@ -106,6 +106,12 @@ body {
 
 // bootstrap re-writes
 
+// override link reboot
+a:not([href]):not([tabindex]) {
+  text-decoration: underline;
+  color: @link-blue;
+}
+
 // darken muted text
 .text-muted {
   color: rgba(0, 0, 0, 0.2)!important;
