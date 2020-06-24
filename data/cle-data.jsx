@@ -31,6 +31,36 @@ const cleData = [
     urlsample: '/pdfs/cles/CLE-SAMPLE-Planning-for-Unmarried-Couples.pdf',
   },
   {
+    key: '3fcc4bd5-5889-4699-99bb-976cc2f0ba4d',
+    title: 'Criminal Legal Issues and The LGBTQ+ Community',
+    date: '7/18/2019',
+    credits: [
+      {
+        number: 1.5,
+        type: 'in Areas of Professional Practice (Appropriate for both newly admitted and experienced attorneys.)',
+        }
+    ],
+    attended: false,
+    registered: false,
+    url: '/pdfs/cles/CLE-Criminal-Legal-Issues.pdf',
+    urlsample: '/pdfs/cles/CLE-SAMPLE-Criminal-Legal-Issues.pdf',
+  },
+  {
+    key: 'a65d213e-fdf7-453b-bfed-b25af7cda7fb',
+    title: 'Title VII Lunchtime CLE',
+    date: '6/20/2019',
+    credits: [
+      {
+        number: 0,
+        type: 'No credits available',
+      },
+    ],
+    attended: false,
+    registered: false,
+    url: '/pdfs/cles/CLE-Title-VII-Lunchtime.pdf',
+    urlsample: '/pdfs/cles/CLE-SAMPLE-Title-VII-Lunchtime.pdf',
+  },
+  {
     key: 'b89cc1c6-a228-43ab-8176-0390915a6f91',
     title: 'LGBTQ Law 2018 Year In Review',
     date: '1/17/2019',
@@ -48,6 +78,21 @@ const cleData = [
     ],
     sample: true,
     url: '/pdfs/cles/LGBTQ-Law-2018-Year-In-Review.pdf',
+  },
+  {
+    key: 'c72b34b2-f871-4ebb-bd0d-ee127d536463',
+    title: 'Supreme Court Term Preview',
+    date: '12/6/2019',
+    credits: [
+      {
+        number: 1.5,
+        type: 'in Areas of Professional Practice (Appropriate for both newly admitted and experienced attorneys.)',
+      }
+    ],
+    attended: false,
+    registered: true,
+    url: '/pdfs/cles/CLE-Supreme-Court-Term-Preview.pdf',
+    urlsample: '/pdfs/cles/CLE-SAMPLE-Supreme-Court-Term-Preview.pdf',
   },
 ];
 

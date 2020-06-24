@@ -1,27 +1,27 @@
 /**
  * required params:
  * * wintitle - date/issue + title
+ * * url - PDF URL, may be url to sample
  *
  * optional params:
  * * linked - type of col
  * * locked - cle non-sample titles
- * * excerpt - add '[Excerpt]' to end of title, after link
+ * * excerpt - '[Excerpt]' added to end of title (not excerpt if registered or attended)
  */
 import { useState, useMemo, useRef } from 'react';
-import { Table, Input, Button, Space, Tooltip, Modal, Typography } from 'antd';
+import { Table, Input, Button, Space, Tooltip, Typography } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
 // custom components
-import PdfViewer from './pdf-viewer';
+import PdfModal from './pdfs/pdf-modal';
 import SvgIcon from './utils/svg-icon';
-// import './law-notes.less';
 // data
 import * as memberTypes from '../data/member-types';
 
 const { Link } = Typography;
 
 const ModalWinIcon = () =>
-  <span role="img" aria-label="Open Law Notes issue on modal window" className="anticon">
+  <span role="img" aria-label="open in this window" className="anticon">
     <SvgIcon
       name="modal-window"
       width="1.1em"
@@ -31,7 +31,7 @@ const ModalWinIcon = () =>
   </span>
 
 const LinkOutIcon = () =>
-  <span role="img" aria-label="Open Law Notes issue in new tab" className="anticon">
+  <span role="img" aria-label="open in new tab" className="anticon">
     <SvgIcon
       name="link-out"
       width="1.2em"
@@ -57,7 +57,7 @@ const PdfTable = ({
 }) => {
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
-  const [issueKey, setIssueKey] = useState('');
+  const [dataKey, setDataKey] = useState('');
   const [pdfModalVisible, setPdfModalVisible] = useState(false);
 
   const searchInput = useRef();
@@ -125,6 +125,8 @@ const PdfTable = ({
         ...searchProps,
         render: col.render ? col.render : (text, record) => {
           let _text = text;
+          let activeStyle = col.style && {...col.style} || {};
+          if (!record.excerpt) activeStyle.fontWeight = 'bold';
           if (searchedColumn === col.key) _text = highlightText(text);
           if (col.linkToPDF && !record.locked) {
             return <>
@@ -132,12 +134,12 @@ const PdfTable = ({
                 <Link
                   onClick={() => handleOpenModal(record.key)}
                 >
-                  <span style={col.style && col.style}>{_text}</span>
+                  <span style={activeStyle}>{_text}</span>
                 </Link>
               </Tooltip> {record.excerpt && ` [Excerpt]`}
             </>;
           }
-          return <span style={col.style && col.style}>{_text}</span>;
+          return <span style={activeStyle}>{_text}</span>;
         },
         width: col.width ? col.width: null,
       };
@@ -180,29 +182,19 @@ const PdfTable = ({
   };
 
   const handleOpenModal = (key) => {
-    setIssueKey(key);
+    setDataKey(key);
     setPdfModalVisible(true);
   };
 
   const pdfModal = useMemo(() => {
-    let modal = null;
-    if (issueKey) {
-      const issue = data.find(item => item.key == issueKey);
-      modal = <Modal
-        title={null}
-        width="92%"
-        visible={pdfModalVisible}
-        onCancel={() => setPdfModalVisible(false)}
-        onOk={() => setPdfModalVisible(false)}
-      >
-        <PdfViewer
-          title={issue.wintitle ? issue.wintitle : issue.title}
-          url={issue.url}
-        />
-      </Modal>
-    }
-    return modal;
-  }, [issueKey, data, pdfModalVisible]);
+    return <PdfModal
+      key="pdf-table-modal"
+      visible={pdfModalVisible}
+      setvisible={setPdfModalVisible}
+      data={data}
+      datakey={dataKey}
+    />
+  }, [dataKey, data, pdfModalVisible]);
 
   return <div className="law-notes law-notes-archive">
     <Table

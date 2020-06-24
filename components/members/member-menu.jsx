@@ -111,8 +111,9 @@ const MemberMenu = ({
             return <Menu.Item
               key={subitem.key}
               disabled={subitem.disabled ? subitem.disabled : false}
+              className={subitem.locked && 'locked'}
             >
-              {subContent}
+              {subContent} {subitem.locked && <LockIcon />}
             </Menu.Item>
           })}
         </SubMenu>
