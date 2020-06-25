@@ -6,6 +6,7 @@ import LawNotesLatest from '../components/members/law-notes/law-notes-latest';
 import LawNotesArchive from '../components/members/law-notes/law-notes-archive';
 import ClePdfEmbed from '../components/members/cle/cle-pdf-embed';
 import CleArchive from '../components/members/cle/cle-archive';
+import Discounts from '../components/members/discounts';
 import Banner from '../components/utils/banner';
 import SvgIcon from '../components/utils/svg-icon';
 // data
@@ -593,45 +594,17 @@ const discounts = (memberType, onLink, previewUser) => {
     banner = banners('login', onLink);
   }
 
-  const sampleDiscounts = <ul>
-    <li>Annual Dinner.</li>
-    <li>Merchandise on Zazzle discount code.</li>
-    <li>National LGBT Bar Association discount code.</li>
-    <li>Third-party discounts.</li>
-  </ul>
-
   return {
     icon: <MenuIcon name="star" ariaLabel="Discounts" />,
     label: 'Discounts',
     locked,
     banner,
     title,
-    content: <>
-      {memberType === memberTypes.USER_ATTORNEY &&
-        <>
-          <div>Discounts:</div>
-          {sampleDiscounts}
-        </>
-      }
-      {memberType === memberTypes.USER_ANON &&
-        (previewUser === memberTypes.USER_ATTORNEY
-          ?
-          <>
-            <div><Button type="link" onClick={() => onLink(memberTypes.SIGNUP_ATTORNEY)}>Become a member</Button> to get member discounts:</div>
-            {sampleDiscounts}
-          </>
-          :
-          <>
-            Only attorney members are eligible for discounts.
-          </>)
-      }
-      {memberType === memberTypes.USER_NON_MEMBER &&
-        <>
-          <div>If you are an attorney, <Button type="link" onClick={() => onLink(memberTypes.SIGNUP_MEMBER)}>become a member</Button> to get member discounts:</div>
-          {sampleDiscounts}
-        </>
-      }
-    </>,
+    content: <Discounts
+      memberType={memberType}
+      onLink={onLink}
+      previewUser={previewUser}
+    />,
   };
 };
 
