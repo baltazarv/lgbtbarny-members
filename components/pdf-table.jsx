@@ -136,7 +136,7 @@ const PdfTable = ({
                 >
                   <span style={activeStyle}>{_text}</span>
                 </Link>
-              </Tooltip> {record.excerpt && ` [Excerpt]`}
+              </Tooltip> {record.excerpt && ` [Excerpt]`}{record.sample && ' [Sample]'}
             </>;
           }
           return <span style={activeStyle}>{_text}</span>;

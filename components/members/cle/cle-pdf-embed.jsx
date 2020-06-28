@@ -9,7 +9,7 @@ const { Link } = Typography;
 
 const ClePdfEmbed = ({
   data, // full CLE data file
-  type, // 'current', 'sample'
+  type, // 'latest', 'sample'
   memberType,
   previewUser,
   onLink,
@@ -21,46 +21,60 @@ const ClePdfEmbed = ({
   }, [data, type]);
 
   const title = useMemo(() => {
-    return itemData.title;
-  });
+    let _title = '';
+    if (itemData && itemData.title) _title = itemData.title;
+    return _title;
+  }, [itemData]);
 
   const introText = useMemo(() => {
     let text = null;
-    if (
-        memberType === memberTypes.USER_ATTORNEY ||
-        memberType === memberTypes.USER_STUDENT
-      ) {
-      text = <div>
-        Study the most current CLE course material, available before the course starts, and afterwards. Find previous CLE course material on the <Link onClick={() => onLink('clearchives')}>CLE Archive</Link>.
-      </div>
-    }
 
-    if (memberType === memberTypes.USER_NON_MEMBER || memberType === memberTypes.USER_ANON) {
-
-    if (type === 'current') { // itemData.current
-      text = <>
-        <p><Link onClick={() => onLink(memberTypes.SIGNUP_MEMBER)}>Become a member</Link> to get access to all CLE materials, current materials as well as the archive. See the below course material exerpts, which include topics, agenda, speaker bios, and course credits.&nbsp;
-        </p>
-
-        {previewUser === memberTypes.USER_ATTORNEY &&
-          <p>When you sign up, you will be able to download CLE certificates for courses which you have attended.</p>
+    const whatYouGetTxt = <>
+      {type === 'latest' &&
+          <>See the below course material exerpt, which include topics, agenda, speaker bios, and course credits:</>
         }
-
-        {previewUser === memberTypes.USER_NON_MEMBER &&
-          <p>If you are not an attorney or law student you can still register for CLE courses. When you <Link onClick={() => onLink(memberTypes.SIGNUP_NON_MEMBER)}>sign up</Link> you can view or download any CLE certificates for courses, which you have attended from the <em>Dashboard</em>.</p>
+        {type === 'sample' &&
+          <>See a sample of the <em>LGBT Law Notes</em> &ndash; read the entire <em>Year in Review:</em></>
         }
-      </>
-    }
+    </>;
 
-    if (type === 'sample') { // itemData.sample
+    const certTxt = <p>When you sign up, you will be able to download CLE certificates for courses which you have attended.</p>;
+
+    if (memberType === memberTypes.USER_ANON) {
+      if (previewUser === memberTypes.USER_NON_MEMBER) {
+        text = <>
+          <p>If you are not an attorney or a law student you can still register for CLE courses. When you <Link onClick={() => onLink(memberTypes.SIGNUP_NON_MEMBER)}>sign up</Link> you can view or download any CLE certificates for courses, which you have attended from the <em>Dashboard</em>.</p>
+          <p>{whatYouGetTxt}</p>
+        </>
+      } else {
+        text = <>
+          <p>{previewUser === memberTypes.USER_ATTORNEY &&
+              <Link onClick={() => onLink(memberTypes.SIGNUP_ATTORNEY)}>Become an attorney member</Link>
+            }{previewUser === memberTypes.USER_STUDENT &&
+              <Link onClick={() => onLink(memberTypes.SIGNUP_STUDENT)}>Become a law student member</Link>
+            } to get access to all CLE materials, current materials, as well as the archives.&nbsp;
+          {previewUser === memberTypes.USER_ATTORNEY &&
+            <span>When you sign up, you will be able to download CLE certificates for courses which you have attended.</span>
+          }</p>
+          <p>{whatYouGetTxt}</p>
+        </>;
+      }
+    } else if (memberType === memberTypes.USER_NON_MEMBER) {
       text = <>
-        Get a preview of the <em>LGBT Law Notes</em> by reading the <em>Year in Review</em>.
+        <p><Link onClick={() => onLink(memberTypes.SIGNUP_MEMBER)}>Become a member</Link> to get access to all CLE materials, current materials as well as the archives. {whatYouGetTxt}</p>
+        {/* {certTxt} */}
       </>
-    }
-  }
+    } else {
+      text = <>
+        Study the most current CLE course material, available before the course starts, and afterwards. Find previous CLE course material on the <Link onClick={() => onLink('clearchives')}>CLE Archives</Link>.
+        {/* {memberType === memberTypes.USER_ATTORNEY &&
+          <>View and download <Link onClick={() => onLink('clecerts')}>CLE certificates</Link> for any course you have attended.</>
+        } */}
+      </>;
+    };
 
     return text;
-  }, [memberType, previewUser]);
+  }, [memberType, previewUser, type]);
 
   const url = useMemo(() => {
     if (

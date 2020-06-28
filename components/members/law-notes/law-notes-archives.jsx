@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Button, Typography } from 'antd';
+import { Typography } from 'antd';
 // custom components
 import PdfTable from '../../pdf-table';
 import PdfModal from '../../pdfs/pdf-modal';
@@ -50,20 +50,20 @@ const LawNotesArchives = ({
   }, [data]);
 
   const introText = useMemo(() => {
-    let text = null
+    let text = null;
 
     const whatYouGetTxt = <>
-      <p>See what you get with Law Notes &mdash; peruse some of the contents of Law Notes issues or read the entire <Link onClick={() => openSample()}>January edition</Link>:</p>
+      <p>See what you get with Law Notes &mdash; See the contents of any of the editions. Or read the <Link onClick={() => onLink('lnsample')}>sample January edition</Link>:</p>
     </>
 
     if (memberType === memberTypes.USER_ATTORNEY || memberType === memberTypes.USER_STUDENT) {
       text = <>
-        <p>Read any past editions of the <em>The LGBT Law Notes</em>. Or read the <Link onClick={() => onLink('lnLatest')}>latest issue</Link>.</p>
-        {/* <Link onClick={() => openLatestIssue()}>latest issue</Link>.</p> */}
+        <p>Read any past editions of the <em>The LGBT Law Notes</em>. Or read the <Link onClick={() => onLink('lnlatest')}>latest issue</Link>.</p>
       </>
     } else if (memberType === memberTypes.USER_NON_MEMBER) {
       text = <>
-        <p>If you are an attorney, <Link onClick={() => onLink(memberTypes.SIGNUP_MEMBER)}>become a member</Link> to get the <em>LGBT Law Notes</em>. Otherwise, get a <Link onClick={() => onLink(memberTypes.SIGNUP_LAW_NOTES)}>Law Notes subscription</Link>:</p>
+        <p><Link onClick={() => onLink(memberTypes.SIGNUP_MEMBER)}>Become a member</Link> to get the <em>LGBT Law Notes</em>. </p>
+        {/* Otherwise, get a <Link onClick={() => onLink(memberTypes.SIGNUP_LAW_NOTES)}>Law Notes subscription</Link>. */}
         {whatYouGetTxt}
       </>;
     } else if (memberType === memberTypes.USER_ANON) {
@@ -80,7 +80,7 @@ const LawNotesArchives = ({
         }</p>
         {whatYouGetTxt}
       </>
-    };
+    }
     return text;
   }, [memberType, previewUser]);
 
@@ -104,35 +104,24 @@ const LawNotesArchives = ({
 
   const expandableContent = useMemo(() => {
     return {
-      expandedRowRender: (record) => <ul>{record.chapters && record.chapters.length > 0 &&
-        record.chapters.map((chapter, index) => {
-          return <li key={index}>{chapter}{index === record.chapters.length -1 && "..."}</li>
-        })
-      }</ul>,
+      expandedRowRender: (record, index, indent, expanded) => {
+        const expandArticle = (chapter, articleIndex) => {
+          console.log(record, index, indent, expanded, chapter, articleIndex)
+        }
+        return <ul style={{
+            maxHeight: '200px',
+            overflow: 'auto'
+          }}>{record.chapters && record.chapters.length > 0 &&
+          record.chapters.map((chapter, articleIndex) => {
+            return <li key={articleIndex}>{chapter}</li>
+            // {articleIndex === record.chapters.length -1 && <Link onClick={() => expandArticle(chapter, articleIndex)}>MORE</Link>}
+          })
+        }</ul>
+      },
       rowExpandable: (record) => record.chapters,
       // expandRowByClick: true,
     }
   });
-
-  const openLatestIssue = () => {
-    const currentIssueKey = dataTransformed.find((item) => item.latest && item.key);
-    if (currentIssueKey) {
-      handleOpenModal(currentIssueKey.key);
-    }
-  };
-
-  // January Issue
-  const openSample = () => {
-    const sampleKey = dataTransformed.find((item) => item.sample && item.key);
-    if (sampleKey) {
-      handleOpenModal(sampleKey.key);
-    }
-  };
-
-  const handleOpenModal = (key) => {
-    setModalKey(key);
-    setPdfModalVisible(true);
-  };
 
   const pdfModal = useMemo(() => {
     return <PdfModal

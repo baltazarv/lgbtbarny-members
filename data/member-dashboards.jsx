@@ -3,7 +3,8 @@ import { LoginOutlined } from '@ant-design/icons';
 // custom components
 import MemberGroups from '../components/members/groups/member-groups';
 import LawNotesLatest from '../components/members/law-notes/law-notes-latest';
-import LawNotesArchive from '../components/members/law-notes/law-notes-archive';
+import LawNotesSample from '../components/members/law-notes/law-notes-sample';
+import LawNotesArchives from '../components/members/law-notes/law-notes-archives';
 import ClePdfEmbed from '../components/members/cle/cle-pdf-embed';
 import CleArchive from '../components/members/cle/cle-archive';
 import Discounts from '../components/members/discounts';
@@ -284,16 +285,6 @@ const participate = (memberType, onLink, previewUser) => {
   let locked = false;
   let banner = null;
   let title = 'Member Participation';
-  // let children = {
-  //   committees: committees(),
-  //   referralsvs: referralsvs(),
-  //   leadership: leadership(),
-  //   volunteer: volunteer(),
-  //   mentoring: mentoring(),
-  // };
-  // if (memberType !== memberTypes.USER_ATTORNEY) {
-  //   children = null;
-  // };
   if (memberType === memberTypes.USER_STUDENT) {
     title ='Law Student Programs & Events';
   }
@@ -325,7 +316,6 @@ const participate = (memberType, onLink, previewUser) => {
       onLink={onLink}
       previewUser={previewUser}
     />,
-    // children,
   }
 };
 
@@ -334,25 +324,27 @@ const participate = (memberType, onLink, previewUser) => {
  ******************/
 
  const lawNotes = (memberType, onLink, previewUser) => {
-  let locked = null;
+  let locked = false;
   let banner = null;
   let links = [];
-  // attorney & student
-  let children = {
-    lnLatest: lnLatest(memberType, onLink, previewUser),
-    lnarchive: lnArchive(memberType, onLink, previewUser),
-  };
-
+  let children = null;
+  if (memberType === memberTypes.USER_ATTORNEY || memberType === memberTypes.USER_STUDENT) {
+    children = {
+      lnlatest: lnLatest(memberType, onLink, previewUser),
+      lnarchives: lnArchives(memberType, onLink, previewUser),
+    };
+  } else {
+    children = {
+      lnsample: lnSample(memberType, onLink, previewUser),
+      lnarchives: lnArchives(memberType, onLink, previewUser),
+    }
+  }
   if (memberType === memberTypes.USER_ANON) {
-    locked = true;
-    children = null;
     banner = banners('login', onLink);
     links = [linkText.memberSignup];
     if(previewUser === memberTypes.USER_NON_MEMBER) links = [linkText.memberSignup, linkText.lnSignup];
   } else if (memberType === memberTypes.USER_NON_MEMBER) {
-    locked = true;
     banner = banners('lawnotes', onLink);
-    children = null;
     links = [linkText.memberSignup, linkText.lnSignup];
   };
 
@@ -360,54 +352,73 @@ const participate = (memberType, onLink, previewUser) => {
     icon: <MenuIcon name="bookmark" ariaLabel="LGBT Law Notes" />,
     label: 'Law Notes',
     locked,
-    title: 'LGBT Law Notes',
     banner,
-    content: <LawNotesArchive
-      data={lawNotesData}
-      memberType={memberType}
-      previewUser={previewUser}
-      onLink={onLink}
-    />,
-    links,
     children,
+    links,
   }
 };
 
 // member only
-const lnLatest = (memberType) => {
+const lnLatest = (memberType, onLink, previewUser) => {
   const data = lawNotesData.find((item) => item.latest === true);
   let title = 'Latest Law Notes';
   let label = 'Latest';
+  let locked = false;
   let content = <div>Error loading latest Law Notes.</div>
+  if (memberType === memberTypes.USER_NON_MEMBER || memberTypes.USER_ANON) locked = true;
   if (data) {
-    label = `${data.month} ${data.year}`;
+    label = 'Latest';
     title = <span><em>{data.month} {data.year}</em> Edition</span>;
     content = <LawNotesLatest
       data={data}
       memberType={memberType}
-      // data={lawNotesData}
-      // type='latest'
+      onLink={onLink}
     />;
   };
   return {
     title,
     label,
     content,
-    links: ['lnarchive'],
+    links: ['lnarchives'],
   };
 }
 
-const lnArchive = (memberType, onLink, previewUser) => {
+
+// non-member & anon
+const lnSample = (memberType, onLink, previewUser) => {
+  const data = lawNotesData.find((item) => item.sample === true);
+  let content = <div>Error loading latest Law Notes.</div>
+  if (data) {
+    content = <LawNotesSample
+      data={data}
+      memberType={memberType}
+      onLink={onLink}
+      previewUser={previewUser}
+    />;
+  };
   return {
-    label: 'Archive',
-    title: 'Law Notes Archive',
-    content: <LawNotesArchive
+    title: 'Sample Law Notes - January Edition',
+    label: 'Sample',
+    content,
+    links: ['lnarchives'],
+  };
+}
+
+
+const lnArchives = (memberType, onLink, previewUser) => {
+  let locked = false;
+  if (memberType === memberTypes.USER_NON_MEMBER || memberType === memberTypes.USER_ANON) locked = true;
+  return {
+    label: 'Archives',
+    locked,
+    title: 'Law Notes Archives',
+    content: <LawNotesArchives
       data={lawNotesData}
       memberType={memberType}
       previewUser={previewUser}
       onLink={onLink}
     />,
-    links: ['lnLatest'],
+    links: ['lnlatest'],
   }
 }
 
@@ -421,27 +432,27 @@ const cleCenter = (memberType = memberTypes.USER_ATTORNEY, onLink, previewUser) 
   // children
   if (memberType === memberTypes.USER_ATTORNEY) {
     children = {
-      clecurrent: cleCurrent(memberType, onLink),
+      clecurrent: cleLatest(memberType, onLink),
       clearchives: cleArchives(memberType, onLink, previewUser),
       clecerts: cleCerts(memberType, onLink),
     };
   } else if (memberType === memberTypes.USER_STUDENT) {
     children = {
-      clecurrent: cleCurrent(memberType, onLink),
+      clecurrent: cleLatest(memberType, onLink),
       clearchives: cleArchives(memberType, onLink, previewUser),
     };
   } else if(memberType === memberTypes.USER_NON_MEMBER) {
     children = {
-      clecurrent: cleCurrent(memberType, onLink),
+      clecurrent: cleLatest(memberType, onLink),
+      cleyrinreview: cleSample(memberType, onLink),
       clearchives: cleArchives(memberType, onLink, previewUser),
-      cleyrinreview: cleYrInReview(memberType, onLink),
       clecerts: cleCerts(memberType, onLink),
     };
   } else if(memberType === memberTypes.USER_ANON) {
     children = {
-      clecurrent: cleCurrent(memberType, onLink, previewUser),
+      clecurrent: cleLatest(memberType, onLink, previewUser),
+      cleyrinreview: cleSample(memberType, onLink, previewUser),
       clearchives: cleArchives(memberType, onLink, previewUser),
-      cleyrinreview: cleYrInReview(memberType, onLink, previewUser),
     };
   }
 
@@ -452,26 +463,20 @@ const cleCenter = (memberType = memberTypes.USER_ATTORNEY, onLink, previewUser) 
     locked,
     banner: banners('clecurrent', onLink),
     title: 'CLE Center',
-    content: <CleArchive
-      data={cleData}
-      memberType={memberType}
-      previewUser={previewUser}
-      onLink={onLink}
-    />,
     children,
   }
 };
 
 // This should only show up if there is a current CLE
-const cleCurrent = (memberType = memberTypes.USER_ATTORNEY, onLink, previewUser) => {
-  let label = 'Current CLE';
+const cleLatest = (memberType = memberTypes.USER_ATTORNEY, onLink, previewUser) => {
+  let label = 'Latest';
   let locked = false;
-  let title = 'Current CLE - Course Material';
+  let title = 'Latest CLE Materials';
   let links = [];
 
   if (memberType === memberTypes.USER_ANON || memberType === memberTypes.USER_NON_MEMBER) {
     locked = true;
-    title = 'Current CLE - Course Material [Excerpt]';
+    title = 'Latest CLE Materials [Excerpt]';
   }
 
   if (memberType === memberTypes.USER_ATTORNEY) {
@@ -491,7 +496,7 @@ const cleCurrent = (memberType = memberTypes.USER_ATTORNEY, onLink, previewUser)
     title,
     content: <ClePdfEmbed
       data={cleData}
-      type='current'
+      type='latest'
       memberType={memberType}
       previewUser={previewUser}
       onLink={onLink}
@@ -501,14 +506,10 @@ const cleCurrent = (memberType = memberTypes.USER_ATTORNEY, onLink, previewUser)
 };
 
 // Sample for anon and non-member
-const cleYrInReview = (memberType, onLink, previewUser) => {
+const cleSample = (memberType, onLink, previewUser) => {
   let links = [];
 
-  if (memberType === memberTypes.USER_ATTORNEY) {
-    links = ['clecurrent', 'clearchives', 'clecerts'];
-  } else if (memberType === memberTypes.USER_STUDENT) {
-    links = ['clecurrent', 'clearchives'];
-  } else if(memberType === memberTypes.USER_NON_MEMBER) {
+  if(memberType === memberTypes.USER_NON_MEMBER) {
     links = [linkText.memberSignup, 'clecurrent', 'clearchives', 'clecerts'];
   } else if(memberType === memberTypes.USER_ANON) {
     links = [linkText.memberSignup, 'clecurrent', 'clearchives'];
@@ -516,9 +517,9 @@ const cleYrInReview = (memberType, onLink, previewUser) => {
   }
 
   return {
-    label: 'Year in Review',
+    label: 'Sample',
     locked: false,
-    title: <span><em>Year in Review</em> Edition</span>,
+    title: 'Sample CLE Materials',
     content: <ClePdfEmbed
       data={cleData}
       type='sample'
@@ -548,7 +549,7 @@ const cleArchives = (memberType = memberTypes.USER_ATTORNEY, onLink, previewUser
   if (memberType === memberTypes.USER_NON_MEMBER || memberType === memberTypes.USER_ANON) locked = true;
 
   return {
-    label: 'Archive',
+    label: 'Archives',
     locked,
     title: 'CLE Materials Archive',
     content: <CleArchive
@@ -783,7 +784,7 @@ const anonDashboard = (userType, onLink, previewUser = memberTypes.USER_ATTORNEY
   const options = {
     key: userType,
     defaultSelectedKeys: ['billing'], //
-    defaultMenuOpenKeys: ['clecenter'],
+    defaultMenuOpenKeys: [],
     avatar: <Avatar
       icon={<SvgIcon
         name="customer-profile"
@@ -806,7 +807,7 @@ const anonDashboard = (userType, onLink, previewUser = memberTypes.USER_ATTORNEY
   }
 };
 
-const nonMemberData = (userType, onLink) => {
+const nonMemberData = (userType, onLink, previewUser) => {
   return {
   options: {
     key: userType,
@@ -819,7 +820,7 @@ const nonMemberData = (userType, onLink) => {
   profile: profile(userType, onLink),
   billing: billing(userType, onLink),
   participate: participate(userType, onLink),
-  lawnotes: lawNotes(userType, onLink),
+  lawnotes: lawNotes(userType, onLink, previewUser),
   clecenter: cleCenter(userType, onLink),
   discounts: discounts(userType, onLink),
   emailprefs: emailPrefs(userType, onLink),

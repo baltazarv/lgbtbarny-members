@@ -142,6 +142,91 @@ export const ATTORNEY_GROUPS = {
     ],
     categories: ['committees'],
   },
+  lrn: {
+    key: 'lrn',
+    image: '',
+    colors: ['#fadb14', '#ffec3d'], // yellow
+    title: 'Lawyer Referral Network',
+    description: <span>As part of LeGaL’s effort to provide and increase access to high quality, culturally competent legal services for members of the LGBTQ community, we offer a Pro Bono Panel (PBP)  and a Lawyer Referral Network (LRN). This provides opportunities for solo lawyers, law firms, and legal services organizations to assist the community by offering pro bono services through the PBP, or to obtain potential fee-paying clients through  the LRN. Both utilize the LeGaL Help Platform, which facilitates quick and appropriate referrals. In 2017, 65 providers made themselves available for approximately 1,000 potential consultations.</span>,
+    links: [
+      {
+        title: 'Lawyer Referral Network',
+        url: 'https://www.lgbtbarny.org/lrn-pbp',
+      },
+      {
+        title: 'Legal Services',
+        url: 'https://www.lgbtbarny.org/legal-services',
+      },
+      {
+        title: 'Get Involved',
+        url: 'https://www.lgbtbarny.org/get-involved',
+      },
+    ],
+    categories: ['referrals'],
+  },
+  // TODO: add Leadership Council Steering Committee?
+  leadership: {
+    key: 'leadership',
+    image: '',
+    colors: ['#389e0d', '#52c41a'], // green
+    title: 'Leadership Council',
+    description: <span>The Leadership Council brings together firms and companies to assist LeGaL in its mission of safeguarding and advancing the rights of the LGBT community. It provides vital pro bono services, including hosting, sponsorship, and/or legal advocacy to provide life-changing services to member of our community members unlikely to be able to afford an attorney.</span>,
+    links: [
+      {
+        title: 'LeGaL\'s Leadership Council',
+        url: 'https://www.lgbtbarny.org/leadership-council',
+      },
+      {
+        title: 'Legal Services',
+        url: 'https://www.lgbtbarny.org/legal-services',
+      },
+    ],
+    categories: ['leadership'],
+  },
+  helpline: {
+    key: 'helpline',
+    image: '',
+    colors: ['#531dab', '#b37feb'], //purple
+    title: 'Legal Helpline',
+    description: <span>LeGaL's Helpline, which fields legal inquiries and provides information about our walk-in clinics, experienced a surge in calls from LGBTQ community in 2017, with nearly 2,000 requests for legal assistance.</span>,
+    links: [
+      {
+        title: 'Legal Services',
+        url: 'https://www.lgbtbarny.org/legal-services',
+      },
+    ],
+    categories: ['volunteering'],
+  },
+  youthqlinic: {
+    key: 'youthqlinic',
+    colors: ['#1d39c4', '#597ef7'], // geekblue
+    title: 'LeGaL\'s LGBT Youth Qlinic ',
+    description: <span>The LGBTQ Youth Qlinic (the “Qlinic”) is a project of The LeGaL Foundation in collaboration with Sanctuary for Families’ Pro Bono Council to provide free short-term limited scope legal services to LGBTQ youth.  The Qlinic takes place on Saturday evenings at the Church of St. Luke in the Fields in coordination with Art &amp; Acceptance, a weekly program that provides a safe space and community for lesbian, gay, transgender, gender non-conforming, questioning, and allied youth ages 16-24, many of whom are homeless or struggling with unstable living situations.<br /><br />
+    What kind of help is offered?<br /><br />
+    It is the goal of the Qlinic to intervene in the cycle of alienation, discrimination, and exploitation that marginalizes LGBTQ homeless youth. Through short-term legal consultations and referrals, the Qlinic connects youth participants of Art &amp; Acceptance to legal resources to address critical needs.  In each consultation, Qlinic Volunteer Attorneys identify legal issues and remedies that may be available to youth participants, and, if appropriate, refer youth participants to legal services organizations that  can offer further guidance or representation.  In providing these services, the Qlinic aims to foster an atmosphere of acceptance and inclusiveness, and to communicate to youth participants that their needs are visible and important and that their voices are heard.</span>,
+    links: [
+      {
+        title: 'LeGaL\'s Youth Qlinic',
+        url: 'https://www.lgbtbarny.org/youthqlinic',
+      },
+      {
+        title: 'LeGaL\'s Walk-In Clinics',
+        url: 'https://www.lgbtbarny.org/clinics-information',
+      },
+      {
+        title: 'Legal Services',
+        url: 'https://www.lgbtbarny.org/legal-services',
+      },
+      {
+        title: 'Get Involved',
+        url: 'https://www.lgbtbarny.org/get-involved',
+      },
+    ],
+    categories: ['volunteering'],
+  },
+  tnc,
+  mentoring,
+  njclinic,
   social: {
     key: 'social',
     image: '/images/groups/pool-party.jpg',
@@ -158,12 +243,13 @@ export const ATTORNEY_GROUPS = {
     ],
     categories: ['committees'],
   },
-  solo: {
-    key: 'solo',
+  partners: {
+    key: 'partners',
     image: '',
-    colors: ['#5b8c00', '#a0d911'], // lime
-    title: 'Solo & Small Law Firm Practitioners Committee',
-    description: <span>The Public Interest Law Committee is made up of the LGBT not-for-profit legal services community, governmental attorneys and judges, academics, and attorneys interested in pro bono opportunities and public interest work. The PILC is also working to launch LeGaL’s new Leadership Council for law firms and companies to take on innovative pro bono projects.</span>,
+    colors: ['#c41d7f', '#eb2f96'],
+    title: 'Partners Group',
+    chairs: ['Joe Evall'],
+    description: <span>Forum for partners in large law firms and with corporate/institutional clients to network and share experiences and ideas; promote LGBT friendly policies within the law firm community; promote recruiting and mentoring of LGBT associates; work to improve the prospects of LGBT lawyers interested in serving on the bench and sponsor events of interest to large law firm community.</span>,
     links: [
       {
         title: 'Committees & Sections',
@@ -172,13 +258,30 @@ export const ATTORNEY_GROUPS = {
     ],
     categories: ['committees'],
   },
-  partners: {
-    key: 'partners',
+  probono: {
+    key: 'probono',
     image: '',
-    colors: ['#c41d7f', '#eb2f96'],
-    title: 'Partners Group',
-    chairs: ['Joe Evall'],
-    description: <span>Forum for partners in large law firms and with corporate/institutional clients to network and share experiences and ideas; promote LGBT friendly policies within the law firm community; promote recruiting and mentoring of LGBT associates; work to improve the prospects of LGBT lawyers interested in serving on the bench and sponsor events of interest to large law firm community.</span>,
+    colors: ['#d48806', '#faad14'], // gold
+    title: 'Pro Bono Panel',
+    description: <span>LeGaL also provides several legal services to the LGBTQ community such as LeGaL's Helpline and several legal clinics in NY and NJ. Through these legal services and the LRN/PBP referral platform, LeGaL helps lawyers and legal services organizations connect with members of the LGBTQ community.</span>,
+    links: [
+      {
+        title: 'Lawyer Referral Network',
+        url: 'https://www.lgbtbarny.org/lrn-pbp',
+      },
+      {
+        title: 'Get Involved',
+        url: 'https://www.lgbtbarny.org/get-involved',
+      },
+    ],
+    categories: ['referrals'],
+  },
+  solo: {
+    key: 'solo',
+    image: '',
+    colors: ['#5b8c00', '#a0d911'], // lime
+    title: 'Solo & Small Law Firm Practitioners Committee',
+    description: <span>The Public Interest Law Committee is made up of the LGBT not-for-profit legal services community, governmental attorneys and judges, academics, and attorneys interested in pro bono opportunities and public interest work. The PILC is also working to launch LeGaL’s new Leadership Council for law firms and companies to take on innovative pro bono projects.</span>,
     links: [
       {
         title: 'Committees & Sections',
@@ -208,129 +311,9 @@ export const ATTORNEY_GROUPS = {
     ],
     categories: ['committees'],
   },
-  lrn: {
-    key: 'lrn',
-    image: '',
-    colors: ['#fadb14', '#ffec3d'], // yellow
-    title: 'Lawyer Referral Network',
-    description: <span>As part of LeGaL’s effort to provide and increase access to high quality, culturally competent legal services for members of the LGBTQ community, we offer a Pro Bono Panel (PBP)  and a Lawyer Referral Network (LRN). This provides opportunities for solo lawyers, law firms, and legal services organizations to assist the community by offering pro bono services through the PBP, or to obtain potential fee-paying clients through  the LRN. Both utilize the LeGaL Help Platform, which facilitates quick and appropriate referrals. In 2017, 65 providers made themselves available for approximately 1,000 potential consultations.</span>,
-    links: [
-      {
-        title: 'Lawyer Referral Network',
-        url: 'https://www.lgbtbarny.org/lrn-pbp',
-      },
-      {
-        title: 'Legal Services',
-        url: 'https://www.lgbtbarny.org/legal-services',
-      },
-      {
-        title: 'Get Involved',
-        url: 'https://www.lgbtbarny.org/get-involved',
-      },
-    ],
-    categories: ['referrals'],
-  },
-  probono: {
-    key: 'probono',
-    image: '',
-    colors: ['#d48806', '#faad14'], // gold
-    title: 'Pro Bono Panel',
-    description: <span>LeGaL also provides several legal services to the LGBTQ community such as LeGaL's Helpline and several legal clinics in NY and NJ. Through these legal services and the LRN/PBP referral platform, LeGaL helps lawyers and legal services organizations connect with members of the LGBTQ community.</span>,
-    links: [
-      {
-        title: 'Lawyer Referral Network',
-        url: 'https://www.lgbtbarny.org/lrn-pbp',
-      },
-      {
-        title: 'Get Involved',
-        url: 'https://www.lgbtbarny.org/get-involved',
-      },
-    ],
-    categories: ['referrals'],
-  },
-  // TODO: add Leadership Council Steering Committee?
-  leadership: {
-    key: 'leadership',
-    image: '',
-    colors: ['#389e0d', '#52c41a'], // green
-    title: 'Leadership Council',
-    description: <span>The Leadership Council brings together firms and companies to assist LeGaL in its mission of safeguarding and advancing the rights of the LGBT community. It provides vital pro bono services, including hosting, sponsorship, and/or legal advocacy to provide life-changing services to member of our community members unlikely to be able to afford an attorney.</span>,
-    links: [
-      {
-        title: 'LeGaL\'s Leadership Council',
-        url: 'https://www.lgbtbarny.org/leadership-council',
-      },
-      {
-        title: 'Legal Services',
-        url: 'https://www.lgbtbarny.org/legal-services',
-      },
-    ],
-    categories: ['leadership'],
-  },
-  tnc,
-  youthqlinic: {
-    key: 'youthqlinic',
-    colors: ['#1d39c4', '#597ef7'], // geekblue
-    title: 'LeGaL\'s LGBT Youth Qlinic ',
-    description: <span>The LGBTQ Youth Qlinic (the “Qlinic”) is a project of The LeGaL Foundation in collaboration with Sanctuary for Families’ Pro Bono Council to provide free short-term limited scope legal services to LGBTQ youth.  The Qlinic takes place on Saturday evenings at the Church of St. Luke in the Fields in coordination with Art &amp; Acceptance, a weekly program that provides a safe space and community for lesbian, gay, transgender, gender non-conforming, questioning, and allied youth ages 16-24, many of whom are homeless or struggling with unstable living situations.<br /><br />
-    What kind of help is offered?<br /><br />
-    It is the goal of the Qlinic to intervene in the cycle of alienation, discrimination, and exploitation that marginalizes LGBTQ homeless youth. Through short-term legal consultations and referrals, the Qlinic connects youth participants of Art &amp; Acceptance to legal resources to address critical needs.  In each consultation, Qlinic Volunteer Attorneys identify legal issues and remedies that may be available to youth participants, and, if appropriate, refer youth participants to legal services organizations that  can offer further guidance or representation.  In providing these services, the Qlinic aims to foster an atmosphere of acceptance and inclusiveness, and to communicate to youth participants that their needs are visible and important and that their voices are heard.</span>,
-    links: [
-      {
-        title: 'LeGaL\'s Youth Qlinic',
-        url: 'https://www.lgbtbarny.org/youthqlinic',
-      },
-      {
-        title: 'LeGaL\'s Walk-In Clinics',
-        url: 'https://www.lgbtbarny.org/clinics-information',
-      },
-      {
-        title: 'Legal Services',
-        url: 'https://www.lgbtbarny.org/legal-services',
-      },
-      {
-        title: 'Get Involved',
-        url: 'https://www.lgbtbarny.org/get-involved',
-      },
-    ],
-    categories: ['volunteering'],
-  },
-  njclinic,
-  helpline: {
-    key: 'helpline',
-    image: '',
-    colors: ['#531dab', '#b37feb'], //purple
-    title: 'Legal Helpline',
-    description: <span>LeGaL's Helpline, which fields legal inquiries and provides information about our walk-in clinics, experienced a surge in calls from LGBTQ community in 2017, with nearly 2,000 requests for legal assistance.</span>,
-    links: [
-      {
-        title: 'Legal Services',
-        url: 'https://www.lgbtbarny.org/legal-services',
-      },
-    ],
-    categories: ['volunteering'],
-  },
-  mentoring,
 };
 
 export const STUDENT_GROUPS = {
-  careerfair: {
-    key: 'careerfair',
-    colors: ['#fa541c', '#ff9c6e'],
-    image: 'images/groups/career-fair.jpg',
-    imageOptions: { backgroundPosition: 'center -43px' },
-    label: 'Law Student Career Fair',
-    title: 'LGBTQ Law Student Career Fair',
-    description: <span>Targeted specifically to local LGBTQ law students, this one-of-a-kind annual event provides a great opportunity to meet informally with lawyers and recruiters and learn about employment opportunities in preparation for the fall recruiting season.<br /><br />
-    LeGaL's LGBTQ Legal Career Fair for First-Year students is held annually at New York Law School in the Spring. The event includes a pre-fair panel discussion with insiders' tips on job searches and the workplace environment, followed by the opportunity to establish networks with many of New York's top firms, largest government employers, and leading public interest organizations.</span>,
-    links: [
-      {
-        title: 'Career Fair',
-        url: 'https://www.lgbtbarny.org/career-fair',
-      },
-    ],
-    categories: ['student'],
-  },
   internship: {
     key: 'internship',
     image: '/images/groups/internship.jpg',
@@ -361,6 +344,23 @@ export const STUDENT_GROUPS = {
       },
     ],
   },
+  careerfair: {
+    key: 'careerfair',
+    colors: ['#fa541c', '#ff9c6e'],
+    image: 'images/groups/career-fair.jpg',
+    imageOptions: { backgroundPosition: 'center -43px' },
+    label: 'Law Student Career Fair',
+    title: 'LGBTQ Law Student Career Fair',
+    description: <span>Targeted specifically to local LGBTQ law students, this one-of-a-kind annual event provides a great opportunity to meet informally with lawyers and recruiters and learn about employment opportunities in preparation for the fall recruiting season.<br /><br />
+    LeGaL's LGBTQ Legal Career Fair for First-Year students is held annually at New York Law School in the Spring. The event includes a pre-fair panel discussion with insiders' tips on job searches and the workplace environment, followed by the opportunity to establish networks with many of New York's top firms, largest government employers, and leading public interest organizations.</span>,
+    links: [
+      {
+        title: 'Career Fair',
+        url: 'https://www.lgbtbarny.org/career-fair',
+      },
+    ],
+    categories: ['student'],
+  },
   summit: {
     key: 'summit',
     image: '/images/groups/summit.jpg',
@@ -376,7 +376,7 @@ export const STUDENT_GROUPS = {
   //     },
   //   ],
   },
-  mentoring,
   tnc,
+  mentoring,
   njclinic,
 }

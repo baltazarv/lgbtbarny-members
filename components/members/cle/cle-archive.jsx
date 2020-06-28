@@ -50,6 +50,8 @@ const CleTable = ({
           row.excerpt = true;
           row.url = row.urlsample;
         }
+      } else {
+        row.sample = false;
       }
       return row;
     });
@@ -60,10 +62,10 @@ const CleTable = ({
     let text = null;
 
     const whatYouGetTxt = <>
-      See the below course material exerpts, which include topics, agenda, speaker bios, and course credits for all courses. The entire <Link onClick={() => openSample()}><em>Year in Review</em></Link> edition is available. Or see an excerpt of the materials for the <Link onClick={() => openCurrentCLE()}>most-current CLE</Link> being offered.
+      See the below course materials exerpts, which include topics, agenda, speaker bios, and course credits for all courses. The <Link onClick={() => openSample()}>sample <em>Year in Review</em></Link> edition is available. Or see an excerpt of the materials for the <Link onClick={() => openCurrentCLE()}>latest CLE</Link> being offered.
     </>
 
-    const certTxt = <p>Courses with <CertIcon /> icon are ones which you have attended. Click the icon to view and download your certificate. Or view all <Link onClick={() => onLink('clecerts')}>certificates attained</Link>.</p>
+    const certTxt = <p>Courses with <CertIcon /> icon are ones which you have attended. Click the icon to view and download your certificate. Or view all <Link onClick={() => onLink('clecerts')}>certificates</Link> attained.</p>
 
     const registeredText = <>You have registered for courses with the <ScheduleOutlined style={{ width: '1.6em', fontSize: '20px' }} /> icon.</>
 
@@ -79,7 +81,7 @@ const CleTable = ({
               <Link onClick={() => onLink(memberTypes.SIGNUP_ATTORNEY)}>Become an attorney member</Link>
             }{previewUser === memberTypes.USER_STUDENT &&
               <Link onClick={() => onLink(memberTypes.SIGNUP_STUDENT)}>Become a law student member</Link>
-            } to get access to all CLE materials, current materials, as well as the archive.&nbsp;
+            } to get access to all CLE materials, current materials, as well as the archives.&nbsp;
           {previewUser === memberTypes.USER_ATTORNEY &&
             <span>When you sign up, you will be able to download CLE certificates for courses which you have attended.</span>
           }</p>
@@ -88,9 +90,8 @@ const CleTable = ({
       }
     } else if (memberType === memberTypes.USER_NON_MEMBER) {
       text = <>
-        <p>
-          If you are an attorney or law student, <Link onClick={() => onLink(memberTypes.SIGNUP_MEMBER)}>become a member</Link> to get access to all CLE materials, current materials as well as the archive. {whatYouGetTxt}
-        </p>
+        <p><Link onClick={() => onLink(memberTypes.SIGNUP_MEMBER)}>Become a member</Link> to get access to all CLE materials, current materials as well as the archives.</p>
+        <p>{whatYouGetTxt}</p>
         <p>{registeredText} You can view the entire content for the materials or all courses that you have signed up for.</p>
         {certTxt}
       </>
@@ -172,7 +173,7 @@ const CleTable = ({
           if (record.credits.length) {
             credits = <ul>
               {
-                record.credits.map((item) => <li>{getLabel(item.number)} {item.type}</li>)
+                record.credits.map((item) => <li key={record.key}>{getLabel(item.number)} {item.type}</li>)
               }
             </ul>
           }
