@@ -12,7 +12,7 @@ export const USER_ATTORNEY = 'attorney';
 export const USER_STUDENT = 'student';
 
 // TODO: remove in favor of 'signin' function with value of userLogin type
-// commands to open sign-up (log-in) modal windows
+// commands to open sign-up (login) modal windows
 export const SIGNUP_MEMBER = 'signup-member';
 export const SIGNUP_ATTORNEY = 'signup-attorney';
 export const SIGNUP_STUDENT = 'signup-student';

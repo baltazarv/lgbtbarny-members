@@ -64,7 +64,7 @@ const banners = (type, onLink) => {
     text={<span><Button type="link" onClick={() => onLink(memberTypes.SIGNUP_LAW_NOTES)}>Sign up</Button> to get your digital subscription...</span>}
     colors={{ backgroundColor: '#feffe6', color: '#ad8b00' }} // yellow
   />;
-  if (type === 'clecurrent') return <Banner
+  if (type === 'clelatest') return <Banner
     title="Current CLE Event Announcement"
     text={<span><u>Sign up</u> for current event...</span>}
     colors={{ backgroundColor: '#fcffe6', color: '#3f6600' }} // green
@@ -95,17 +95,18 @@ const linkText = {
  ******************/
 
 const profile = (memberType, onLink) => {
+  let route = '';
   let banner = null;
   let title = '';
   let content = null;
   let links = [];
-  // attorney and student
   let children = {
     logininfo: loginInfo(memberType, onLink),
     memberinfo: memberInfo(memberType, onLink),
   }
 
   if (memberType === memberTypes.USER_NON_MEMBER) {
+    route = 'profile';
     banner = banners('membership', onLink);
     title = 'Profile';
     content = <>
@@ -124,6 +125,7 @@ const profile = (memberType, onLink) => {
   };
 
   return {
+    route,
     icon: <MenuIcon name="customer-profile" ariaLabel="Profile" />,
     label: 'Profile',
     banner,
@@ -136,10 +138,11 @@ const profile = (memberType, onLink) => {
 
 const loginInfo = () => {
   return {
-    label: 'Log-in Info',
-    title: 'Log-in Information',
+    route: 'login-info',
+    label: 'Login Info',
+    title: 'Login Information',
     content: <>
-      <span>Edit log-in info:</span>
+      <span>Edit login info:</span>
       <ul>
         <li>Email address.</li>
         <li>Alternate email address (optional), for account recovery.</li>
@@ -152,6 +155,7 @@ const loginInfo = () => {
 
 const memberInfo = (memberType = memberTypes.USER_ATTORNEY) => {
   return {
+    route: 'member-info',
     label: 'Member Info',
     title: 'Member Information',
     content: <>
@@ -199,17 +203,18 @@ const billing = (memberType = memberTypes.USER_ATTORNEY, onLink, previewUser) =>
   let children = {
     payments: payments(memberType, onLink),
     autopay: {
+      route: 'auto-payments',
       label: 'Auto Payments',
       title: 'Auto Payment Settings',
       links: ['payments'],
     },
-    taxForms: taxForms(memberType, onLink),
+    taxforms: taxForms(memberType, onLink),
   };
 
   if (memberType === memberTypes.USER_STUDENT) {
     children = {
       payments: payments(memberType, onLink),
-      taxForms: taxForms(memberType, onLink),
+      taxforms: taxForms(memberType, onLink),
     };
   } else if (memberType === memberTypes.USER_ANON) {
     locked = true;
@@ -234,11 +239,12 @@ const billing = (memberType = memberTypes.USER_ATTORNEY, onLink, previewUser) =>
     children = {
       payments: payments(memberTypes.USER_NON_MEMBER),
       // autopay: // only when subscribed to Law Notes
-      taxForms: taxForms(),
+      taxforms: taxForms(),
     };
   };
 
   return {
+    route: 'billing',
     icon: <MenuIcon name="annotate" ariaLabel="Billing" />,
     label: "Billing",
     locked,
@@ -250,6 +256,7 @@ const billing = (memberType = memberTypes.USER_ATTORNEY, onLink, previewUser) =>
 }
 
 const payments = (memberType = memberTypes.USER_ATTORNEY, onLink) => ({
+  route: 'payments',
   label: 'Payment History',
   title: 'Payment History',
   content: <>
@@ -260,10 +267,11 @@ const payments = (memberType = memberTypes.USER_ATTORNEY, onLink) => ({
       <li>Donations.</li>
     </ul>
   </>,
-  links: ['taxForms']
+  links: ['taxforms'],
 });
 
 const taxForms = (memberType, onLink) => ({
+  route: 'tax-forms',
   label: 'Tax Deductions',
   title: 'Charitable Tax Contribution Deductions',
   content: <>
@@ -306,6 +314,7 @@ const participate = (memberType, onLink, previewUser) => {
   }
 
   return {
+    route: 'participate',
     icon: <MenuIcon name="demographic" ariaLabel="Participate" />,
     label: 'Participate',
     banner,
@@ -324,16 +333,19 @@ const participate = (memberType, onLink, previewUser) => {
  ******************/
 
  const lawNotes = (memberType, onLink, previewUser) => {
+  // let redirect = '';
   let locked = false;
   let banner = null;
   let links = [];
   let children = null;
   if (memberType === memberTypes.USER_ATTORNEY || memberType === memberTypes.USER_STUDENT) {
+    // redirect = 'lnlatest';
     children = {
       lnlatest: lnLatest(memberType, onLink, previewUser),
       lnarchives: lnArchives(memberType, onLink, previewUser),
     };
   } else {
+    // redirect = 'lnsample';
     children = {
       lnsample: lnSample(memberType, onLink, previewUser),
       lnarchives: lnArchives(memberType, onLink, previewUser),
@@ -349,6 +361,8 @@ const participate = (memberType, onLink, previewUser) => {
   };
 
   return {
+    // route: 'law-notes',
+    // redirect,
     icon: <MenuIcon name="bookmark" ariaLabel="LGBT Law Notes" />,
     label: 'Law Notes',
     locked,
@@ -376,13 +390,13 @@ const lnLatest = (memberType, onLink, previewUser) => {
     />;
   };
   return {
+    route: 'law-notes-latest',
     title,
     label,
     content,
     links: ['lnarchives'],
   };
 }
-
 
 // non-member & anon
 const lnSample = (memberType, onLink, previewUser) => {
@@ -397,6 +411,7 @@ const lnSample = (memberType, onLink, previewUser) => {
     />;
   };
   return {
+    route: 'law-notes-sample',
     title: 'Sample Law Notes - January Edition',
     label: 'Sample',
     content,
@@ -404,11 +419,16 @@ const lnSample = (memberType, onLink, previewUser) => {
   };
 }
 
-
 const lnArchives = (memberType, onLink, previewUser) => {
   let locked = false;
-  if (memberType === memberTypes.USER_NON_MEMBER || memberType === memberTypes.USER_ANON) locked = true;
+  let links = ['lnlatest']
+  if (memberType === memberTypes.USER_NON_MEMBER || memberType === memberTypes.USER_ANON) {
+    locked = true;
+    links = ['lnsample']
+  }
+
   return {
+    route: 'law-notes-archives',
     label: 'Archives',
     locked,
     title: 'Law Notes Archives',
@@ -418,7 +438,7 @@ const lnArchives = (memberType, onLink, previewUser) => {
       previewUser={previewUser}
       onLink={onLink}
     />,
-    links: ['lnlatest'],
+    links,
   }
 }
 
@@ -432,26 +452,26 @@ const cleCenter = (memberType = memberTypes.USER_ATTORNEY, onLink, previewUser) 
   // children
   if (memberType === memberTypes.USER_ATTORNEY) {
     children = {
-      clecurrent: cleLatest(memberType, onLink),
+      clelatest: cleLatest(memberType, onLink),
       clearchives: cleArchives(memberType, onLink, previewUser),
       clecerts: cleCerts(memberType, onLink),
     };
   } else if (memberType === memberTypes.USER_STUDENT) {
     children = {
-      clecurrent: cleLatest(memberType, onLink),
+      clelatest: cleLatest(memberType, onLink),
       clearchives: cleArchives(memberType, onLink, previewUser),
     };
   } else if(memberType === memberTypes.USER_NON_MEMBER) {
     children = {
-      clecurrent: cleLatest(memberType, onLink),
-      cleyrinreview: cleSample(memberType, onLink),
+      clelatest: cleLatest(memberType, onLink),
+      clesample: cleSample(memberType, onLink),
       clearchives: cleArchives(memberType, onLink, previewUser),
       clecerts: cleCerts(memberType, onLink),
     };
   } else if(memberType === memberTypes.USER_ANON) {
     children = {
-      clecurrent: cleLatest(memberType, onLink, previewUser),
-      cleyrinreview: cleSample(memberType, onLink, previewUser),
+      clelatest: cleLatest(memberType, onLink, previewUser),
+      clesample: cleSample(memberType, onLink, previewUser),
       clearchives: cleArchives(memberType, onLink, previewUser),
     };
   }
@@ -461,7 +481,7 @@ const cleCenter = (memberType = memberTypes.USER_ATTORNEY, onLink, previewUser) 
     icon: <MenuIcon name="government" ariaLabel="CLE Center" />,
     label: 'CLE Center',
     locked,
-    banner: banners('clecurrent', onLink),
+    banner: banners('clelatest', onLink),
     title: 'CLE Center',
     children,
   }
@@ -484,13 +504,14 @@ const cleLatest = (memberType = memberTypes.USER_ATTORNEY, onLink, previewUser) 
   } else if (memberType === memberTypes.USER_STUDENT) {
     links = ['clearchives'];
   } else if(memberType === memberTypes.USER_NON_MEMBER) {
-    links = [linkText.memberSignup, 'clearchives', 'cleyrinreview', 'clecerts'];
+    links = [linkText.memberSignup, 'clearchives', 'clesample', 'clecerts'];
   } else if(memberType === memberTypes.USER_ANON) {
-    links = [linkText.memberSignup, 'clearchives', 'cleyrinreview'];
-    if (previewUser === memberTypes.USER_NON_MEMBER) links = [linkText.nonMemberSignup, 'clearchives', 'cleyrinreview'];
+    links = [linkText.memberSignup, 'clearchives', 'clesample'];
+    if (previewUser === memberTypes.USER_NON_MEMBER) links = [linkText.nonMemberSignup, 'clearchives', 'clesample'];
   }
 
   return {
+    route: 'cle-latest',
     label,
     locked,
     title,
@@ -510,13 +531,14 @@ const cleSample = (memberType, onLink, previewUser) => {
   let links = [];
 
   if(memberType === memberTypes.USER_NON_MEMBER) {
-    links = [linkText.memberSignup, 'clecurrent', 'clearchives', 'clecerts'];
+    links = [linkText.memberSignup, 'clelatest', 'clearchives', 'clecerts'];
   } else if(memberType === memberTypes.USER_ANON) {
-    links = [linkText.memberSignup, 'clecurrent', 'clearchives'];
-    if (previewUser === memberTypes.USER_NON_MEMBER) links = [linkText.nonMemberSignup, 'clecurrent', 'clearchives'];
+    links = [linkText.memberSignup, 'clelatest', 'clearchives'];
+    if (previewUser === memberTypes.USER_NON_MEMBER) links = [linkText.nonMemberSignup, 'clelatest', 'clearchives'];
   }
 
   return {
+    route: 'cle-sample',
     label: 'Sample',
     locked: false,
     title: 'Sample CLE Materials',
@@ -536,19 +558,20 @@ const cleArchives = (memberType = memberTypes.USER_ATTORNEY, onLink, previewUser
   let links = [];
 
   if (memberType === memberTypes.USER_ATTORNEY) {
-    links = ['clecurrent', 'clecerts'];
+    links = ['clelatest', 'clecerts'];
   } else if (memberType === memberTypes.USER_STUDENT) {
-    links = ['clecurrent'];
+    links = ['clelatest'];
   } else if(memberType === memberTypes.USER_NON_MEMBER) {
-    links = [linkText.memberSignup, 'clecurrent', 'cleyrinreview', 'clecerts'];
+    links = [linkText.memberSignup, 'clelatest', 'clesample', 'clecerts'];
   } else if(memberType === memberTypes.USER_ANON) {
-    links = [linkText.memberSignup, 'clecurrent', 'cleyrinreview'];
-    if (previewUser === memberTypes.USER_NON_MEMBER) links = [linkText.nonMemberSignup, 'clecurrent', 'cleyrinreview'];
+    links = [linkText.memberSignup, 'clelatest', 'clesample'];
+    if (previewUser === memberTypes.USER_NON_MEMBER) links = [linkText.nonMemberSignup, 'clelatest', 'clesample'];
   };
 
   if (memberType === memberTypes.USER_NON_MEMBER || memberType === memberTypes.USER_ANON) locked = true;
 
   return {
+    route: 'cle-archives',
     label: 'Archives',
     locked,
     title: 'CLE Materials Archive',
@@ -565,11 +588,12 @@ const cleArchives = (memberType = memberTypes.USER_ATTORNEY, onLink, previewUser
 const cleCerts = (memberType, onLink) => {
   let links = [];
   if (memberType === memberTypes.USER_ATTORNEY) {
-    links = ['clecurrent', 'clearchives'];
+    links = ['clelatest', 'clearchives'];
   } else if(memberType === memberTypes.USER_NON_MEMBER) {
-    links = [linkText.memberSignup, 'clecurrent', 'clearchives', 'cleyrinreview'];
+    links = [linkText.memberSignup, 'clelatest', 'clearchives', 'clesample'];
   };
   return {
+    route: 'cle-certs',
     label: 'Certificates',
     title: <span><CleCertIcon /> CLE Course Certifications</span>,
     // <span style={{ display: 'flex', alignItems: 'center' }}
@@ -596,6 +620,7 @@ const discounts = (memberType, onLink, previewUser) => {
   }
 
   return {
+    route: 'discounts',
     icon: <MenuIcon name="star" ariaLabel="Discounts" />,
     label: 'Discounts',
     locked,
@@ -667,6 +692,7 @@ const emailPrefs = (memberType = memberTypes.USER_ATTORNEY, onLink, previewUser)
   }
 
   return {
+    route: 'email-prefs',
     icon,
     label: 'Email Prefs',
     banner,
@@ -853,7 +879,9 @@ export const getMemberPageParentKey = (data, key) => {
     if (parentKey === key) return '';
     if (data[parentKey].children) {
       for (const childKey in data[parentKey].children) {
-        if (childKey === key) return parentKey;
+        if (childKey === key) {
+          return parentKey;
+        }
       }
     }
   }

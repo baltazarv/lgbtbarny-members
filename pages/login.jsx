@@ -6,7 +6,7 @@ import { Jumbotron, Container } from 'react-bootstrap';
 import MainLayout from '../components/main-layout';
 import MemberMenu from '../components/members/member-menu';
 import Signup from '../components/members/signup/signup';
-import './members.less';
+import './members/members.less';
 // data
 import { loginData } from '../data/member-dashboards';
 
@@ -16,7 +16,6 @@ const Login = () => {
   const [data, setData] = useState({});
   const [selectedKey, setSelectedKey] = useState('');
   const [menuOpenKeys, setMenuOpenKeys] = useState([]);
-  const [menuCollapsed, setMenuCollapsed] = useState(false);
 
   const handleSignUp = (type) => {
     alert('open modal', type);
