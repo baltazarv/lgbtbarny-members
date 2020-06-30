@@ -463,7 +463,7 @@ const cleCenter = (memberType = memberTypes.USER_ATTORNEY, onLink, previewUser) 
     };
   } else if(memberType === memberTypes.USER_NON_MEMBER) {
     children = {
-      clelatest: cleLatest(memberType, onLink),
+      // clelatest: cleLatest(memberType, onLink),
       clesample: cleSample(memberType, onLink),
       clearchives: cleArchives(memberType, onLink, previewUser),
       clecerts: cleCerts(memberType, onLink),
@@ -594,8 +594,8 @@ const cleCerts = (memberType, onLink) => {
   };
   return {
     route: 'cle-certs',
-    label: 'Certificates',
-    title: <span><CleCertIcon /> CLE Course Certifications</span>,
+    label: 'My Certificates',
+    title: <span><CleCertIcon /> My CLE Certifications</span>,
     // <span style={{ display: 'flex', alignItems: 'center' }}
     content: <>
       <div>View and download CLE course certificates, for which you have registered and attended.</div>
