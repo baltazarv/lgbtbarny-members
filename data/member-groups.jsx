@@ -7,6 +7,39 @@
 // colors: ['#531dab', '#b37feb'], // purple
 // colors: ['#d4380d', '#fa541c'], // volcano
 
+export const groupCategories = {
+  committees: 'Committees & Sections',
+  referrals: 'Referrals & Pro Bono',
+  leadership: 'Leadership Council',
+  volunteering: 'Volunteering at Clinics',
+  mentoring: 'Mentoring',
+  internship: 'Internship',
+};
+
+const virtualclinic = {
+  key: 'virtualclinic',
+  colors: ['#d46b08', '#fa8c16'], // orange
+  label: 'Virtual Legal Clinic',
+  title: 'Virtual Legal Clinic',
+  description: <div>We are pleased to announce the return of LeGaL’s Tuesday Night Clinic, now online! The Clinic will continue to operate on Tuesdays from 6-8 pm, now with video consultations with our volunteer lawyers.
+  </div>,
+  links: [
+    {
+      title: 'LeGaL\'s Virtual Legal Clinic',
+      url: 'https://www.lgbtbarny.org/clinics-information',
+    },
+    {
+      title: 'Legal Services',
+      url: 'https://www.lgbtbarny.org/legal-services',
+    },
+    {
+      title: 'Get Involved',
+      url: 'https://www.lgbtbarny.org/get-involved',
+    },
+  ],
+  categories: ['volunteering'],
+};
+
 const tnc = {
   key: 'tnc',
   colors: ['#d46b08', '#fa8c16'], // orange
@@ -56,11 +89,39 @@ const njclinic = {
   categories: ['volunteering', 'student'],
 };
 
+const youthqlinic = {
+  key: 'youthqlinic',
+  colors: ['#1d39c4', '#597ef7'], // geekblue
+  title: 'LeGaL\'s LGBT Youth Qlinic ',
+  description: <span>The LGBTQ Youth Qlinic (the “Qlinic”) is a project of The LeGaL Foundation in collaboration with Sanctuary for Families’ Pro Bono Council to provide free short-term limited scope legal services to LGBTQ youth.  The Qlinic takes place on Saturday evenings at the Church of St. Luke in the Fields in coordination with Art &amp; Acceptance, a weekly program that provides a safe space and community for lesbian, gay, transgender, gender non-conforming, questioning, and allied youth ages 16-24, many of whom are homeless or struggling with unstable living situations.<br /><br />
+  What kind of help is offered?<br /><br />
+  It is the goal of the Qlinic to intervene in the cycle of alienation, discrimination, and exploitation that marginalizes LGBTQ homeless youth. Through short-term legal consultations and referrals, the Qlinic connects youth participants of Art &amp; Acceptance to legal resources to address critical needs.  In each consultation, Qlinic Volunteer Attorneys identify legal issues and remedies that may be available to youth participants, and, if appropriate, refer youth participants to legal services organizations that  can offer further guidance or representation.  In providing these services, the Qlinic aims to foster an atmosphere of acceptance and inclusiveness, and to communicate to youth participants that their needs are visible and important and that their voices are heard.</span>,
+  links: [
+    {
+      title: 'LeGaL\'s Youth Qlinic',
+      url: 'https://www.lgbtbarny.org/youthqlinic',
+    },
+    {
+      title: 'LeGaL\'s Walk-In Clinics',
+      url: 'https://www.lgbtbarny.org/clinics-information',
+    },
+    {
+      title: 'Legal Services',
+      url: 'https://www.lgbtbarny.org/legal-services',
+    },
+    {
+      title: 'Get Involved',
+      url: 'https://www.lgbtbarny.org/get-involved',
+    },
+  ],
+  categories: ['volunteering'],
+};
+
 const mentoring = {
   key: 'mentoring',
   image: '/images/groups/mentoring.jpg',
   imageOptions: {
-    backgroundPosition: 'center -20px',
+    backgroundPosition: 'center -11px',
   },
   colors: ['#eb2f96'],
   title: 'Mentoring Program',
@@ -76,6 +137,39 @@ const mentoring = {
     },
   ],
   categories: ['mentoring'],
+};
+
+const helpline = {
+  key: 'helpline',
+  image: '',
+  colors: ['#531dab', '#b37feb'], //purple
+  title: 'Legal Helpline',
+  description: <span>LeGaL's Helpline, which fields legal inquiries and provides information about our walk-in clinics, experienced a surge in calls from LGBTQ community in 2017, with nearly 2,000 requests for legal assistance.</span>,
+  links: [
+    {
+      title: 'Legal Services',
+      url: 'https://www.lgbtbarny.org/legal-services',
+    },
+  ],
+  categories: ['volunteering'],
+};
+
+const internship = {
+  key: 'internship',
+  image: '/images/groups/internship.jpg',
+  imageOptions: {
+    backgroundPosition: 'center -4px',
+  },
+  colors: ['#08979c', '#87e8de'],
+  title: 'Internship Program',
+  description: 'Under the guidance of LeGaL’s Legal Director and volunteer attorneys, interns participate in client intake, assist with legal research, organize case documents, learn valuable legal resources, and develop a deeper understanding of the profession. They have the opportunity to interact directly with clients through LeGaL’s free legal clinics, client phone calls, and online inquiries. As a result, LeGaL’s interns gain exposure to a wide range of legal issue and practice areas, including housing, criminal law, discrimination, employment, family law, immigration, and estate planning.',
+  links: [
+    {
+      title: 'Internship Program',
+      url: 'https://www.lgbtbarny.org/career-fair',
+    },
+  ],
+  categories: ['internship'],
 };
 
 export const ATTORNEY_GROUPS = {
@@ -125,6 +219,7 @@ export const ATTORNEY_GROUPS = {
     ],
     categories: ['committees'],
   },
+  internship,
   // TODO: add Judicial Screening Panel?
   judiciary: {
     key: 'judiciary',
@@ -183,54 +278,11 @@ export const ATTORNEY_GROUPS = {
     ],
     categories: ['leadership'],
   },
-  helpline: {
-    key: 'helpline',
-    image: '',
-    colors: ['#531dab', '#b37feb'], //purple
-    title: 'Legal Helpline',
-    description: <span>LeGaL's Helpline, which fields legal inquiries and provides information about our walk-in clinics, experienced a surge in calls from LGBTQ community in 2017, with nearly 2,000 requests for legal assistance.</span>,
-    links: [
-      {
-        title: 'Legal Services',
-        url: 'https://www.lgbtbarny.org/legal-services',
-      },
-    ],
-    categories: ['volunteering'],
-  },
-  youthqlinic: {
-    key: 'youthqlinic',
-    colors: ['#1d39c4', '#597ef7'], // geekblue
-    title: 'LeGaL\'s LGBT Youth Qlinic ',
-    description: <span>The LGBTQ Youth Qlinic (the “Qlinic”) is a project of The LeGaL Foundation in collaboration with Sanctuary for Families’ Pro Bono Council to provide free short-term limited scope legal services to LGBTQ youth.  The Qlinic takes place on Saturday evenings at the Church of St. Luke in the Fields in coordination with Art &amp; Acceptance, a weekly program that provides a safe space and community for lesbian, gay, transgender, gender non-conforming, questioning, and allied youth ages 16-24, many of whom are homeless or struggling with unstable living situations.<br /><br />
-    What kind of help is offered?<br /><br />
-    It is the goal of the Qlinic to intervene in the cycle of alienation, discrimination, and exploitation that marginalizes LGBTQ homeless youth. Through short-term legal consultations and referrals, the Qlinic connects youth participants of Art &amp; Acceptance to legal resources to address critical needs.  In each consultation, Qlinic Volunteer Attorneys identify legal issues and remedies that may be available to youth participants, and, if appropriate, refer youth participants to legal services organizations that  can offer further guidance or representation.  In providing these services, the Qlinic aims to foster an atmosphere of acceptance and inclusiveness, and to communicate to youth participants that their needs are visible and important and that their voices are heard.</span>,
-    links: [
-      {
-        title: 'LeGaL\'s Youth Qlinic',
-        url: 'https://www.lgbtbarny.org/youthqlinic',
-      },
-      {
-        title: 'LeGaL\'s Walk-In Clinics',
-        url: 'https://www.lgbtbarny.org/clinics-information',
-      },
-      {
-        title: 'Legal Services',
-        url: 'https://www.lgbtbarny.org/legal-services',
-      },
-      {
-        title: 'Get Involved',
-        url: 'https://www.lgbtbarny.org/get-involved',
-      },
-    ],
-    categories: ['volunteering'],
-  },
-  tnc,
   mentoring,
-  njclinic,
   social: {
     key: 'social',
     image: '/images/groups/pool-party.jpg',
-    imageOptions: { backgroundPosition: `center` },
+    imageOptions: { backgroundPosition: `center -32px` },
     colors: ['#c41d7f', '#40a9ff'], // custom, grey
     title: 'Networking & Social Events Committee',
     chairs: ['Nicholas Corsano'],
@@ -243,6 +295,7 @@ export const ATTORNEY_GROUPS = {
     ],
     categories: ['committees'],
   },
+  virtualclinic,
   partners: {
     key: 'partners',
     image: '',
@@ -314,23 +367,11 @@ export const ATTORNEY_GROUPS = {
 };
 
 export const STUDENT_GROUPS = {
-  internship: {
-    key: 'internship',
-    image: '/images/groups/internship.jpg',
-    colors: ['#08979c', '#87e8de'],
-    title: 'Internship Program',
-    description: 'Under the guidance of LeGaL’s Legal Director and volunteer attorneys, interns participate in client intake, assist with legal research, organize case documents, learn valuable legal resources, and develop a deeper understanding of the profession. They have the opportunity to interact directly with clients through LeGaL’s free legal clinics, client phone calls, and online inquiries. As a result, LeGaL’s interns gain exposure to a wide range of legal issue and practice areas, including housing, criminal law, discrimination, employment, family law, immigration, and estate planning.',
-    links: [
-      {
-        title: 'Internship Program',
-        url: 'https://www.lgbtbarny.org/career-fair',
-      },
-    ],
-  },
+  internship,
   fellowship: {
     key: 'fellowship',
     image: '/images/groups/fellowship.jpg',
-    imageOptions: { backgroundPosition: 'center -27px' },
+    imageOptions: { backgroundPosition: 'center -6px' },
     colors: ['#fadb14'],
     label: 'Judicial Fellowship',
     title: 'Hank Henry Judicial Fellowship',
@@ -364,7 +405,7 @@ export const STUDENT_GROUPS = {
   summit: {
     key: 'summit',
     image: '/images/groups/summit.jpg',
-    imageOptions: { backgroundPosition: 'center -16px' },
+    imageOptions: { backgroundPosition: 'center -9px' },
     colors: ['#9254de'],
     label: 'Leadership Summit',
     title: 'New York LGBTQ+ Law Student Leadership Summit',
@@ -376,7 +417,5 @@ export const STUDENT_GROUPS = {
   //     },
   //   ],
   },
-  tnc,
   mentoring,
-  njclinic,
 }

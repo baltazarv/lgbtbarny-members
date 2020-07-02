@@ -5,18 +5,11 @@ import './member-groups.less';
 // data
 import * as memberTypes from '../../../data/member-types';
 import { ATTORNEY_GROUPS, STUDENT_GROUPS } from '../../../data/member-groups';
+import { groupCategories } from '../../../data/member-groups';
 
 const { Option } = Select;
 const { Meta } = Card;
 const { Paragraph, Link } = Typography;
-
-const groupCategories = {
-  committees: 'Committees & Sections',
-  referrals: 'Referral Service',
-  leadership: 'Leadership Council',
-  volunteering: 'Volunteering',
-  mentoring: 'Mentoring',
-};
 
 const categoryOptions = [];
 for (const key in groupCategories) {
@@ -163,7 +156,7 @@ const MemberGroups = ({
   }, [ATTORNEY_GROUPS, STUDENT_GROUPS, memberType, previewUser, categories, memberTypeView]);
 
   const introText = useMemo(() => {
-    if (memberType === memberTypes.USER_ATTORNEY) return <p>Look into the following ways to get involved:</p>;
+    if (memberType === memberTypes.USER_ATTORNEY) return <div className="mb-2">Browse over the following ways to get involved or find by using the filters:</div>;
 
     if (memberType === memberTypes.USER_STUDENT) return <p>See the opportunities available to you:</p>;
 
