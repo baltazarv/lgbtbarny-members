@@ -1,6 +1,7 @@
 import { Avatar, Button, Typography } from 'antd';
 import { LoginOutlined } from '@ant-design/icons';
 // custom components
+import Account from '../components/members/account/account';
 import MemberGroups from '../components/members/groups/member-groups';
 import LawNotesLatest from '../components/members/law-notes/law-notes-latest';
 import LawNotesSample from '../components/members/law-notes/law-notes-sample';
@@ -91,199 +92,28 @@ const linkText = {
 }
 
 /******************
- * profile
+ * account
  ******************/
 
-const profile = (memberType, onLink) => {
-  let route = '';
+const account = (memberType, user, onLink) => {
   let banner = null;
-  let title = '';
-  let content = null;
-  let links = [];
-  let children = {
-    logininfo: loginInfo(memberType, onLink),
-    memberinfo: memberInfo(memberType, onLink),
-  }
-
   if (memberType === memberTypes.USER_NON_MEMBER) {
-    route = 'profile';
     banner = banners('membership', onLink);
-    title = 'Profile';
-    content = <>
-      <span>Edit account info:</span>
-      <ul>
-        <li>Name.</li>
-        <li><u>Upload profile picture</u>.</li>
-        <li>Email address.</li>
-        <li>Alternate email address (optional), for account recovery.</li>
-        <li>Password.</li>
-        <li>Cell phone number for account recovery (optional).</li>
-      </ul>
-    </>;
-    links = ['emailprefs'];
-    children = null;
   };
 
   return {
-    route,
-    icon: <MenuIcon name="customer-profile" ariaLabel="Profile" />,
-    label: 'Profile',
+    route: 'account',
+    icon: <MenuIcon name="user-admin" ariaLabel="My Account Settings" />,
+    label: 'Account',
     banner,
-    title,
-    content,
-    links,
-    children,
+    title: 'Account Settings',
+    // title: `Welcome, ${user.firstname} ${user.lastname}`,
+    content: <Account
+      memberType={memberType}
+      user={user}
+      />,
   }
 };
-
-const loginInfo = () => {
-  return {
-    route: 'login-info',
-    label: 'Login Info',
-    title: 'Login Information',
-    content: <>
-      <span>Edit login info:</span>
-      <ul>
-        <li>Email address.</li>
-        <li>Alternate email address (optional), for account recovery.</li>
-        <li>Password.</li>
-      </ul>
-    </>,
-    links: ['emailprefs', 'memberinfo'],
-  }
-};
-
-const memberInfo = (memberType = memberTypes.USER_ATTORNEY) => {
-  return {
-    route: 'member-info',
-    label: 'Member Info',
-    title: 'Member Information',
-    content: <>
-      <span>Edit member info, including some statistic &amp; demographic info:</span>
-      <ul>
-        <li>Name.</li>
-        <li>Upload profile picture.</li>
-        <li>Address (optional).</li>
-        <li>Cell phone number for account recovery (optional).</li>
-        {memberType === memberTypes.USER_ATTORNEY &&
-          <>
-            <li>Attorney status (bar member, law graduate, retired attorney).</li>
-            <li>Income range.</li>
-            <li>Employer.</li>
-            <li>Practice/work setting.</li>
-            <li>Primary area of practice.</li>
-            <li>Age range.</li>
-          </>
-        }
-        {memberType === memberTypes.USER_STUDENT &&
-          <>
-            <li>Law school.</li>
-            <li>Graduation year.</li>
-          </>
-        }
-        <li>Race/ethnicity.</li>
-        <li>Sexual orientation, gender identity, &amp; preferred pronouns.</li>
-        <li>Special accommodations (accessibility, ASL).</li>
-      </ul>
-    </>,
-    links: ['logininfo', 'emailprefs'],
-  }
-}
-
-/******************
- * billing
- ******************/
-
-const billing = (memberType = memberTypes.USER_ATTORNEY, onLink, previewUser) => {
-  let locked = false;
-  let banner = null;
-  let title = 'Billing';
-  let content = null;
-
-  let children = {
-    payments: payments(memberType, onLink),
-    autopay: {
-      route: 'auto-payments',
-      label: 'Auto Payments',
-      title: 'Auto Payment Settings',
-      links: ['payments'],
-    },
-    taxforms: taxForms(memberType, onLink),
-  };
-
-  if (memberType === memberTypes.USER_STUDENT) {
-    children = {
-      payments: payments(memberType, onLink),
-      taxforms: taxForms(memberType, onLink),
-    };
-  } else if (memberType === memberTypes.USER_ANON) {
-    locked = true;
-    banner = banners('login', onLink);
-    content = <>
-      <div>{ previewUser === memberTypes.USER_ATTORNEY &&
-          <Button type="link" onClick={() => onLink(memberTypes.SIGNUP_ATTORNEY)}>Sign up as an Attorney Member</Button>
-        }{ previewUser === memberTypes.USER_STUDENT &&
-          <Button type="link" onClick={() => onLink(memberTypes.SIGNUP_STUDENT)}>Sign up as a Law Student Member</Button>
-        }{ previewUser === memberTypes.USER_NON_MEMBER &&
-          <Button type="link" onClick={() => onLink(memberTypes.SIGNUP_NON_MEMBER)}>Sign up for a Basic Account</Button>
-        } to do the following:</div>
-      <ul>
-        <li><strong>View payment history</strong> for events that you have attended and donations that you have made.</li>
-        <li><strong>Download tax forms</strong> for charitable tax contributions that you have made to the Foundation.</li>
-      </ul>
-    </>;
-    children = null;
-  } else if (memberType === memberTypes.USER_NON_MEMBER) {
-    banner = banners('membership', onLink);
-    title = 'Billing';
-    children = {
-      payments: payments(memberTypes.USER_NON_MEMBER),
-      // autopay: // only when subscribed to Law Notes
-      taxforms: taxForms(),
-    };
-  };
-
-  return {
-    route: 'billing',
-    icon: <MenuIcon name="annotate" ariaLabel="Billing" />,
-    label: "Billing",
-    locked,
-    title,
-    banner,
-    content,
-    children,
-  }
-}
-
-const payments = (memberType = memberTypes.USER_ATTORNEY, onLink) => ({
-  route: 'payments',
-  label: 'Payment History',
-  title: 'Payment History',
-  content: <>
-    <div>Payment receipts for:</div>
-    <ul>
-      <li>Events.</li>
-      {memberType === memberTypes.USER_ATTORNEY && <li>Membership fees.</li>}
-      <li>Donations.</li>
-    </ul>
-  </>,
-  links: ['taxforms'],
-});
-
-const taxForms = (memberType, onLink) => ({
-  route: 'tax-forms',
-  label: 'Tax Deductions',
-  title: 'Charitable Tax Contribution Deductions',
-  content: <>
-    <div>Download tax forms for contributions to Foundation. (Forms generated on web server.)</div>
-    <ul>
-      <li>2019 tax deductions</li>
-      <li>2018 tax deductions</li>
-      <li>...</li>
-    </ul>
-  </>,
-  links: ['payments']
-});
 
 /******************
  * participate
@@ -635,75 +465,6 @@ const discounts = (memberType, onLink, previewUser) => {
 };
 
 /******************
- * email prefs
- ******************/
-
-const emailPrefs = (memberType = memberTypes.USER_ATTORNEY, onLink, previewUser) => {
-  let icon = <MenuIcon name="email-gear" ariaLabel="Email Preferences" fill="#415158" />
-  let banner = null;
-  let nonMemberClasses = '';
-  let locked = false;
-  let content = <>
-    <span>Choose the type of emails to opt out from receiving:</span>
-    <ul>
-      <li>
-        <span className="font-weight-bold">LGBT Bar Newsletter emails,</span> including <em>Pride and Advocacy</em> emails.
-      </li>
-      {memberType === memberTypes.USER_STUDENT &&
-        <li>
-          <span className="font-weight-bold">Law Student emails.</span>
-        </li>
-      }
-      {memberType !== memberTypes.USER_STUDENT &&
-        <li>
-          <span className={`font-weight-bold ${nonMemberClasses}`}>Association Member emails.</span>
-        </li>
-      }
-      <li className={`${nonMemberClasses}`}>
-        <span className="font-weight-bold">Law Notes emails:</span> magazine &amp; podcast.
-      </li>
-    </ul>
-    <span className="font-weight-bold">Transactional notifications</span> will always be sent:
-    <ul>
-      <li>Password reset emails.</li>
-      <li>Transaction &amp; payment emails (donations, membership, paid events).</li>
-      <li>Event registration confirmations.</li>
-    </ul>
-    <p>The same settings will be available from <em>unsubscribe</em> or <em>manage email preference</em> links on emails sent.</p>
-  </>;
-  let links = ['logininfo', 'memberinfo'];
-
-  if (memberType === memberTypes.USER_ANON) {
-    banner = banners('newsletter', onLink);
-    locked = true;
-    // fill needs to be hard-coded for 'email-gear' icon
-    icon = <MenuIcon name="email-gear" ariaLabel="Email Preferences" fill="rgba(0, 0, 0, 0.2" />
-    let signupLink = memberTypes.SIGNUP_ATTORNEY;
-    if (previewUser === memberTypes.USER_STUDENT) signupLink = memberTypes.SIGNUP_STUDENT;
-    if (previewUser === memberTypes.USER_NON_MEMBER) signupLink = memberTypes.SIGNUP_NON_MEMBER;
-    content = <>
-      <p>When you <Button type="link" onClick={() => onLink(linkText.newsletter)}>sign up to our newsletter</Button> you can also manage your email preferences from the <em>Dashboard</em> when you <Button type="link" onClick={() => onLink(signupLink)}>sign up</Button>.</p>
-    </>;
-    links = [linkText.memberSignup, linkText.newsletter, linkText.nonMemberSignup];
-  } else if (memberType === memberTypes.USER_NON_MEMBER) {
-    nonMemberClasses = 'text-muted line-through';
-    banner = banners('newsletter', onLink);
-    links = ['profile'];
-  }
-
-  return {
-    route: 'email-prefs',
-    icon,
-    label: 'Email Prefs',
-    banner,
-    locked,
-    title: 'Email Preferences',
-    content,
-    links,
-  };
-}
-
-/******************
  * logout
  ******************/
 
@@ -728,11 +489,32 @@ const login = () => {
 
 // TODO: replace onLink and previewUser functions for commands object with function name and vars
 
-export const getDashboard = (userType, onLink, previewUser) => {
-  if (userType === memberTypes.USER_ANON) return anonDashboard(memberTypes.USER_ANON, onLink, previewUser);
-  if (userType === memberTypes.USER_ATTORNEY) return attorneyData(memberTypes.USER_ATTORNEY, onLink);
-  if (userType === memberTypes.USER_NON_MEMBER) return nonMemberData(memberTypes.USER_NON_MEMBER, onLink);
-  if (userType === memberTypes.USER_STUDENT) return studentData(memberTypes.USER_STUDENT, onLink);
+export const getDashboard = ({
+  userType,
+  user,
+  onLink,
+  previewUser,
+}) => {
+  if (userType === memberTypes.USER_ANON) return anonDashboard({
+    userType: memberTypes.USER_ANON,
+    onLink,
+    previewUser,
+  });
+  if (userType === memberTypes.USER_ATTORNEY) return attorneyData({
+    userType: memberTypes.USER_ATTORNEY,
+    user,
+    onLink,
+  });
+  if (userType === memberTypes.USER_NON_MEMBER) return nonMemberData({
+    userType: memberTypes.USER_NON_MEMBER,
+    user,
+    onLink,
+  });
+  if (userType === memberTypes.USER_STUDENT) return studentData({
+    userType: memberTypes.USER_STUDENT,
+    user,
+    onLink,
+  });
   return;
 }
 
@@ -742,10 +524,9 @@ export const loginData = (onLink) => {
     options: {
       defaultSelectedKeys: [],
       defaultMenuOpenKeys: ['members', 'lawnotes', 'clecenter', 'discounts', 'participate', 'billing'],
-      avatar: null,
     },
     members: {
-      icon: <MenuIcon name="customer-profile" ariaLabel="profile" />,
+      icon: <MenuIcon name="customer-profile" ariaLabel="Membership" />,
       label: 'Membership',
       // disabled: true,
       heading: true,
@@ -785,31 +566,35 @@ export const loginData = (onLink) => {
   }
 };
 
-const attorneyData = (userType, onLink) => {
+const attorneyData = ({
+  userType,
+  user,
+  onLink,
+}) => {
   return {
     options: {
       key: userType,
-      defaultSelectedKeys: ['logininfo'], //
-      defaultMenuOpenKeys: ['profile'], //
-      avatar: <Avatar
-        src="/images/users/denzel.jpg"
-      />,
+      defaultSelectedKeys: ['account'], //
+      defaultMenuOpenKeys: [], //
+      user, // TODO: move outside options
     },
-    profile: profile(userType, onLink),
-    billing: billing(userType, onLink),
     participate: participate(userType, onLink),
     lawnotes: lawNotes(userType, onLink),
     clecenter: cleCenter(userType, onLink),
     discounts: discounts(userType, onLink),
-    emailprefs: emailPrefs(userType, onLink),
+    account: account(userType, user, onLink),
     logout: logout(userType, onLink),
   }
 }
 
-const anonDashboard = (userType, onLink, previewUser = memberTypes.USER_ATTORNEY) => {
+const anonDashboard = ({
+  userType,
+  onLink,
+  previewUser = memberTypes.USER_ATTORNEY,
+}) => {
   const options = {
     key: userType,
-    defaultSelectedKeys: ['billing'], //
+    defaultSelectedKeys: ['participate'], //
     defaultMenuOpenKeys: [],
     avatar: <Avatar
       icon={<SvgIcon
@@ -823,53 +608,52 @@ const anonDashboard = (userType, onLink, previewUser = memberTypes.USER_ATTORNEY
   };
   return {
     options,
-    billing: billing(userType, onLink, previewUser),
     participate: participate(userType, onLink, previewUser),
     lawnotes: lawNotes(userType, onLink, previewUser),
     clecenter: cleCenter(userType, onLink, previewUser),
     discounts:discounts(userType, onLink, previewUser),
-    emailprefs: emailPrefs(userType, onLink, previewUser),
     login: login(),
   }
 };
 
-const nonMemberData = (userType, onLink, previewUser) => {
+const nonMemberData = ({
+  userType,
+  user,
+  onLink,
+  previewUser,
+}) => {
   return {
   options: {
     key: userType,
-    defaultSelectedKeys: ['profile'], //
+    defaultSelectedKeys: ['account'], //
     defaultMenuOpenKeys: [],
-    avatar: <Avatar
-      src="/images/users/river.jpg"
-    />,
+    user, // TODO: move outside options
   },
-  profile: profile(userType, onLink),
-  billing: billing(userType, onLink),
   participate: participate(userType, onLink),
   lawnotes: lawNotes(userType, onLink, previewUser),
   clecenter: cleCenter(userType, onLink),
   discounts: discounts(userType, onLink),
-  emailprefs: emailPrefs(userType, onLink),
+  account: account(userType, user, onLink),
   logout: logout(userType, onLink),
   }
 }
 
-const studentData = (userType, onLink) => {
+const studentData = ({
+  userType,
+  user,
+  onLink,
+}) => {
   return {
     options: {
       key: userType,
-      defaultSelectedKeys: ['logininfo'], //
-      defaultMenuOpenKeys: ['profile'], //
-      avatar: <Avatar
-        src="/images/users/reese.jpg"
-      />,
+      defaultSelectedKeys: ['account'], //
+      defaultMenuOpenKeys: [], //
+      user, // TODO: move outside options
     },
-    profile: profile(userType, onLink),
-    billing: billing(userType, onLink),
     participate: participate(userType, onLink),
     lawnotes: lawNotes(userType, onLink),
     clecenter: cleCenter(userType, onLink),
-    emailprefs: emailPrefs(userType, onLink),
+    account: account(userType, user, onLink),
     logout: logout(userType, onLink),
   }
 };

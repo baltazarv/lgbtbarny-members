@@ -98,12 +98,11 @@ const MemberAccordion = ({
       activeKey={activeKey}
       onChange={onPanelSelected}
     >
-      {
-        data.options && data.options.avatar ?
-      <div className="toolbar d-flex justify-content-around align-items-center">
+      {data && data.options ?
+        <div className="toolbar d-flex justify-content-around align-items-center">
           <span>
             <Avatar
-              src={data.options.avatarSrc}
+              src={data && data.options.user && data.options.user.photo}
             />
           </span>
           <span

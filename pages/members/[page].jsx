@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router'
 import { Breakpoint } from 'react-socks';
 import { Jumbotron, Container } from 'react-bootstrap';
-import { Layout, Button, Tooltip } from 'antd';
+import { Layout, Button, Tooltip, Avatar } from 'antd';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 // custom components
@@ -11,11 +11,13 @@ import MemberMenu from '../../components/members/member-menu';
 import MemberAccordion from '../../components/members/member-accordion';
 import MemberContent from '../../components/members/member-content';
 import MemberModal from '../../components/members/member-modal';
+import SvgIcon from '../../components/utils/svg-icon';
 import NewsNotification from '../../components/utils/open-notification';
 import './members.less';
 // data
 import { getDashboard, getMemberPageParentKey } from '../../data/member-dashboards';
 import * as memberTypes from '../../data/member-types';
+import users from '../../data/users';
 
 const { Sider } = Layout;
 
@@ -64,20 +66,29 @@ const Members = () => {
     let dashboardKey = '';
     let previewUserKey = '';
     let _data = {};
+    let userData = {};
 
     if (!router.query.type || router.query.type === 'anon' || router.query.type === 'anonymous') {
       dashboardKey = memberTypes.USER_ANON;
       previewUserKey = memberTypes.USER_ATTORNEY;
     } else if (router.query.type === 'attorney') {
       dashboardKey = memberTypes.USER_ATTORNEY;
+      userData = users.attorney;
     } else if (router.query.type === 'student') {
       dashboardKey = memberTypes.USER_STUDENT;
+      userData = users.student;
     } else if (router.query.type === 'non-member') {
       dashboardKey = memberTypes.USER_NON_MEMBER;
+      userData = users.nonMember;
     }
 
     setMemberType(dashboardKey);
-    _data = {...getDashboard(dashboardKey, handleContentLink, previewUserKey)};
+    _data = {...getDashboard({
+      userType: dashboardKey,
+      user: userData,
+      onLink: handleContentLink,
+      previewUser: previewUserKey,
+    })};
     setData(_data);
 
     // set routes key/value object from data
@@ -215,7 +226,12 @@ const Members = () => {
 
   const handleSelectPreviewUser = (user) => {
     setPreviewUser(user);
-    setData({...getDashboard(memberTypes.USER_ANON, handleContentLink, user)});
+    setData({...getDashboard({
+      userType: memberTypes.USER_ANON,
+      user: {},
+      onLink: handleContentLink,
+      previewUser: user,
+    })});
   }
 
   return (
@@ -258,16 +274,23 @@ const Members = () => {
                 onCollapse={onMenuCollapse}
                 theme="light"
               >
-                {
-                  data && data.options && data.options.avatar ?
                   <Tooltip title="toggle opening menu">
                     <div className="avatar-box" onClick={toggleOpenMenuKeys}>
-                      {data.options.avatar}
+                      {data && data.options && data.options.user ?
+                        <Avatar src={data.options.user.photo} />
+                      :
+                        <Avatar
+                        icon={<SvgIcon
+                          name="customer-profile"
+                          width="2.2em"
+                          height="2.2em"
+                          fill="rgba(0, 0, 0, 0.65)"
+                        />}
+                        style={{ backgroundColor: 'rgba(0, 0, 0, 0)' }}
+                      />
+                      }
                     </div>
                   </Tooltip>
-                :
-                  null
-                }
                 <MemberMenu
                   data={data}
                   selectedKeys={selectedKey}

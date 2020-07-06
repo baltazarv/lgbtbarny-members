@@ -39,9 +39,7 @@ const MainLayout = ({ children, subtitle = '' }) => (
       </Head>
       <Layout>
         <MainHeader />
-        {/* <Container> */}
           {children}
-        {/* </Container> */}
         <MainFooter />
       </Layout>
     {/* </Elements> */}
