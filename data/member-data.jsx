@@ -29,6 +29,8 @@ export const FORMS = {
   createAccount: 'create-account',
   validate: 'validate',
   pay: 'pay',
+  editProfile: 'edit-profile',
+  editLoginSecurity: 'edit-login-security',
 }
 
 export const SIGNUP_FORM_FIELDS = {

@@ -112,12 +112,24 @@ a, a:not([href]):not([tabindex]) {
   color: @link-blue;
 }
 
+label {
+  margin-bottom: .0;
+}
+
 // darken muted text
 .text-muted {
   color: rgba(0, 0, 0, 0.2)!important;
 }
 
 // antd re-writes
+
+.ant-form-item {
+  margin-bottom: 1em;
+
+  @media @sm-up {
+    margin-bottom: 0.4em;
+  }
+}
 
 .ant-card-bordered {
   border: 1px solid rgba(0, 0, 0, 0.2);
@@ -138,6 +150,16 @@ a, a:not([href]):not([tabindex]) {
   }
 }
 
+.ant-card-head {
+  min-height: 0;
+  background-color: #fafafa;
+}
+
 .ant-card-head-title {
+  padding: 0.5em 0;
   font-weight: bold;
+}
+
+.ant-card-extra {
+  padding: 0;
 }
