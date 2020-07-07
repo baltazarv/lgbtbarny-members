@@ -6,19 +6,20 @@ import { UserOutlined } from '@ant-design/icons';
 // data
 import { FORMS } from '../../../data/member-data';
 
-const ProfileFields = ({
-  loading,
+const ProfileForm = ({
+  name,
+  title,
   user,
+  setUser,
+  loading,
 }) => {
-  const [userData, setUserData] = useState(null);
   const [editing, setEditing] = useState(false);
 
   return <AccountsForm
-    title="Profile"
-    name={FORMS.editProfile}
+    title={title}
+    name={name}
     user={user}
-    userData={userData}
-    setUserData={setUserData}
+    setUser={setUser}
     editing={editing}
     setEditing={setEditing}
     // labelCol={{
@@ -37,7 +38,7 @@ const ProfileFields = ({
         xs={24}
         sm={10}
         md={8}
-        style={{ textAlign: 'center' }}
+        className="text-left text-sm-center"
       >
         {editing
         ?
@@ -96,8 +97,8 @@ const ProfileFields = ({
       :
         <>
           <div><label className="ant-form-item-label">Name</label></div>
-          {userData &&
-            <div style={{ fontSize: 16 }}>{userData.firstname} {userData.lastname}</div>
+          {user &&
+            <div style={{ fontSize: 16 }}>{user.firstname} {user.lastname}</div>
           }
         </>
       }</Col>
@@ -105,4 +106,4 @@ const ProfileFields = ({
   </AccountsForm>
 };
 
-export default ProfileFields;
+export default ProfileForm;

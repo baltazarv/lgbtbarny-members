@@ -3,9 +3,11 @@ import { Form } from 'antd';
 import SvgIcon from '../../utils/svg-icon';
 import ProfileForm from './profile-form';
 import LoginSecurityForm from './login-security-form';
+import MembershipForm from './membership-form';
 import './account.less'
 // data
-// import * as memberTypes from '../../../data/member-types';
+import * as memberTypes from '../../../data/member-types';
+import { FORMS } from '../../../data/member-data';
 
 const MenuIcon = ({
   name,
@@ -22,20 +24,23 @@ const MenuIcon = ({
   </span>
 
 const Account = ({
-  // memberType,
+  userType,
   user,
+  setUser,
 }) => {
 
   const [loading, setLoading] = useState(false);
 
   const onFormChange = (formName, info) => {
-    console.log(formName, info.changedFields);
+    // console.log(formName, info.changedFields);
   }
 
   const onFormFinish = async (formName, info) => {
     // formName: string, info: { values, forms })
-    console.log(formName, info.values, info.forms)
+    // console.log(formName, info.values, info.forms)
   }
+
+  console.log(userType);
 
   return <div className="members-account">
     <Form.Provider
@@ -44,22 +49,42 @@ const Account = ({
     >
       <div className="mb-3">
         <ProfileForm
+          name={FORMS.editProfile}
+          title="Profile"
           user={user}
+          setUser={setUser}
           loading={loading}
         />
       </div>
 
       <div className="mb-3">
         <LoginSecurityForm
+          name={FORMS.editLoginSecurity}
+          title="Login &amp; security"
           user={user}
+          setUser={setUser}
           loading={loading}
         />
       </div>
 
-      {/* <span>Edit member info, including some statistic &amp; demographic info:</span>
+      {(
+        userType === memberTypes.USER_ATTORNEY ||
+        userType === memberTypes.USER_STUDENT
+      ) &&
+        <div className="mb-3">
+          <MembershipForm
+            name={FORMS.editMembership}
+            title="Membership info"
+            user={user}
+            setUser={setUser}
+            loading={loading}
+          />
+        </div>
+      }
+
+      <span>Edit member info, including some statistic &amp; demographic info:</span>
       <ul>
-        <li>Address (optional).</li>
-        // {memberType === memberTypes.USER_ATTORNEY &&
+        {userType === memberTypes.USER_ATTORNEY &&
           <>
             <li>Attorney status (bar member, law graduate, retired attorney).</li>
             <li>Income range.</li>
@@ -69,7 +94,7 @@ const Account = ({
             <li>Age range.</li>
           </>
         }
-        // {memberType === memberTypes.USER_STUDENT &&
+        {userType === memberTypes.USER_STUDENT &&
           <>
             <li>Law school.</li>
             <li>Graduation year.</li>
@@ -90,7 +115,7 @@ const Account = ({
       <div>Payment receipts for:</div>
       <ul>
         <li>Events.</li>
-        // {memberType === memberTypes.USER_ATTORNEY && <li>Membership fees.</li>}
+        {userType === memberTypes.USER_ATTORNEY && <li>Membership fees.</li>}
         <li>Donations.</li>
       </ul>
 
@@ -117,12 +142,12 @@ const Account = ({
         <li>
           <span className="font-weight-bold">LGBT Bar Newsletter emails,</span> including <em>Pride and Advocacy</em> emails.
         </li>
-        // {memberType === memberTypes.USER_STUDENT &&
+        {userType === memberTypes.USER_STUDENT &&
           <li>
             <span className="font-weight-bold">Law Student emails.</span>
           </li>
         }
-        // {memberType !== memberTypes.USER_STUDENT &&
+        {userType !== memberTypes.USER_STUDENT &&
           <li>
             <span className={`font-weight-bold`}>Association Member emails.</span>
           </li>
@@ -137,7 +162,7 @@ const Account = ({
         <li>Transaction &amp; payment emails (donations, membership, paid events).</li>
         <li>Event registration confirmations.</li>
       </ul>
-      <p>The same settings will be available from <em>unsubscribe</em> or <em>manage email preference</em> links on emails sent.</p> */}
+      <p>The same settings will be available from <em>unsubscribe</em> or <em>manage email preference</em> links on emails sent.</p>
 
     </Form.Provider>
   </div>

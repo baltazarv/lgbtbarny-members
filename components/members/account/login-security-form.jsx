@@ -6,18 +6,19 @@ import AccountsForm from './accounts-form';
 import { FORMS } from '../../../data/member-data';
 
 const LoginSecurityForm = ({
+  name,
+  title,
   user,
+  setUser,
   loading,
 }) => {
-  const [userData, setUserData] = useState(null);
   const [editing, setEditing] = useState(false);
 
   return <AccountsForm
-    title="Login &amp; security"
-    name={FORMS.editLoginSecurity}
+    name={name}
+    title={title}
     user={user}
-    userData={userData}
-    setUserData={setUserData}
+    setUser={setUser}
     editing={editing}
     setEditing={setEditing}
     labelCol={{
@@ -60,7 +61,7 @@ const LoginSecurityForm = ({
             xs={14}
             sm={24}
             md={16}
-          >{user.email}</Col>
+          >{user && user.email}</Col>
           <Col
             xs={8}
             sm={24}
@@ -81,6 +82,7 @@ const LoginSecurityForm = ({
       <Button
         type="primary"
         ghost
+        onClick={() => alert('Enter current password...')}
       >Change password...</Button>
     </Form.Item>
 

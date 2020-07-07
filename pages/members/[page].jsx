@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useReducer } from 'react';
 import { useRouter } from 'next/router'
 import { Breakpoint } from 'react-socks';
 import { Jumbotron, Container } from 'react-bootstrap';
@@ -61,35 +61,41 @@ const Members = () => {
     ),
   });
 
+  const userReducer = (state, action) => {
+    switch (action.type) {
+      case 'update':
+        return {...state, ...action.value};
+      default:
+        throw new Error();
+    };
+    return state;
+  };
+
+  // setUser({ type: 'update', value });
+  const [user, setUser] = useReducer(userReducer, {});
+
   // load data file based on type query string
   useEffect(() => {
-    let dashboardKey = '';
-    let previewUserKey = '';
+    let _memberType = '';
     let _data = {};
-    let userData = {};
+    let _user = {};
 
     if (!router.query.type || router.query.type === 'anon' || router.query.type === 'anonymous') {
-      dashboardKey = memberTypes.USER_ANON;
-      previewUserKey = memberTypes.USER_ATTORNEY;
+      _memberType = memberTypes.USER_ANON;
+      setPreviewUser(memberTypes.USER_ATTORNEY);
     } else if (router.query.type === 'attorney') {
-      dashboardKey = memberTypes.USER_ATTORNEY;
-      userData = users.attorney;
+      _memberType = memberTypes.USER_ATTORNEY;
+      _user = {...users.attorney};
     } else if (router.query.type === 'student') {
-      dashboardKey = memberTypes.USER_STUDENT;
-      userData = users.student;
+      _memberType = memberTypes.USER_STUDENT;
+      _user = {...users.student};
     } else if (router.query.type === 'non-member') {
-      dashboardKey = memberTypes.USER_NON_MEMBER;
-      userData = users.nonMember;
+      _memberType = memberTypes.USER_NON_MEMBER;
+      _user = {...users.nonMember};
     }
+    setMemberType(_memberType);
+    setUser({ type: 'update', value: _user });
 
-    setMemberType(dashboardKey);
-    _data = {...getDashboard({
-      userType: dashboardKey,
-      user: userData,
-      onLink: handleContentLink,
-      previewUser: previewUserKey,
-    })};
-    setData(_data);
 
     // set routes key/value object from data
     let _routes = {};
@@ -110,7 +116,21 @@ const Members = () => {
     setRoutes(_routes)
   }, [router.query]);
 
-  // set menu item based on page
+  // set dashboard when user is known
+  useEffect(() => {
+    if (user && memberType) {
+      const dashboard = {...getDashboard({
+        userType: memberType,
+        user,
+        setUser,
+        onLink: handleContentLink,
+        previewUser,
+      })};
+      setData(dashboard);
+    }
+  }, [user, memberType, previewUser]);
+
+  // set selected menu item based on page
   useEffect(() => {
     if (data) {
       if (!router.query.page || !routes[router.query.page]) {
@@ -229,6 +249,7 @@ const Members = () => {
     setData({...getDashboard({
       userType: memberTypes.USER_ANON,
       user: {},
+      setUser,
       onLink: handleContentLink,
       previewUser: user,
     })});

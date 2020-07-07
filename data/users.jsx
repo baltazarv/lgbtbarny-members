@@ -7,6 +7,7 @@ const users = {
     stripeCustomerId: 'cus_HPCQyo4yZKxSOY',
     photo: '/images/users/denzel.jpg',
     phone: '917-000-0000',
+    certifystatus: 'bar',
   },
   student: {
     firstname: 'Elle',
@@ -16,6 +17,7 @@ const users = {
     stripeCustomerId: 'cus_HPCPEND8CHcBXT',
     photo: '/images/users/reese.jpg',
     phone: '718-000-0000',
+    certifystatus: 'student',
   },
   nonMember: {
     firstname: 'Mikey',
@@ -25,6 +27,7 @@ const users = {
     stripeCustomerId: 'cus_HPCRNIKlfW7I8W',
     photo: '/images/users/river.jpg',
     phone: '212-000-0000',
+    certifystatus: null,
   },
 }
 

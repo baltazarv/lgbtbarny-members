@@ -19,11 +19,10 @@ import { EditOutlined } from '@ant-design/icons';
 
 const AccountsForm = ({
   // loading,
-  title,
   name,
+  title,
   user,
-  userData,
-  setUserData,
+  setUser,
   editing,
   setEditing,
   children,
@@ -40,21 +39,20 @@ const AccountsForm = ({
 }) => {
 
   const [form] = Form.useForm();
+  // enable submit button
   const [fieldValuesChanged, setFieldValuesChanged] = useState(false);
 
   useEffect(() => {
-    setUserData(Object.create(user));
-  }, [user]);
-
-  useEffect(() => {
-    if (userData) populateFields();
-  }, [userData, editing]);
+    if (user) {
+      populateFields();
+    }
+  }, [user, editing]);
 
   const populateFields = () => {
     const fields = form.getFieldsValue();
     for (const key in fields) {
-      if (userData[key]) {
-        form.setFieldsValue({ [key]: userData[key] })
+      if (user[key]) {
+        form.setFieldsValue({ [key]: user[key] })
       }
     }
   };
@@ -80,12 +78,12 @@ const AccountsForm = ({
 
   const onSubmit = () => {
     const fields = form.getFieldsValue();
-    let _userData = {};
+    let _user = {};
     for(const key in fields) {
-      if (userData[key]) {
-        _userData[key] = form.getFieldValue(key);
+      if (user[key]) {
+        _user[key] = form.getFieldValue(key);
       }
-      setUserData(_userData);
+      setUser({ type: 'update', value: _user});
     };
     setEditing(false);
     setFieldValuesChanged(false);

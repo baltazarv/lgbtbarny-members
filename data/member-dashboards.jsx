@@ -95,9 +95,14 @@ const linkText = {
  * account
  ******************/
 
-const account = (memberType, user, onLink) => {
+const account = ({
+  userType,
+  user,
+  setUser,
+  onLink,
+}) => {
   let banner = null;
-  if (memberType === memberTypes.USER_NON_MEMBER) {
+  if (userType === memberTypes.USER_NON_MEMBER) {
     banner = banners('membership', onLink);
   };
 
@@ -109,9 +114,10 @@ const account = (memberType, user, onLink) => {
     title: 'Account Settings',
     // title: `Welcome, ${user.firstname} ${user.lastname}`,
     content: <Account
-      memberType={memberType}
+      userType={userType}
       user={user}
-      />,
+      setUser={setUser}
+    />,
   }
 };
 
@@ -492,6 +498,7 @@ const login = () => {
 export const getDashboard = ({
   userType,
   user,
+  setUser,
   onLink,
   previewUser,
 }) => {
@@ -503,16 +510,19 @@ export const getDashboard = ({
   if (userType === memberTypes.USER_ATTORNEY) return attorneyData({
     userType: memberTypes.USER_ATTORNEY,
     user,
+    setUser,
     onLink,
   });
   if (userType === memberTypes.USER_NON_MEMBER) return nonMemberData({
     userType: memberTypes.USER_NON_MEMBER,
     user,
+    setUser,
     onLink,
   });
   if (userType === memberTypes.USER_STUDENT) return studentData({
     userType: memberTypes.USER_STUDENT,
     user,
+    setUser,
     onLink,
   });
   return;
@@ -569,6 +579,7 @@ export const loginData = (onLink) => {
 const attorneyData = ({
   userType,
   user,
+  setUser,
   onLink,
 }) => {
   return {
@@ -582,7 +593,7 @@ const attorneyData = ({
     lawnotes: lawNotes(userType, onLink),
     clecenter: cleCenter(userType, onLink),
     discounts: discounts(userType, onLink),
-    account: account(userType, user, onLink),
+    account: account({ userType, user, setUser, onLink }),
     logout: logout(userType, onLink),
   }
 }
@@ -619,6 +630,7 @@ const anonDashboard = ({
 const nonMemberData = ({
   userType,
   user,
+  setUser,
   onLink,
   previewUser,
 }) => {
@@ -633,7 +645,7 @@ const nonMemberData = ({
   lawnotes: lawNotes(userType, onLink, previewUser),
   clecenter: cleCenter(userType, onLink),
   discounts: discounts(userType, onLink),
-  account: account(userType, user, onLink),
+  account: account({ userType, user, setUser, onLink }),
   logout: logout(userType, onLink),
   }
 }
@@ -641,6 +653,7 @@ const nonMemberData = ({
 const studentData = ({
   userType,
   user,
+  setUser,
   onLink,
 }) => {
   return {
@@ -653,7 +666,7 @@ const studentData = ({
     participate: participate(userType, onLink),
     lawnotes: lawNotes(userType, onLink),
     clecenter: cleCenter(userType, onLink),
-    account: account(userType, user, onLink),
+    account: account({ userType, user, setUser, onLink }),
     logout: logout(userType, onLink),
   }
 };
