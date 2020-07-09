@@ -1,4 +1,4 @@
-import { Avatar, Button, Typography } from 'antd';
+import { Avatar, Typography } from 'antd';
 import { LoginOutlined } from '@ant-design/icons';
 // custom components
 import Account from '../components/members/account/account';
@@ -15,6 +15,8 @@ import SvgIcon from '../components/utils/svg-icon';
 import * as memberTypes from './member-types';
 import lawNotesData from '../data/law-notes-data';
 import cleData from '../data/cle-data';
+
+const { Link } = Typography;
 
 const MenuIcon = ({
   name,
@@ -57,12 +59,12 @@ const banners = (type, onLink) => {
   />;
   if (type === 'membership') return <Banner
     title="Become a member"
-    text={<span>If you are an attorney, <Button type="link" onClick={() => alert('Certify you are a lawyer > payment')}>become a member</Button> of the Association...</span>}
+    text={<span>If you are an attorney, <Link onClick={() => alert('Certify you are a lawyer > payment')}>become a member</Link> of the Association...</span>}
     colors={{ backgroundColor: '#f9f0ff', color: '#9e1068' }} // magenta
   />;
   if (type === 'lawnotes') return <Banner
     title="Subscribe to Law Notes"
-    text={<span><Button type="link" onClick={() => onLink(memberTypes.SIGNUP_LAW_NOTES)}>Sign up</Button> to get your digital subscription...</span>}
+    text={<span><Link onClick={() => onLink(memberTypes.SIGNUP_LAW_NOTES)}>Sign up</Link> to get your digital subscription...</span>}
     colors={{ backgroundColor: '#feffe6', color: '#ad8b00' }} // yellow
   />;
   if (type === 'clelatest') return <Banner
@@ -72,13 +74,13 @@ const banners = (type, onLink) => {
   />;
   if (type === 'newsletter') return <Banner
     title="Newsletter"
-    text={<span><Button type="link" onClick={() => onLink('signup-newletter')}>Sign up</Button> for the newsletter...</span>}
+    text={<span><Link onClick={() => onLink('signup-newletter')}>Sign up</Link> for the newsletter...</span>}
     colors={{ backgroundColor: '#e6fffb', color: '#006d75' }} // cyan
   />;
   if (type === 'login') return <Banner
     title="Already in the System?"
-    text={<span>If you already have an account <Button type="link" onClick={() => onLink('login')}>log in.</Button><br />
-    If you are a member, but have not logged into the new system, <Button type="link" onClick={() => alert('REQUEST ACCESS')}>request access.</Button></span>}
+    text={<span>If you already have an account <Link onClick={() => onLink('login')}>log in.</Link><br />
+    If you are a member, but have not logged into the new system, <Link onClick={() => alert('REQUEST ACCESS')}>request access.</Link></span>}
     colors={{ backgroundColor: '#f9f0ff', color: '#9e1068' }} // magenta
   />;
 }
@@ -117,6 +119,7 @@ const account = ({
       userType={userType}
       user={user}
       setUser={setUser}
+      onLink={onLink}
     />,
   }
 };

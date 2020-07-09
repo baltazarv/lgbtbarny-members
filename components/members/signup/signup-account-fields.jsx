@@ -6,6 +6,7 @@ import { MailOutlined, UserOutlined, LockOutlined } from '@ant-design/icons';
 // data
 import * as memberTypes from '../../../data/member-types';
 import { SIGNUP_FORM_FIELDS } from '../../../data/member-data';
+import { salaryOptions, gradYearOptions } from '../../../data/member-plans';
 
 const { Option } = Select;
 
@@ -16,41 +17,9 @@ const tailFormItemLayout = {
 
 const SignupAccountFields = ({
   signupType,
-  salaries,
   donationFields,
   loading,
 }) => {
-
-  // build options for salary select component
-  const salaryOptions = useMemo(() => {
-    let options = [];
-    for (const key in salaries) {
-      const newObject = Object.assign({}, salaries[key], {key});
-      options.push(<Option
-          key={key}
-          value={key}
-        >
-          {salaries[key].label}
-        </Option>)
-    }
-    return options;
-  }, [salaries]);
-
-  // build options for grad year select component
-  const gradYearOptions = useMemo(() => {
-    const thisYear = new Date().getFullYear();
-    let years = [];
-    for (let i = thisYear; i <= thisYear + 4; i++) {
-      years.push(i);
-    }
-    const options = years.map((year) => <Option
-        key={year}
-        value={year}
-      >
-        {year}
-      </Option>);
-    return options;
-  }, []);
 
   // create account fields
   const userFields = useMemo(() => {
@@ -111,7 +80,7 @@ const SignupAccountFields = ({
             placeholder="Choose salary to calculate fee..."
             disabled={loading}
           >
-            {salaryOptions}
+            {salaryOptions()}
           </Select>
         </Form.Item>
 
@@ -152,7 +121,7 @@ const SignupAccountFields = ({
             style={{ width: '100%' }}
             placeholder="Choose year..."
           >
-            {gradYearOptions}
+            {gradYearOptions()}
           </Select>
         </Form.Item>
       </>

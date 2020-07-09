@@ -8,6 +8,9 @@ const users = {
     photo: '/images/users/denzel.jpg',
     phone: '917-000-0000',
     certifystatus: 'bar',
+    employer: 'Cravath, Swaine & Moore LLP',
+    salary: 'upTo150K',
+    practicesetting: 'nonprofit',
   },
   student: {
     firstname: 'Elle',
@@ -18,6 +21,8 @@ const users = {
     photo: '/images/users/reese.jpg',
     phone: '718-000-0000',
     certifystatus: 'student',
+    school: 'Columbia Law School',
+    // gradyear: 2021, // memento object required
   },
   nonMember: {
     firstname: 'Mikey',
@@ -27,7 +32,7 @@ const users = {
     stripeCustomerId: 'cus_HPCRNIKlfW7I8W',
     photo: '/images/users/river.jpg',
     phone: '212-000-0000',
-    certifystatus: null,
+    certifystatus: 'na',
   },
 }
 

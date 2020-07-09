@@ -13,11 +13,13 @@ const ProfileForm = ({
   setUser,
   loading,
 }) => {
+  const [form] = Form.useForm();
   const [editing, setEditing] = useState(false);
 
   return <AccountsForm
-    title={title}
     name={name}
+    title={title}
+    form={form}
     user={user}
     setUser={setUser}
     editing={editing}

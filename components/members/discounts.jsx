@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Row, Col, Select, Card, Button, Typography, Radio, Modal } from 'antd';
 import { Container } from 'react-bootstrap';
 import './discounts.less';

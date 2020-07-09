@@ -12,11 +12,13 @@ const LoginSecurityForm = ({
   setUser,
   loading,
 }) => {
+  const [form] = Form.useForm();
   const [editing, setEditing] = useState(false);
 
   return <AccountsForm
     name={name}
     title={title}
+    form={form}
     user={user}
     setUser={setUser}
     editing={editing}
@@ -81,6 +83,7 @@ const LoginSecurityForm = ({
     >
       <Button
         type="primary"
+        size="small"
         ghost
         onClick={() => alert('Enter current password...')}
       >Change password...</Button>

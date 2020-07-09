@@ -6,6 +6,7 @@ export const CERTIFY_OPTIONS = {
   graduate: 'A law graduate who intends to be admitted',
   retired: 'An attorney retired from the practice of law',
   student: 'A law student',
+  na: 'Not an attorney nor a law student',
 }
 
 export const DONATIONS_SUGGESTED = {

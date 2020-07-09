@@ -27,6 +27,7 @@ const Account = ({
   userType,
   user,
   setUser,
+  onLink,
 }) => {
 
   const [loading, setLoading] = useState(false);
@@ -39,8 +40,6 @@ const Account = ({
     // formName: string, info: { values, forms })
     // console.log(formName, info.values, info.forms)
   }
-
-  console.log(userType);
 
   return <div className="members-account">
     <Form.Provider
@@ -68,36 +67,26 @@ const Account = ({
       </div>
 
       {(
-        userType === memberTypes.USER_ATTORNEY ||
-        userType === memberTypes.USER_STUDENT
+        userType !== memberTypes.USER_ANON
       ) &&
         <div className="mb-3">
           <MembershipForm
             name={FORMS.editMembership}
-            title="Membership info"
+            title={userType === memberTypes.USER_NON_MEMBER ? 'Membership qualification' : 'Membership info'}
+            userType={userType}
             user={user}
             setUser={setUser}
+            onLink={onLink}
             loading={loading}
           />
         </div>
       }
 
-      <span>Edit member info, including some statistic &amp; demographic info:</span>
+      {/* <span>Edit member info, including some statistic &amp; demographic info:</span>
       <ul>
         {userType === memberTypes.USER_ATTORNEY &&
           <>
-            <li>Attorney status (bar member, law graduate, retired attorney).</li>
-            <li>Income range.</li>
-            <li>Employer.</li>
-            <li>Practice/work setting.</li>
-            <li>Primary area of practice.</li>
             <li>Age range.</li>
-          </>
-        }
-        {userType === memberTypes.USER_STUDENT &&
-          <>
-            <li>Law school.</li>
-            <li>Graduation year.</li>
           </>
         }
         <li>Race/ethnicity.</li>
@@ -162,7 +151,7 @@ const Account = ({
         <li>Transaction &amp; payment emails (donations, membership, paid events).</li>
         <li>Event registration confirmations.</li>
       </ul>
-      <p>The same settings will be available from <em>unsubscribe</em> or <em>manage email preference</em> links on emails sent.</p>
+      <p>The same settings will be available from <em>unsubscribe</em> or <em>manage email preference</em> links on emails sent.</p> */}
 
     </Form.Provider>
   </div>

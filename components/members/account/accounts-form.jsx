@@ -21,6 +21,7 @@ const AccountsForm = ({
   // loading,
   name,
   title,
+  form,
   user,
   setUser,
   editing,
@@ -37,8 +38,6 @@ const AccountsForm = ({
     md: { span: 20 }
   },
 }) => {
-
-  const [form] = Form.useForm();
   // enable submit button
   const [fieldValuesChanged, setFieldValuesChanged] = useState(false);
 
@@ -80,9 +79,8 @@ const AccountsForm = ({
     const fields = form.getFieldsValue();
     let _user = {};
     for(const key in fields) {
-      if (user[key]) {
-        _user[key] = form.getFieldValue(key);
-      }
+      // if property not on user object add it anyway
+      _user[key] = form.getFieldValue(key);
       setUser({ type: 'update', value: _user});
     };
     setEditing(false);
