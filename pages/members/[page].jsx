@@ -295,23 +295,23 @@ const Members = () => {
                 onCollapse={onMenuCollapse}
                 theme="light"
               >
-                  <Tooltip title="toggle opening menu">
-                    <div className="avatar-box" onClick={toggleOpenMenuKeys}>
-                      {data && data.options && data.options.user ?
-                        <Avatar src={data.options.user.photo} />
-                      :
-                        <Avatar
-                        icon={<SvgIcon
-                          name="customer-profile"
-                          width="2.2em"
-                          height="2.2em"
-                          fill="rgba(0, 0, 0, 0.65)"
-                        />}
-                        style={{ backgroundColor: 'rgba(0, 0, 0, 0)' }}
-                      />
-                      }
-                    </div>
-                  </Tooltip>
+                <Tooltip title="toggle opening menu">
+                  <div className="avatar-box" onClick={toggleOpenMenuKeys}>
+                    {data && data.options && data.options.user ?
+                      <Avatar src={data.options.user.photo} />
+                    :
+                      <Avatar
+                      icon={<SvgIcon
+                        name="customer-profile"
+                        width="2.2em"
+                        height="2.2em"
+                        fill="rgba(0, 0, 0, 0.65)"
+                      />}
+                      style={{ backgroundColor: 'rgba(0, 0, 0, 0)' }}
+                    />
+                    }
+                  </div>
+                </Tooltip>
                 <MemberMenu
                   data={data}
                   selectedKeys={selectedKey}

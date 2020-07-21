@@ -1,39 +1,12 @@
-import { useState } from 'react';
 import { Form, Input, Button, Row, Col } from 'antd';
 import { MailOutlined } from '@ant-design/icons';
-import AccountsForm from './accounts-form';
-// data
-import { FORMS } from '../../../data/member-data';
 
 const LoginSecurityForm = ({
-  name,
-  title,
   user,
-  setUser,
   loading,
+  editing,
 }) => {
-  const [form] = Form.useForm();
-  const [editing, setEditing] = useState(false);
-
-  return <AccountsForm
-    name={name}
-    title={title}
-    form={form}
-    user={user}
-    setUser={setUser}
-    editing={editing}
-    setEditing={setEditing}
-    labelCol={{
-      xs: { span: 24 },
-      sm: { span: 6 },
-      md: { span: 6 }
-    }}
-    wrapperCol={{
-      xs: { span: 24 },
-      sm: { span: 16 },
-      md: { span: 16 }
-    }}
->
+  return <>
     <Form.Item
       name="email"
       label="Email"
@@ -85,11 +58,10 @@ const LoginSecurityForm = ({
         type="primary"
         size="small"
         ghost
-        onClick={() => alert('Enter current password...')}
+        onClick={() => alert('Confirm current password...')}
       >Change password...</Button>
     </Form.Item>
-
-  </AccountsForm>
+  </>
 }
 
 export default LoginSecurityForm;

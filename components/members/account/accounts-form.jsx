@@ -1,32 +1,13 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Card, Form, Button } from 'antd';
 import { EditOutlined } from '@ant-design/icons';
-// import SvgIcon from '../../utils/svg-icon';
-
-// const MenuIcon = ({
-//   name,
-//   ariaLabel,
-//   fill='currentColor'
-// }) =>
-//   <span role="img" aria-label={ariaLabel} className="anticon">
-//     <SvgIcon
-//       name={name}
-//       width="1.6em"
-//       height="1.6em"
-//       fill={fill} // "#008cdb"
-//     />
-//   </span>
 
 const AccountsForm = ({
-  // loading,
   name,
   title,
-  form,
   user,
   setUser,
-  editing,
-  setEditing,
-  children,
+  render,
   labelCol={
     xs: { span: 24 },
     sm: { span: 24 },
@@ -37,9 +18,12 @@ const AccountsForm = ({
     sm: { span: 22 },
     md: { span: 20 }
   },
+  userType,
 }) => {
+  const [form] = Form.useForm();
   // enable submit button
   const [fieldValuesChanged, setFieldValuesChanged] = useState(false);
+  const [editing, setEditing] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -133,7 +117,18 @@ const AccountsForm = ({
         onFieldsChange={onFieldsChange}
         onValuesChange={onValuesChange}
       >
-        {children}
+        {render({
+          form,
+          editing,
+          setEditing,
+          name,
+          title,
+          user,
+          setUser,
+          userType,
+          labelCol,
+          wrapperCol,
+        })}
       </Form>
     </Card>
   </>

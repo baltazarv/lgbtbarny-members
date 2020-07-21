@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Form, Input, Select, Typography, Button, Row, Col, Tooltip, DatePicker } from 'antd';
+import { Form, Input, Select, Button, Row, Col, Tooltip, DatePicker } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
-import AccountsForm from './accounts-form';
 // data
 import * as memberTypes from '../../../data/member-types';
 import { CERTIFY_OPTIONS } from '../../../data/member-data';
@@ -9,29 +8,15 @@ import { SALARIES, PRACTICE_SETTINGS, practiceOptions } from '../../../data/memb
 
 const { Option } = Select;
 
-const labelCol = {
-  xs: { span: 24 },
-  sm: { span: 6 },
-};
-
-const wrapperCol = {
-  xs: { span: 24 },
-  sm: { span: 18 },
-  md: { span: 17 },
-  lg: { span: 16 },
-}
-
 const MembershipForm = ({
-  name,
-  title,
-  userType,
   user,
-  setUser,
+  userType,
   loading,
-  onLink,
+  editing,
+  setEditing,
+  labelCol,
+  wrapperCol,
 }) => {
-  const [form] = Form.useForm();
-  const [editing, setEditing] = useState(false);
   const [isAttorney, setIsAttorney] = useState(false);
   const [isStudent, setIsStudent] = useState(false);
   const [studentHasGraduated, setStudentHasGraduated] = useState(false);
@@ -325,17 +310,7 @@ const MembershipForm = ({
     return content;
   }, [userType, user, editing, isStudent, isAttorney]);
 
-  return <AccountsForm
-    name={name}
-    title={title}
-    form={form}
-    user={user}
-    setUser={setUser}
-    editing={editing}
-    setEditing={setEditing}
-    labelCol={labelCol}
-    wrapperCol={wrapperCol}
->
+  return <>
   {editing
     ?
       <Form.Item
@@ -363,14 +338,12 @@ const MembershipForm = ({
         <Col {...wrapperCol}>{CERTIFY_OPTIONS[user && user.certifystatus]}</Col>
       </Row>
     }
-
-      {attorneyContent}
-      {studentContent}
-      <Row className="mt-2">
-        <Col sm={{ offset: 6 }}>{nonMemberContent}</Col>
-      </Row>
-
-  </AccountsForm>
+    {attorneyContent}
+    {studentContent}
+    <Row className="mt-2">
+      <Col sm={{ offset: 6 }}>{nonMemberContent}</Col>
+    </Row>
+  </>
 }
 
 export default MembershipForm;

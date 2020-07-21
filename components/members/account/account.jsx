@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Form } from 'antd';
 import SvgIcon from '../../utils/svg-icon';
+import AccountsForm from './accounts-form';
 import ProfileForm from './profile-form';
 import LoginSecurityForm from './login-security-form';
 import MembershipForm from './membership-form';
@@ -27,7 +28,6 @@ const Account = ({
   userType,
   user,
   setUser,
-  onLink,
 }) => {
 
   const [loading, setLoading] = useState(false);
@@ -47,22 +47,34 @@ const Account = ({
       onFormChange={onFormChange}
     >
       <div className="mb-3">
-        <ProfileForm
+        <AccountsForm
           name={FORMS.editProfile}
           title="Profile"
           user={user}
           setUser={setUser}
           loading={loading}
+          render={(args) => <ProfileForm {...args} />}
         />
       </div>
 
       <div className="mb-3">
-        <LoginSecurityForm
+        <AccountsForm
           name={FORMS.editLoginSecurity}
           title="Login &amp; security"
           user={user}
           setUser={setUser}
           loading={loading}
+          labelCol={{
+            xs: { span: 24 },
+            sm: { span: 6 },
+          }}
+          wrapperCol={{
+            xs: { span: 24 },
+            sm: { span: 18 },
+            md: { span: 17 },
+            lg: { span: 16 },
+          }}
+          render={(args) => <LoginSecurityForm {...args} />}
         />
       </div>
 
@@ -70,14 +82,24 @@ const Account = ({
         userType !== memberTypes.USER_ANON
       ) &&
         <div className="mb-3">
-          <MembershipForm
+          <AccountsForm
             name={FORMS.editMembership}
             title={userType === memberTypes.USER_NON_MEMBER ? 'Membership qualification' : 'Membership info'}
-            userType={userType}
             user={user}
             setUser={setUser}
-            onLink={onLink}
             loading={loading}
+            labelCol={{
+              xs: { span: 24 },
+              sm: { span: 6 },
+              md: { span: 6 }
+            }}
+            wrapperCol={{
+              xs: { span: 24 },
+              sm: { span: 16 },
+              md: { span: 16 }
+            }}
+            userType={userType}
+            render={(args) => <MembershipForm {...args} />}
           />
         </div>
       }
