@@ -32,7 +32,10 @@ export const FORMS = {
   pay: 'pay',
   editProfile: 'edit-profile',
   editLoginSecurity: 'edit-login-security',
+  editMemberInfo: 'edit-member-info',
+  editAdditionalInfo: 'edit-additional-info',
   editMembership: 'edit-membership',
+  editEmailPrefs: 'edit-email-prefs',
 }
 
 export const SIGNUP_FORM_FIELDS = {

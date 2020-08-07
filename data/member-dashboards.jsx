@@ -111,7 +111,7 @@ const account = ({
   return {
     route: 'account',
     icon: <MenuIcon name="user-admin" ariaLabel="My Account Settings" />,
-    label: 'Account',
+    label: 'My Account',
     banner,
     title: 'Account Settings',
     // title: `Welcome, ${user.firstname} ${user.lastname}`,

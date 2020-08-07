@@ -8,6 +8,20 @@ export const getStripePlan = (salaryKey) => {
 
 export const STRIPE_MEMBERSHIP_ID = 'prod_HP8GWNCnMR7Qoy';
 
+const buildSelectOptions = (list) => {
+  let options = [];
+  for (const key in list) {
+    const newObject = Object.assign({}, list[key], {key});
+    options.push(<Option
+        key={key}
+        value={key}
+      >
+        {list[key].label}
+      </Option>)
+  }
+  return options;
+}
+
 export const SALARIES = {
   upTo30K: { label: 'Income Up to $30,000', fee: 40, stripePriceId: 'price_1GqJzwBBKyYy0mbAvT6qs7mY' },
   upTo50K: { label: 'Income Up to $50,000', fee: 55, stripePriceId: 'price_1GqJzwBBKyYy0mbAUlL1DuWm' },
@@ -18,17 +32,7 @@ export const SALARIES = {
 }
 
 export const salaryOptions = () => {
-  let options = [];
-  for (const key in SALARIES) {
-    const newObject = Object.assign({}, SALARIES[key], {key});
-    options.push(<Option
-        key={key}
-        value={key}
-      >
-        {SALARIES[key].label}
-      </Option>)
-  }
-  return options;
+  return buildSelectOptions(SALARIES);
 }
 
 export const PRACTICE_SETTINGS = {
@@ -47,17 +51,21 @@ export const PRACTICE_SETTINGS = {
 };
 
 export const practiceOptions = () => {
-  let options = [];
-  // const settings = {...PRACTICE_SETTINGS};
-  for (const key in {...PRACTICE_SETTINGS}) {
-    options.push(<Option
-      key={key}
-      value={key}
-    >
-      {PRACTICE_SETTINGS[key].label}
-    </Option>)
-  }
-  return options;
+  return buildSelectOptions(PRACTICE_SETTINGS);
+}
+
+export const AGE_RANGES = {
+	twenties: { label: '20-29' },
+	thirties: { label: '30-39' },
+	forties: { label: '40-49' },
+	fifties: { label: '50-59' },
+	sixties: { label: '60-69' },
+	seventies: { label: '70-79' },
+	eightyPlus: { label: '80+' },
+}
+
+export const ageOptions = () => {
+  return buildSelectOptions(AGE_RANGES);
 }
 
 export const gradYearOptions = () => {

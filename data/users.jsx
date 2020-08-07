@@ -11,6 +11,11 @@ const users = {
     employer: 'Cravath, Swaine & Moore LLP',
     salary: 'upTo150K',
     practicesetting: 'nonprofit',
+    agerange: 'thirties',
+    race: 'Black',
+    gender: 'Queer',
+    memberstart: '4/5/2010',
+    donation: 100,
   },
   student: {
     firstname: 'Elle',
@@ -23,6 +28,9 @@ const users = {
     certifystatus: 'student',
     school: 'Columbia Law School',
     // gradyear: 2021, // memento object required
+    agerange: 'twenties',
+    race: 'white',
+    gender: 'lesbian',
   },
   nonMember: {
     firstname: 'Mikey',
@@ -33,6 +41,9 @@ const users = {
     photo: '/images/users/river.jpg',
     phone: '212-000-0000',
     certifystatus: 'na',
+    agerange: 'forties',
+    race: 'Azerbaijan',
+    gender: 'gay, trans, he/his/him',
   },
 }
 

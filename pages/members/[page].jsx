@@ -322,6 +322,7 @@ const Members = () => {
                 />
               </Sider>
               <Layout className="site-layout">
+                {/* TODO: render props to manage content types from this component? */}
                 <MemberContent
                   data={data}
                   dataKey={selectedKey}
