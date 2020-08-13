@@ -200,8 +200,7 @@ const participate = (memberType, onLink, previewUser) => {
   };
 
   return {
-    // route: 'law-notes',
-    // redirect,
+    // redirect to `law-notes-latest?
     icon: <MenuIcon name="bookmark" ariaLabel="LGBT Law Notes" />,
     label: 'Law Notes',
     locked,
@@ -315,7 +314,6 @@ const cleCenter = (memberType = memberTypes.USER_ATTORNEY, onLink, previewUser) 
     };
   }
 
-  // locked = true;
   return {
     icon: <MenuIcon name="government" ariaLabel="CLE Center" />,
     label: 'CLE Center',

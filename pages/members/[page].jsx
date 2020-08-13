@@ -1,4 +1,16 @@
-import { useEffect, useState, useReducer } from 'react';
+/**
+ *** APP START PROCESS
+ * 1) non-empty router.query > populates:
+ *    * memberType (all) based on query.type
+ *    * user (login user, ie, member and non-member)
+ *    * previewType (anon user)
+ * 2) data populates from user dashboard object
+ * 3) routes parsed from data, ie, dashboard objects
+ * 4) dasboard menu item selected and content loaded, based on:
+ *    * url's query.page value
+ *    * -or- user selection
+ */
+import { useEffect, useState, useMemo, useReducer } from 'react';
 import { useRouter } from 'next/router'
 import { Breakpoint } from 'react-socks';
 import { Jumbotron, Container } from 'react-bootstrap';
@@ -18,6 +30,8 @@ import './members.less';
 import { getDashboard, getMemberPageParentKey } from '../../data/member-dashboards';
 import * as memberTypes from '../../data/member-types';
 import users from '../../data/users';
+// utils
+import { isEmpty } from 'lodash/lang';
 
 const { Sider } = Layout;
 
@@ -29,12 +43,13 @@ const notifThemeColor = '#BC1552';
 const Members = () => {
   const router = useRouter();
 
-  const [routes, setRoutes] = useState([]);
   // menu and main content user views
   const [memberType, setMemberType] = useState('');
   // when anon user, select tab to view preview content
   const [previewUser, setPreviewUser] = useState(memberTypes.USER_ATTORNEY);
-  const [data, setData] = useState(null);
+  // when modalType is 'signup' signupType is a loginUser type
+  const [signupType, setSignupType] = useState('');
+
   // menu & main content page/section selections
   const [selectedKey, setSelectedKey] = useState('');
   const [menuOpenKeys, setMenuOpenKeys] = useState([]);
@@ -43,8 +58,6 @@ const Members = () => {
   // modals
   const [modalType, setModalType] = useState('login');
   const [modalVisible, setModalVisible] = useState(false); // modal
-  // when modalType is 'signup' signupType is a loginUser type
-  const [signupType, setSignupType] = useState('');
 
   const [notification, setNotification] = useState({
     message: 'What\'t New',
@@ -74,65 +87,78 @@ const Members = () => {
   // setUser({ type: 'update', value });
   const [user, setUser] = useReducer(userReducer, {});
 
-  // load data file based on type query string
+  // set user, memberType, & userType based on router.query.type
   useEffect(() => {
-    let _memberType = '';
-    let _data = {};
-    let _user = {};
+    if (!isEmpty(router.query)) { // query is empty {} at app start
+      // console.log('query:', router.query);
 
-    if (!router.query.type || router.query.type === 'anon' || router.query.type === 'anonymous') {
-      _memberType = memberTypes.USER_ANON;
-      setPreviewUser(memberTypes.USER_ATTORNEY);
-    } else if (router.query.type === 'attorney') {
-      _memberType = memberTypes.USER_ATTORNEY;
-      _user = {...users.attorney};
-    } else if (router.query.type === 'student') {
-      _memberType = memberTypes.USER_STUDENT;
-      _user = {...users.student};
-    } else if (router.query.type === 'non-member') {
-      _memberType = memberTypes.USER_NON_MEMBER;
-      _user = {...users.nonMember};
+      let _memberType = '';
+      let _data = {};
+      let _user = {};
+
+      if (!router.query.type || router.query.type === 'anon' || router.query.type === 'anonymous') {
+        _memberType = memberTypes.USER_ANON;
+        setPreviewUser(memberTypes.USER_ATTORNEY);
+      } else if (router.query.type === 'attorney') {
+        _memberType = memberTypes.USER_ATTORNEY;
+        _user = {...users.attorney};
+      } else if (router.query.type === 'student') {
+        _memberType = memberTypes.USER_STUDENT;
+        _user = {...users.student};
+      } else if (router.query.type === 'non-member') {
+        _memberType = memberTypes.USER_NON_MEMBER;
+        _user = {...users.nonMember};
+      }
+      setMemberType(_memberType);
+      setUser({ type: 'update', value: _user });
     }
-    setMemberType(_memberType);
-    setUser({ type: 'update', value: _user });
+  }, [router.query]);
 
+  // set data, ie, dashboard, when user info is established
+  const data = useMemo(() => {
+    if (!isEmpty(memberType)) { // user empty for anon & previewType empty for others
+      // console.log('user:', user, 'memberType:', memberType, 'previewUser:', previewUser)
+      if (user && memberType) {
+        return {...getDashboard({
+          userType: memberType,
+          user,
+          setUser,
+          onLink: handleContentLink,
+          previewUser,
+        })};
+      }
+    };
+    return null;
+  }, [user, memberType, previewUser]);
 
-    // set routes key/value object from data
-    let _routes = {};
-    for (const objKey in _data) {
-      if (objKey !== 'options' && objKey !== 'logout') {
-        if (_data[objKey].route) {
-          const route = _data[objKey].route;
-          _routes[route] = objKey;
-        }
-        if(_data[objKey].children) {
-          for (const childObjKey in _data[objKey].children) {
-            const route = _data[objKey].children[childObjKey].route;
-            _routes[route] = childObjKey;
+  // parse routes from dashboard data
+  const routes = useMemo(() => {
+    if (!isEmpty(data)) {
+      // console.log('data:', data)
+      let _routes = {};
+      for (const objKey in data) {
+        if (objKey !== 'options' && objKey !== 'logout') {
+          if (data[objKey].route) {
+            const route = data[objKey].route;
+            _routes[route] = objKey;
+          }
+          if(data[objKey].children) {
+            for (const childObjKey in data[objKey].children) {
+              const route = data[objKey].children[childObjKey].route;
+              _routes[route] = childObjKey;
+            }
           }
         }
       }
-    }
-    setRoutes(_routes)
-  }, [router.query]);
+      return _routes;
+    };
+    return null;
+  }, [data]);
 
-  // set dashboard when user is known
+  // set selected menu item based on dashboard data & routes parsed from it
   useEffect(() => {
-    if (user && memberType) {
-      const dashboard = {...getDashboard({
-        userType: memberType,
-        user,
-        setUser,
-        onLink: handleContentLink,
-        previewUser,
-      })};
-      setData(dashboard);
-    }
-  }, [user, memberType, previewUser]);
-
-  // set selected menu item based on page
-  useEffect(() => {
-    if (data) {
+    if (routes) { // data var has been populated
+      // console.log('routes:', routes);
       if (!router.query.page || !routes[router.query.page]) {
         setSelectedKey(data.options.defaultSelectedKeys[0]);
         setMenuOpenKeys(data.options.defaultMenuOpenKeys);
@@ -140,7 +166,7 @@ const Members = () => {
         selectItem(routes[router.query.page]);
       }
     }
-  }, [data, router.query.page]);
+  }, [routes]);
 
   // build notifications
   useEffect(() => {
