@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Card, Typography, Switch } from 'antd';
 
 const { Link } = Typography;
@@ -8,31 +9,52 @@ const EmailPrefs = ({
   loading,
   editing,
 }) => {
+  const [newsletterChecked, setNewsletterChecked] = useState(true);
+  const [memberEmailChecked, setMemberEmailChecked] = useState(true);
+  const [lawNotesChecked, setLawNotesChecked] = useState(true);
+
+  const allUnchecked = () => {
+    if (newsletterChecked && memberEmailChecked && lawNotesChecked) return true;
+    return false;
+  }
+
+  const onCheckAll = (bool) => {
+    setNewsletterChecked(bool);
+    setMemberEmailChecked(bool);
+    setLawNotesChecked(bool);
+  }
+
   return <>
     <Card
       title={<span>{title}</span>}
-      extra={<span><Link>Check all</Link></span>}
+      extra={<span>{allUnchecked()
+        ? <Link onClick={() => onCheckAll(false)}>Uncheck all</Link>
+        : <Link onClick={() => onCheckAll(true)}>Check all</Link>
+      }</span>}
       style={{ maxWidth: 600 }}
     >
       <div>Choose the type of emails that you would like to receive:</div>
 
       <div className="mt-2">
         <Switch
-          defaultChecked
+          checked={newsletterChecked}
+          onChange={(checked) => setNewsletterChecked(checked)}
           size="small"
         />&nbsp;&nbsp;<strong>LGBT Bar Newsletter emails</strong>, including Pride and Advocacy emails
       </div>
 
       <div className="mt-2">
         <Switch
-          defaultChecked
+          checked={memberEmailChecked}
+          onClick={(checked) => setMemberEmailChecked(checked)}
           size="small"
         />&nbsp;&nbsp;<strong>Association Member emails</strong>
       </div>
 
       <div className="mt-2">
         <Switch
-          defaultChecked
+          checked={lawNotesChecked}
+          onClick={(checked) => setLawNotesChecked(checked)}
           size="small"
         />&nbsp;&nbsp;<strong>Law Notes emails:</strong> magazine &amp; podcast
       </div>
@@ -53,7 +75,7 @@ const EmailPrefs = ({
       <div className="mt-4">{user.email
         ? <span>We will email you at <strong>{user.email}</strong>. </span>
         : ''
-      } To update your email address edit <a href="#edit-login-security"><strong>Email</strong> in <strong>Login &amp; security</strong> section</a> above.</div>
+      } To update <strong>email address</strong>, edit in <a href="#edit-login-security"><strong>Login &amp; security</strong></a> above.</div>
 
     </Card>
   </>

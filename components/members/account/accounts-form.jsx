@@ -8,16 +8,6 @@ const AccountsForm = ({
   user,
   setUser,
   render,
-  // labelCol={
-  //   xs: { span: 24 },
-  //   sm: { span: 24 },
-  //   md: { span: 24 }
-  // },
-  // wrapperCol={
-  //   xs: { span: 24 },
-  //   sm: { span: 22 },
-  //   md: { span: 20 }
-  // },
   userType,
 }) => {
   const [form] = Form.useForm();
@@ -58,11 +48,6 @@ const AccountsForm = ({
     setEditing(false);
     setFieldValuesChanged(false);
   };
-
-  const onUpdateSalary = () => {
-    alert('Update subsciription fee...');
-    setEditing(false);
-  }
 
   const onSubmit = () => {
     const fields = form.getFieldsValue();
@@ -111,16 +96,6 @@ const AccountsForm = ({
     >
       {/* <MenuIcon name="customer-profile" ariaLabel="Profile" />  */}
       <Form
-        // labelCol={{
-        //   xs: { span: 24 },
-        //   sm: { span: 24 },
-        //   md: { span: 24 },
-        // }}
-        // wrapperCol={{
-        //     xs: { span: 24 },
-        //     sm: { span: 22 },
-        //     md: { span: 20 },
-        // }}
         name={name}
         form={form}
         // hideRequiredMark={true}
@@ -138,9 +113,6 @@ const AccountsForm = ({
           user,
           setUser,
           userType,
-          // labelCol,
-          // wrapperCol,
-          onUpdateSalary,
         })}
       </Form>
     </Card>

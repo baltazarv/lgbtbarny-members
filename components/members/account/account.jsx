@@ -1,13 +1,16 @@
 import { useState } from 'react';
 import { Form, Tooltip } from 'antd';
 import SvgIcon from '../../utils/svg-icon';
+// main component
 import AccountsForm from './accounts-form';
+// render functions in AccountsForm
 import ProfileForm from './profile-form';
 import LoginSecurityForm from './login-security-form';
 import MemberInfoForm from './member-info-form';
 import AdditionalInfoForm from './additional-info-form';
 import MembershipForm from './membership-form';
 import EmailPrefs from './email-prefs';
+
 import './account.less'
 // data
 import * as memberTypes from '../../../data/member-types';
@@ -60,24 +63,15 @@ const Account = ({
         />
       </div>
 
+      {/* sections are either wrapped in AccountsForm or in a Card */}
+
       <div id="edit-login-security" className="mb-3">
-        <AccountsForm
-          name={FORMS.editLoginSecurity}
+        <LoginSecurityForm
+          // name={FORMS.editLoginSecurity}
           title="Login &amp; security"
           user={user}
           setUser={setUser}
           loading={loading}
-          // labelCol={{
-          //   xs: { span: 24 },
-          //   sm: { span: 6 },
-          // }}
-          // wrapperCol={{
-          //   xs: { span: 24 },
-          //   sm: { span: 18 },
-          //   md: { span: 17 },
-          //   lg: { span: 16 },
-          // }}
-          render={(args) => <LoginSecurityForm {...args} />}
         />
       </div>
 
@@ -91,16 +85,6 @@ const Account = ({
             user={user}
             setUser={setUser}
             loading={loading}
-            // labelCol={{
-            //   xs: { span: 24 },
-            //   sm: { span: 6 },
-            //   md: { span: 6 }
-            // }}
-            // wrapperCol={{
-            //   xs: { span: 24 },
-            //   sm: { span: 16 },
-            //   md: { span: 16 }
-            // }}
             userType={userType}
             render={(args) => <MemberInfoForm {...args} />}
           />
@@ -120,14 +104,13 @@ const Account = ({
 
       {userType === memberTypes.USER_ATTORNEY
         && <div className="mb-3">
-        <AccountsForm
-          name={FORMS.editMembership}
-          title="Membership"
+        <MembershipForm
+          // name={FORMS...}
+          title="Membership dues"
           user={user}
           setUser={setUser}
           loading={loading}
           userType={userType}
-          render={(args) => <MembershipForm {...args} />}
         />
       </div>}
 

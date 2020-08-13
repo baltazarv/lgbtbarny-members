@@ -1,7 +1,7 @@
 // TODO: move into SignupCreateAccount?
 
 import { useMemo } from 'react';
-import { Form, Input, Row, Col, Select, Checkbox } from 'antd';
+import { Form, Input, Row, Col, Select, Checkbox, Radio } from 'antd';
 import { MailOutlined, UserOutlined, LockOutlined } from '@ant-design/icons';
 // data
 import * as memberTypes from '../../../data/member-types';
@@ -238,6 +238,22 @@ const SignupAccountFields = ({
       {typeSpecificFields}
 
       {donationFields}
+
+      <Form.Item
+        name="donation-recurrence"
+        style={{ textAlign: 'left' }}
+        wrapperCol={{
+          xs: { offset: 24 },
+          sm: { offset: 8 },
+        }}
+      >
+        <Radio.Group
+          defaultValue="donation-recurs"
+        >
+          <Radio value="donation-recurs">Recurring donation</Radio>
+          <Radio value="dontaion-once">One-time donation</Radio>
+        </Radio.Group>
+      </Form.Item>
 
       { signupType === memberTypes.USER_ATTORNEY &&
         <Row className="mb-2">

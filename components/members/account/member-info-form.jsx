@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Form, Input, Select, Button, Row, Col, Tooltip, DatePicker, Divider } from 'antd';
+import { Form, Input, Select, Button, Row, Col, Tooltip, DatePicker, Divider, Modal } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
+import DuesForm from './modals/dues-form';
 // data
 import * as memberTypes from '../../../data/member-types';
 import { CERTIFY_OPTIONS } from '../../../data/member-data';
@@ -14,11 +15,11 @@ const MemberInfoForm = ({
   loading,
   editing,
   setEditing,
-  onUpdateSalary,
 }) => {
   const [isAttorney, setIsAttorney] = useState(false);
   const [isStudent, setIsStudent] = useState(false);
   const [studentHasGraduated, setStudentHasGraduated] = useState(false);
+  const [salaryModalVisible, setSalaryModalVisible] = useState(false);
 
   // when cancel & certifystatus not saved
   useEffect(() => {
@@ -89,18 +90,16 @@ const MemberInfoForm = ({
                   </Tooltip>
                 </label> {SALARIES[user.salary] && SALARIES[user.salary].label}
             </Col>
-            {editing
-              && <Col>
-                <Button
-                  type="primary"
-                  ghost
-                  size="small"
-                  onClick={() => onUpdateSalary()}
-                >
-                  Update salary
-                </Button>
-              </Col>
-            }
+            <Col>
+              <Button
+                type="primary"
+                ghost
+                size="small"
+                onClick={() => setSalaryModalVisible(true)}
+              >
+                Update salary
+              </Button>
+            </Col>
           </Row>
         </div>
 
@@ -334,6 +333,16 @@ const MemberInfoForm = ({
     <Row className="mt-2">
       <Col sm={{ offset: 6 }}>{nonMemberContent}</Col>
     </Row>
+
+    <Modal
+      title="Update Salary"
+      visible={salaryModalVisible}
+      okText="Update Renewal Charge"
+      onOk={() => setSalaryModalVisible(false)}
+      onCancel={() => setSalaryModalVisible(false)}
+    >
+      <DuesForm user={user} />
+    </Modal>
   </>
 }
 

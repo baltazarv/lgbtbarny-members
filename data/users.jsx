@@ -15,6 +15,7 @@ const users = {
     race: 'Black',
     gender: 'Queer',
     memberstart: '4/5/2010',
+    lastpayment: '4/5/2019',
     donation: 100,
   },
   student: {

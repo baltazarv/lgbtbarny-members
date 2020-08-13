@@ -588,7 +588,7 @@ const attorneyData = ({
   return {
     options: {
       key: userType,
-      defaultSelectedKeys: ['account'], //
+      defaultSelectedKeys: ['participate'],
       defaultMenuOpenKeys: [], //
       user, // TODO: move outside options
     },
@@ -640,7 +640,7 @@ const nonMemberData = ({
   return {
   options: {
     key: userType,
-    defaultSelectedKeys: ['account'], //
+    defaultSelectedKeys: ['participate'],
     defaultMenuOpenKeys: [],
     user, // TODO: move outside options
   },
@@ -662,7 +662,7 @@ const studentData = ({
   return {
     options: {
       key: userType,
-      defaultSelectedKeys: ['account'], //
+      defaultSelectedKeys: ['participate'],
       defaultMenuOpenKeys: [], //
       user, // TODO: move outside options
     },
