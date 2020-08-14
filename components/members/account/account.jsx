@@ -34,6 +34,7 @@ const Account = ({
   userType,
   user,
   setUser,
+  onLink,
 }) => {
 
   const [loading, setLoading] = useState(false);
@@ -118,7 +119,9 @@ const Account = ({
         <EmailPrefs
           title="Email preferences"
           user={user}
-          setUser={setUser}
+          userType={userType}
+          // setUser={setUser}
+          onLink={onLink}
           loading={loading}
         />
       </div>
