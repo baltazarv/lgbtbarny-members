@@ -21,7 +21,7 @@ const BillingList = ({
         key: 'date',
         title: 'Date',
         dataIndex: 'date',
-        render: (date) => <span>{moment(date).format('M/D/YY')}</span>
+        render: (date) => <span>{moment(date).format('M/D/YY')}</span>,
       },
       {
         key: 'type',
@@ -43,7 +43,7 @@ const BillingList = ({
         render: (amt) => `$${amt}`,
       },
     ]
-  }, userData);
+  }, [userData]);
 
   return <PdfTable
     data={userData}
