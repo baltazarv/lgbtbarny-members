@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Card, Row, Col, Divider, Typography, Button, Tooltip, Modal } from 'antd';
 // modals
 import DuesForm from './modals/dues-form';
+import BillingHistory from './modals/billing-list';
 import CardInfoForm from './modals/card-info-form';
 import CancelPayment from './modals/cancel-payment';
 // data
@@ -17,6 +18,7 @@ const MembershipDuesForm = ({
 }) => {
   const [salaryModalVisible, setSalaryModalVisible] = useState(false);
   const [donationModalVisible, setDonationModalVisible] = useState(false);
+  const [billingModalVisible, setBillingModalVisible] = useState(false);
   const [cardModalVisible, setCardModalVisible] = useState(false);
   const [cancelModalVisible, setCancelModalVisible] = useState(false);
 
@@ -113,15 +115,8 @@ const MembershipDuesForm = ({
       {/* last payment + history */}
       <Row justify="space-between">
         <Col><label>Last payment:</label> on 4/5/2020.</Col>
-        <Col><Link>Payment history</Link></Col>
+        <Col><Link onClick={() => setBillingModalVisible(true)}>Payment history</Link></Col>
       </Row>
-      {/* <h3>Payment History</h3>
-      <div>Payment receipts for:</div>
-      <ul>
-        <li>Events.</li>
-        {userType === memberTypes.USER_ATTORNEY && <li>Membership fees.</li>}
-        <li>Donations.</li>
-      </ul> */}
 
       {/* card */}
       <div className="mt-2">
@@ -181,6 +176,25 @@ const MembershipDuesForm = ({
       onCancel={() => setDonationModalVisible(false)}
     >
       <DuesForm user={user} updateDonationOnly={true} />
+    </Modal>
+
+    <Modal
+      title="Billing History"
+      visible={billingModalVisible}
+      okText="Update Renewal Charge"
+      onCancel={() => setBillingModalVisible(false)}
+      footer={[
+        <Button
+          key="custom-ok"
+          onClick={() => setBillingModalVisible(false)}
+          type="primary"
+          ghost
+        >
+          OK
+        </Button>
+      ]}
+    >
+      <BillingHistory user={user} />
     </Modal>
 
     <Modal

@@ -3,7 +3,7 @@
  */
 import { useMemo } from 'react';
 import PdfViewer from '../pdf-viewer';
-import { Modal } from 'antd';
+import { Modal, Button } from 'antd';
 
 const PdfModal = ({
   visible,
@@ -22,7 +22,16 @@ const PdfModal = ({
           width="92%"
           visible={visible}
           onCancel={() => setvisible(false)}
-          onOk={() => setvisible(false)}
+          footer={[
+            <Button
+              key="custom-ok"
+              onClick={() => setvisible(false)}
+              type="primary"
+              ghost
+            >
+              OK
+            </Button>
+          ]}
         >
           <PdfViewer
             title={item.wintitle ? item.wintitle : item.title}

@@ -1,5 +1,6 @@
 const users = {
   attorney: {
+    id: '1b25f567-baa8-42da-8c64-85b1ef699d07',
     firstname: 'Joe',
     lastname: 'Miller',
     email: 'joe_miller@example.com',
@@ -19,6 +20,7 @@ const users = {
     donation: 100,
   },
   student: {
+    id: 'fde7d412-0336-4c17-81f9-438256f831e3',
     firstname: 'Elle',
     lastname: 'Woods',
     email: 'elle_woods@example.com',
@@ -34,6 +36,7 @@ const users = {
     gender: 'lesbian',
   },
   nonMember: {
+    id: '0e0ae8bc-7bae-43f0-8e80-9fe4d6e4deb0',
     firstname: 'Mikey',
     lastname: 'Waters',
     email: 'mikey_waters@example.com',

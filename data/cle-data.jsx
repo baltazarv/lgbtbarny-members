@@ -3,7 +3,6 @@ const cleData = [
     key: 'bfa80f7b-16f3-4270-b947-e1141b69827f',
     title: 'The Future of the Judiciary: Advancing Progressive Goals through New York State Courts',
     date: '10/10/2019',
-    // date: new Date('10/10/2019'),
     latest: true,
     credits: [
       {
