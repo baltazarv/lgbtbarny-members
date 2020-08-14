@@ -36,7 +36,7 @@ const MembershipDuesForm = ({
 
       {/* salary */}
       {SALARIES[user.salary]
-        && <div class="mt-2">
+        && <div className="mt-2">
           <Row justify="space-between">
             <Col>
               <label>
@@ -60,7 +60,7 @@ const MembershipDuesForm = ({
       }
 
       {/* donation */}
-      <div class="mt-2">
+      <div className="mt-2">
         <Row justify="space-between">
           <Col
             xs={{ span: 24 }}
@@ -100,7 +100,7 @@ const MembershipDuesForm = ({
       </ul> */}
 
       {/* total */}
-      <div class="mt-2">
+      <div className="mt-2">
         <Row justify="space-between">
           <Col>
             <label>Total yearly charge:</label> {paymentCharge}
@@ -124,7 +124,7 @@ const MembershipDuesForm = ({
       </ul> */}
 
       {/* card */}
-      <div class="mt-2">
+      <div className="mt-2">
         <Row justify="space-between">
           <Col>
             <label>Card to charge:</label> •••• •••• •••• 4242
@@ -143,7 +143,7 @@ const MembershipDuesForm = ({
       </div>
 
       {/* renewal */}
-      <div class="mt-2">
+      <div className="mt-2">
         <Row justify="space-between">
           <Col>
             <Tooltip title="You will get a reminder email a week before your membership renews"><label>1-Year membership:</label></Tooltip> renews on 4/5/2021.

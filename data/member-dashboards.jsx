@@ -499,7 +499,7 @@ const login = () => {
 export const getDashboard = ({
   userType,
   user,
-  setUser,
+  setUser, // when making edits on user object
   onLink,
   previewUser,
 }) => {

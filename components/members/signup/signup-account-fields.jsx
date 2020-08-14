@@ -240,18 +240,17 @@ const SignupAccountFields = ({
       {donationFields}
 
       <Form.Item
-        name="donation-recurrence"
+        name={SIGNUP_FORM_FIELDS.donationrecurrence}
         style={{ textAlign: 'left' }}
         wrapperCol={{
           xs: { offset: 24 },
           sm: { offset: 8 },
         }}
       >
-        <Radio.Group
-          defaultValue="donation-recurs"
-        >
-          <Radio value="donation-recurs">Recurring donation</Radio>
-          <Radio value="dontaion-once">One-time donation</Radio>
+        <Radio.Group>
+          {/* defaultValue in Form initialValues */}
+          <Radio value={SIGNUP_FORM_FIELDS.donationrecurs}>Recurring donation</Radio>
+          <Radio value={SIGNUP_FORM_FIELDS.donationonce}>One-time donation</Radio>
         </Radio.Group>
       </Form.Item>
 

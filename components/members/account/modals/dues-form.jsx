@@ -28,7 +28,7 @@ const DuesForm = ({
     <div><strong>Total yearly charge</strong></div>
 
     {user && user.memberstart
-      && <div class="mt-4" style={{fontSize: '.9em'}}>Your payment method will be charged on {user.memberstart}.</div>}
+      && <div className="mt-4" style={{fontSize: '.9em'}}>Your payment method will be charged on {user.memberstart}.</div>}
   </>;
 }
 

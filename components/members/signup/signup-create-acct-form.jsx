@@ -105,7 +105,9 @@ const SignupCreateAcctForm = ({
       wrapperCol={{ xs: { span: 24 }, sm: { span: 16 } }}
       name={FORMS.createAccount}
       form={form}
-      // initialValues={{}}
+      initialValues={{
+        [SIGNUP_FORM_FIELDS.donationrecurrence]: SIGNUP_FORM_FIELDS.donationrecurs,
+      }}
       scrollToFirstError
       onFieldsChange={onFieldsChange}
       onValuesChange={onValuesChange}

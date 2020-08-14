@@ -55,7 +55,7 @@ const LoginSecurityForm = ({
         </Form.Item>
 
       {/* password */}
-      <div class="mt-2">
+      <div className="mt-2">
         <Row justify="space-between">
           <Col><label>Password:</label> •••••</Col>
           {/* ●●●●●●●● */}

@@ -55,6 +55,8 @@ const Members = () => {
   const [menuOpenKeys, setMenuOpenKeys] = useState([]);
   const [menuCollapsed, setMenuCollapsed] = useState(false);
 
+  const [data, setData] = useState(null);
+
   // modals
   const [modalType, setModalType] = useState('login');
   const [modalVisible, setModalVisible] = useState(false); // modal
@@ -93,7 +95,6 @@ const Members = () => {
       // console.log('query:', router.query);
 
       let _memberType = '';
-      let _data = {};
       let _user = {};
 
       if (!router.query.type || router.query.type === 'anon' || router.query.type === 'anonymous') {
@@ -114,12 +115,50 @@ const Members = () => {
     }
   }, [router.query]);
 
+  const handleContentLink = (key) => {
+    if (key === 'login') {
+      openModal(key);
+
+    // signup modal
+    } else if (key === memberTypes.SIGNUP_MEMBER) {
+      setSignupType(memberTypes.USER_MEMBER);
+      openModal('signup');
+    } else if (key === memberTypes.SIGNUP_ATTORNEY) {
+      setSignupType(memberTypes.USER_ATTORNEY);
+      openModal('signup');
+    } else if (key === memberTypes.SIGNUP_STUDENT) {
+      setSignupType(memberTypes.USER_STUDENT);
+      openModal('signup');
+    } else if (key === memberTypes.SIGNUP_NON_MEMBER) {
+      setSignupType(memberTypes.USER_NON_MEMBER);
+      openModal('signup');
+    } else if (key === memberTypes.SIGNUP_LAW_NOTES) {
+      setSignupType(memberTypes.USER_LAW_NOTES);
+      openModal('signup');
+    } else if (key === 'signup-newletter') {
+      openModal('newsletter');
+
+    // anon account type preview change tab
+    } else if (key === memberTypes.TAB_ATTORNEY) {
+      handleSelectPreviewUser(memberTypes.USER_ATTORNEY);
+    } else if (key === memberTypes.TAB_STUDENT) {
+      handleSelectPreviewUser(memberTypes.USER_STUDENT);
+    } else if (key === memberTypes.TAB_NON_MEMBER) {
+      handleSelectPreviewUser(memberTypes.USER_NON_MEMBER);
+
+    // handle navigation
+    } else {
+      changeRoute(key);
+    }
+  }
+
   // set data, ie, dashboard, when user info is established
-  const data = useMemo(() => {
+  useEffect(() => {
+    let _data = {};
     if (!isEmpty(memberType)) { // user empty for anon & previewType empty for others
-      // console.log('user:', user, 'memberType:', memberType, 'previewUser:', previewUser)
+      // console.log('user:', user, 'memberType:', memberType, 'previewUser:', previewUser, 'onLink:', handleContentLink)
       if (user && memberType) {
-        return {...getDashboard({
+        _data = {...getDashboard({
           userType: memberType,
           user,
           setUser,
@@ -128,7 +167,7 @@ const Members = () => {
         })};
       }
     };
-    return null;
+    setData(_data);
   }, [user, memberType, previewUser]);
 
   // parse routes from dashboard data
@@ -228,57 +267,14 @@ const Members = () => {
     }
   };
 
-  const handleContentLink = (key) => {
-    if (key === 'login') {
-      openModal(key);
-
-    // signup modal
-    } else if (key === memberTypes.SIGNUP_MEMBER) {
-      setSignupType(memberTypes.USER_MEMBER);
-      openModal('signup');
-    } else if (key === memberTypes.SIGNUP_ATTORNEY) {
-      setSignupType(memberTypes.USER_ATTORNEY);
-      openModal('signup');
-    } else if (key === memberTypes.SIGNUP_STUDENT) {
-      setSignupType(memberTypes.USER_STUDENT);
-      openModal('signup');
-    } else if (key === memberTypes.SIGNUP_NON_MEMBER) {
-      setSignupType(memberTypes.USER_NON_MEMBER);
-      openModal('signup');
-    } else if (key === memberTypes.SIGNUP_LAW_NOTES) {
-      setSignupType(memberTypes.USER_LAW_NOTES);
-      openModal('signup');
-    } else if (key === 'signup-newletter') {
-      openModal('newsletter');
-
-    // anon account type preview change tab
-    } else if (key === memberTypes.TAB_ATTORNEY) {
-      handleSelectPreviewUser(memberTypes.USER_ATTORNEY);
-    } else if (key === memberTypes.TAB_STUDENT) {
-      handleSelectPreviewUser(memberTypes.USER_STUDENT);
-    } else if (key === memberTypes.TAB_NON_MEMBER) {
-      handleSelectPreviewUser(memberTypes.USER_NON_MEMBER);
-
-    // handle navigation
-    } else {
-      changeRoute(key);
-    }
-  }
-
   const openModal = (type) => {
     setModalType(type);
     setModalVisible(true);
   }
 
   const handleSelectPreviewUser = (user) => {
-    setPreviewUser(user);
-    setData({...getDashboard({
-      userType: memberTypes.USER_ANON,
-      user: {},
-      setUser,
-      onLink: handleContentLink,
-      previewUser: user,
-    })});
+    // console.log('handleSelectPreviewUser onLink:', handleContentLink, 'memberType', memberTypes.USER_ANON, 'user:', user);
+    setPreviewUser(user); // > populates data var >> routes >>> selections
   }
 
   return (

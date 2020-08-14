@@ -81,7 +81,7 @@ const MemberInfoForm = ({
       content = <>
 
         {/* salary */}
-        <div class="mt-2">
+        <div className="mt-2">
           <Row justify="space-between">
             <Col>
                 <label>
