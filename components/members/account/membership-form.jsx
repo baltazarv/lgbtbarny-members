@@ -81,7 +81,7 @@ const MembershipDuesForm = ({
               type="primary"
               size="small"
               onClick={() => setDonationModalVisible(true)}
-              >Update Donation</Button>
+              >Update donation</Button>
           </Col>
           <Col
             xs={{ span: 24 }}
@@ -108,7 +108,7 @@ const MembershipDuesForm = ({
         </Row>
       </div>
 
-      <Divider id="edit-payment-info">Payment info</Divider>
+      <Divider>Payment info</Divider>
 
       {/* last payment + history */}
       <Row justify="space-between">

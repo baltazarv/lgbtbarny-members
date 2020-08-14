@@ -20,7 +20,7 @@ const ProfileForm = ({
     {user && user.lastpayment
       && <ul>
         <li>Your account is <strong style={{color: '#389e0d' }}>active</strong>.</li>
-        <li>Next membership payment due: <strong>{getNextDuesDate(user.lastpayment)}</strong>. To update <strong>payment info</strong>, edit in <Link href="#edit-payment-info">Membership dues</Link> below.</li>
+        <li>Next membership payment due: <strong>{getNextDuesDate(user.lastpayment)}</strong>. To update <strong>payment info</strong>, edit in <Link href="#edit-membership-dues">Membership dues</Link> below.</li>
       </ul>
     }
     <Row>

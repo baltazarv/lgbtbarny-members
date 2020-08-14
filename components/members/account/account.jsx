@@ -103,7 +103,7 @@ const Account = ({
       </div>
 
       {userType === memberTypes.USER_ATTORNEY
-        && <div className="mb-3">
+        && <div className="mb-3" id="edit-membership-dues">
         <MembershipForm
           // name={FORMS...}
           title="Membership dues"
