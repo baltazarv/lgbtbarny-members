@@ -8,7 +8,7 @@ import ProfileForm from './profile-form';
 import LoginSecurityForm from './login-security-form';
 import MemberInfoForm from './member-info-form';
 import AdditionalInfoForm from './additional-info-form';
-import MembershipForm from './membership-form';
+import MembershipDuesForm from './membership-dues-form';
 import EmailPrefs from './email-prefs';
 
 import './account.less'
@@ -105,9 +105,9 @@ const Account = ({
 
       {userType === memberTypes.USER_ATTORNEY
         && <div className="mb-3" id="edit-membership-dues">
-        <MembershipForm
+        <MembershipDuesForm
           // name={FORMS...}
-          title="Membership dues"
+          title="Membership dues &amp; donations"
           user={user}
           setUser={setUser}
           loading={loading}
