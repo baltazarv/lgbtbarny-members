@@ -3,7 +3,7 @@ import { Card, Form, Button, Row, Col, Tag, Modal } from 'antd';
 import EmailForm from './modals/email-form';
 import PasswordForm from './modals/password-form';
 // styles
-import './member-account-modal.less';
+import './account.less'; // .member-account-modal
 
 const LoginSecurityForm = ({
   title,

@@ -2,11 +2,14 @@ import { useMemo, useState } from 'react';
 import { Card, Row, Col, Divider, Typography, Button, Tooltip, Modal } from 'antd';
 // modals
 import DuesForm from './modals/dues-form';
+import TaxDeductList from './modals/tax-deduct-list';
 import BillingHistory from './modals/billing-list';
 import CardInfoForm from './modals/card-info-form';
 import CancelPayment from './modals/cancel-payment';
 // data
 import { SALARIES } from '../../../data/member-plans';
+// styles
+import './account.less'; // .member-account-modal
 
 const { Link } = Typography;
 
@@ -18,6 +21,7 @@ const MembershipDuesForm = ({
 }) => {
   const [salaryModalVisible, setSalaryModalVisible] = useState(false);
   const [donationModalVisible, setDonationModalVisible] = useState(false);
+  const [taxDeductModalVisible, setTaxDeductModalVisible] = useState(false);
   const [billingModalVisible, setBillingModalVisible] = useState(false);
   const [cardModalVisible, setCardModalVisible] = useState(false);
   const [cancelModalVisible, setCancelModalVisible] = useState(false);
@@ -89,17 +93,10 @@ const MembershipDuesForm = ({
             xs={{ span: 24 }}
             md={{ span: 8 }}
           >
-            <Link>Charitable tax deductions</Link>
+            <Link onClick={() => setTaxDeductModalVisible(true)}>Charitable tax deductions</Link>
           </Col>
         </Row>
       </div>
-      {/* <h3>Charitable Tax Contribution Deductions</h3>
-      <div>Download tax forms for contributions to Foundation. (Forms generated on web server.)</div>
-      <ul>
-        <li>2019 tax deductions</li>
-        <li>2018 tax deductions</li>
-        <li>...</li>
-      </ul> */}
 
       {/* total */}
       <div className="mt-2">
@@ -179,9 +176,27 @@ const MembershipDuesForm = ({
     </Modal>
 
     <Modal
+      title="Charitable Tax Deductions"
+      visible={taxDeductModalVisible}
+      onCancel={() => setTaxDeductModalVisible(false)}
+      footer={[
+        <Button
+          key="custom-ok"
+          onClick={() => setTaxDeductModalVisible(false)}
+          type="primary"
+          ghost
+        >
+          OK
+        </Button>
+      ]}
+      className="member-account-modal"
+    >
+      <TaxDeductList user={user} />
+    </Modal>
+
+    <Modal
       title="Billing History"
       visible={billingModalVisible}
-      okText="Update Renewal Charge"
       onCancel={() => setBillingModalVisible(false)}
       footer={[
         <Button
@@ -193,6 +208,7 @@ const MembershipDuesForm = ({
           OK
         </Button>
       ]}
+      className="member-account-modal"
     >
       <BillingHistory user={user} />
     </Modal>
