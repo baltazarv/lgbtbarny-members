@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Card, Form, Button, Row, Col, Tag, Modal } from 'antd';
 import EmailForm from './modals/email-form';
 import PasswordForm from './modals/password-form';
+// styles
+import './member-account-modal.less';
 
 const LoginSecurityForm = ({
   title,
@@ -14,7 +16,7 @@ const LoginSecurityForm = ({
   const openModal = (type) => {
     if (type === 'email') setEmailModalVisible(true);
     if (type === 'password') setPwdModalVisible(true);
-  }
+  };
 
   return <>
     <Card
@@ -71,9 +73,7 @@ const LoginSecurityForm = ({
           </Col>
         </Row>
       </div>
-    </Card
-
-    >
+    </Card>
 
     <Modal
       title="Change Email"
@@ -82,9 +82,14 @@ const LoginSecurityForm = ({
       onOk={() => setEmailModalVisible(false)}
       onCancel={() => setEmailModalVisible(false)}
       centered={true}
-    >
-      <EmailForm />
+      className="member-account-modal"
+      >
+      <EmailForm
+        currentEmail={user.email}
+        loading={loading}
+        />
     </Modal>
+
     <Modal
       title="Change Password"
       visible={pwdModalVisible}
@@ -92,10 +97,11 @@ const LoginSecurityForm = ({
       onOk={() => setPwdModalVisible(false)}
       onCancel={() => setPwdModalVisible(false)}
       centered={true}
+      className="member-account-modal"
     >
       <PasswordForm />
     </Modal>
-  </>
-}
+  </>;
+};
 
 export default LoginSecurityForm;

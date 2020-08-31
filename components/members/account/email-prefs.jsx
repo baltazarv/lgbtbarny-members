@@ -27,13 +27,13 @@ const EmailPrefs = ({
   const allUnchecked = () => {
     if (newsletterChecked && memberEmailChecked && lawNotesChecked) return true;
     return false;
-  }
+  };
 
   const onCheckAll = (bool) => {
     setNewsletterChecked(bool);
     setMemberEmailChecked(bool);
     setLawNotesChecked(bool);
-  }
+  };
 
   const checkAllLink = useMemo(() => {
     if (userType !== memberTypes.USER_NON_MEMBER) {
@@ -112,7 +112,7 @@ const EmailPrefs = ({
       } To update <strong>email address</strong>, edit in <a href="#edit-login-security">Login &amp; security</a> above.</div>
 
     </Card>
-  </>
-}
+  </>;
+};
 
 export default EmailPrefs;
