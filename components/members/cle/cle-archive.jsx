@@ -1,5 +1,4 @@
 //TODO: Rename CleTable vs CleDetail?
-
 import { useMemo, useState } from 'react';
 import { Button, Divider, Tooltip, Typography } from 'antd';
 import { ScheduleOutlined } from '@ant-design/icons';
@@ -19,9 +18,9 @@ const CertIcon = () =>
       height="1.6em"
       fill="currentColor"
     />
-  </span>
+  </span>;
 
-const CleTable = ({
+const CleArchive = ({
   data,
   memberType,
   previewUser,
@@ -63,24 +62,24 @@ const CleTable = ({
 
     const whatYouGetTxt = <>
       See the below course materials exerpts, which include topics, agenda, speaker bios, and course credits for all courses. The <Link onClick={() => openSample()}>sample <em>Year in Review</em></Link> edition is available. Or see an excerpt of the materials for the <Link onClick={() => openCurrentCLE()}>latest CLE</Link> being offered.
-    </>
+    </>;
 
-    const certTxt = <p>Courses with <CertIcon /> icon are ones which you have attended. Click the icon to view and download your certificate. Or view all <Link onClick={() => onLink('clecerts')}>certificates</Link> attained.</p>
+    const certTxt = <p>Courses with <CertIcon /> icon are ones which you have attended. Click the icon to view and download your certificate. Or view all <Link onClick={() => onLink('clecerts')}>certificates</Link> attained.</p>;
 
     const registeredText = <>You have registered for courses with the <ScheduleOutlined style={{ width: '1.6em', fontSize: '20px' }} /> icon.</>
 
     if (memberType === memberTypes.USER_ANON) {
       if (previewUser === memberTypes.USER_NON_MEMBER) {
         text = <>
-          <p>If you are not an attorney or a law student you can still register for CLE courses. When you <Link onClick={() => onLink(memberTypes.SIGNUP_NON_MEMBER)}>sign up</Link> you can view or download any CLE certificates for courses, which you have attended from the <em>Dashboard</em>.</p>
+          <p>If you are not an attorney or a law student you can still register for CLE courses. When you <Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_NON_MEMBER)}>sign up</Button> you can view or download any CLE certificates for courses, which you have attended from the <em>Dashboard</em>.</p>
           <p>{whatYouGetTxt}</p>
-        </>
+        </>;
       } else {
         text = <>
           <p>{previewUser === memberTypes.USER_ATTORNEY &&
-              <Link onClick={() => onLink(memberTypes.SIGNUP_ATTORNEY)}>Become an attorney member</Link>
+              <Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_ATTORNEY)}>Become an attorney member</Button>
             }{previewUser === memberTypes.USER_STUDENT &&
-              <Link onClick={() => onLink(memberTypes.SIGNUP_STUDENT)}>Become a law student member</Link>
+              <Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_STUDENT)}>Become a law student member</Button>
             } to get access to all CLE materials, current materials, as well as the archives.&nbsp;
           {previewUser === memberTypes.USER_ATTORNEY &&
             <span>When you sign up, you will be able to download CLE certificates for courses which you have attended.</span>
@@ -90,11 +89,11 @@ const CleTable = ({
       }
     } else if (memberType === memberTypes.USER_NON_MEMBER) {
       text = <>
-        <p><Link onClick={() => onLink(memberTypes.SIGNUP_MEMBER)}>Become a member</Link> to get access to all CLE materials, current materials as well as the archives.</p>
+        <p><Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_MEMBER)}>Become a member</Button> to get access to all CLE materials, current materials as well as the archives.</p>
         <p>{whatYouGetTxt}</p>
         <p>{registeredText} You can view the entire content for the materials or all courses that you have signed up for.</p>
         {certTxt}
-      </>
+      </>;
     } else {
       text = <>
       <p>Read course material for any CLE.</p>
@@ -169,13 +168,13 @@ const CleTable = ({
             let singPlural = 'CLE Credit';
             if (number > 1) singPlural = 'CLE Credits';
             return <strong>{number.toFixed(1)} {singPlural}</strong>
-          }
+          };
           if (record.credits.length) {
             credits = <ul>
               {
                 record.credits.map((item) => <li key={record.key}>{getLabel(item.number)} {item.type}</li>)
               }
-            </ul>
+            </ul>;
           }
         }
         if (record.agenda) agenda = <div>{record.agenda}</div>
@@ -186,18 +185,18 @@ const CleTable = ({
             className="my-2"
             />}
           {credits}
-        </div>
+        </div>;
       },
       rowExpandable: (record) => record.credits || record.agenda,
       // expandRowByClick: true,
       // indentSize: 40,
-    }
+    };
   });
 
   const openCurrentCLE = () => {
-    const currentCleKey = dataTransformed.find((item) => item.current && item.key);
-    if (currentCleKey) {
-      handleOpenModal(currentCleKey.key);
+    const latestCleKey = dataTransformed.find((item) => item.latest && item.key);
+    if (latestCleKey) {
+      handleOpenModal(latestCleKey.key);
     }
   };
 
@@ -221,7 +220,7 @@ const CleTable = ({
       setvisible={setPdfModalVisible}
       data={dataTransformed}
       datakey={modalKey}
-    />
+    />;
   }, [modalKey, dataTransformed, pdfModalVisible]);
 
   return <div className="law-notes law-notes-archive">
@@ -233,7 +232,7 @@ const CleTable = ({
       customCols={customCols}
     />
     {pdfModal}
-  </div>
-}
+  </div>;
+};
 
-export default CleTable;
+export default CleArchive;

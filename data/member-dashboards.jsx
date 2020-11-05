@@ -1,4 +1,4 @@
-import { Avatar, Typography } from 'antd';
+import { Avatar, Typography, Button } from 'antd';
 import { LoginOutlined } from '@ant-design/icons';
 // custom components
 import Account from '../components/members/account/account';
@@ -31,7 +31,7 @@ const MenuIcon = ({
       height="1.6em"
       fill={fill} // "#008cdb"
     />
-  </span>
+  </span>;
 
 const CleCertIcon = () =>
   <span role="img" aria-label="See CLE certificate" className="anticon">
@@ -41,7 +41,7 @@ const CleCertIcon = () =>
       height="1.4em"
       fill="currentColor"
     />
-  </span>
+  </span>;
 
 const anonPromoTxt = {
   members: 'Join to get these member benefits...',
@@ -60,7 +60,7 @@ const banners = (type, onLink) => {
   />;
   if (type === 'membership') return <Banner
     title="Become a member"
-    text={<span>If you are an attorney, <Link onClick={() => alert('Certify you are a lawyer > payment')}>become a member</Link> of the Association...</span>}
+    text={<span>If you are an attorney, <Button size="sm" onClick={() => alert('Certify you are a lawyer > payment')}>become a member</Button> of the Association...</span>}
     colors={{ backgroundColor: '#f9f0ff', color: '#9e1068' }} // magenta
   />;
   if (type === 'lawnotes') return <Banner
@@ -84,7 +84,7 @@ const banners = (type, onLink) => {
     If you are a member, but have not logged into the new system, <Link onClick={() => alert('REQUEST ACCESS')}>request access.</Link></span>}
     colors={{ backgroundColor: '#f9f0ff', color: '#9e1068' }} // magenta
   />;
-}
+};
 
 const linkText = {
   memberSignup: memberTypes.SIGNUP_MEMBER,
@@ -122,7 +122,7 @@ const account = ({
       setUser={setUser}
       onLink={onLink}
     />,
-  }
+  };
 };
 
 /******************
@@ -165,7 +165,7 @@ const participate = (memberType, onLink, previewUser) => {
       onLink={onLink}
       previewUser={previewUser}
     />,
-  }
+  };
 };
 
 /******************
@@ -189,7 +189,7 @@ const participate = (memberType, onLink, previewUser) => {
     children = {
       lnsample: lnSample(memberType, onLink, previewUser),
       lnarchive: lnArchive(memberType, onLink, previewUser),
-    }
+    };
   }
   if (memberType === memberTypes.USER_ANON) {
     banner = banners('login', onLink);
@@ -208,7 +208,7 @@ const participate = (memberType, onLink, previewUser) => {
     banner,
     children,
     links,
-  }
+  };
 };
 
 // member only
@@ -256,7 +256,7 @@ const lnSample = (memberType, onLink, previewUser) => {
     content,
     links: ['lnarchive'],
   };
-}
+};
 
 const lnArchive = (memberType, onLink, previewUser) => {
   let locked = false;
@@ -278,8 +278,8 @@ const lnArchive = (memberType, onLink, previewUser) => {
       onLink={onLink}
     />,
     links,
-  }
-}
+  };
+};
 
 /******************
  * cle
@@ -327,7 +327,7 @@ const cleCenter = ({
     banner: banners('clelatest', onLink),
     title: 'CLE Center',
     children,
-  }
+  };
 };
 
 // This should only show up if there is a current CLE
@@ -366,7 +366,7 @@ const cleLatest = (memberType = memberTypes.USER_ATTORNEY, onLink, previewUser) 
       onLink={onLink}
     />,
     links,
-  }
+  };
 };
 
 // Sample for anon and non-member
@@ -393,7 +393,7 @@ const cleSample = (memberType, onLink, previewUser) => {
       onLink={onLink}
     />,
     links,
-  }
+  };
 };
 
 const cleArchive = (memberType = memberTypes.USER_ATTORNEY, onLink, previewUser) => {
@@ -425,8 +425,8 @@ const cleArchive = (memberType = memberTypes.USER_ATTORNEY, onLink, previewUser)
       onLink={onLink}
     />,
     links,
-  }
-}
+  };
+};
 
 const cleCerts = ({
   userType,
@@ -448,7 +448,7 @@ const cleCerts = ({
     />,
     links,
   };
-}
+};
 
 /******************
  * discounts
@@ -536,7 +536,7 @@ export const getDashboard = ({
     onLink,
   });
   return;
-}
+};
 
 // signature different from other data functions - no memberType, only `anon`
 export const loginData = (onLink) => {
@@ -678,7 +678,7 @@ const studentData = ({
     clecenter: cleCenter({ userType, onLink }),
     account: account({ userType, user, setUser, onLink }),
     logout: logout(userType, onLink),
-  }
+  };
 };
 
 export const getMemberPageParentKey = (data, key) => {
@@ -693,7 +693,7 @@ export const getMemberPageParentKey = (data, key) => {
     }
   }
   return '';
-}
+};
 
 export const getMembersPageItem = (data, key) => {
   for (const parentKey in data) {
@@ -705,4 +705,4 @@ export const getMembersPageItem = (data, key) => {
     }
   }
   return null;
-}
+};

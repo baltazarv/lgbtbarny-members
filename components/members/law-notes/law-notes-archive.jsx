@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Typography } from 'antd';
+import { Typography, Button } from 'antd';
 // custom components
 import PdfTable from '../../pdf-table';
 import PdfModal from '../../pdfs/pdf-modal';
@@ -54,32 +54,31 @@ const LawNotesArchives = ({
 
     const whatYouGetTxt = <>
       <p>See what you get with Law Notes &mdash; See the contents of any of the editions. Or read the <Link onClick={() => onLink('lnsample')}>sample January edition</Link>:</p>
-    </>
+    </>;
 
     if (memberType === memberTypes.USER_ATTORNEY || memberType === memberTypes.USER_STUDENT) {
       text = <>
         <p>Read any past editions of the <em>The LGBT Law Notes</em>. Or read the <Link onClick={() => onLink('lnlatest')}>latest issue</Link>.</p>
-      </>
+      </>;
     } else if (memberType === memberTypes.USER_NON_MEMBER) {
       text = <>
-        <p><Link onClick={() => onLink(memberTypes.SIGNUP_MEMBER)}>Become a member</Link> to get the <em>LGBT Law Notes</em>. </p>
-        {/* Otherwise, get a <Link onClick={() => onLink(memberTypes.SIGNUP_LAW_NOTES)}>Law Notes subscription</Link>. */}
+        <p><Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_MEMBER)}>Become a member</Button> to get the <em>LGBT Law Notes</em>. </p>
         {whatYouGetTxt}
       </>;
     } else if (memberType === memberTypes.USER_ANON) {
       text = <>
         <p>The <em>LGBT Law Notes</em> magazine is included with membership. {
           previewUser === memberTypes.USER_ATTORNEY &&
-          <Link onClick={() => onLink(memberTypes.SIGNUP_ATTORNEY)}>Become an attorney member!</Link>
+          <Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_ATTORNEY)}>Become an attorney member!</Button>
         }{
           previewUser === memberTypes.USER_STUDENT &&
-          <Link onClick={() => onLink(memberTypes.SIGNUP_STUDENT)}>Become a student member!</Link>
+          <Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_STUDENT)}>Become a student member!</Button>
         }{
           previewUser === memberTypes.USER_NON_MEMBER &&
-          <span>But if you are neither an attorney nor law student, you can still <Link onClick={() => onLink(memberTypes.SIGNUP_LAW_NOTES)}>subscribe to <em>Law Notes</em>.</Link></span>
+          <span>But if you are neither an attorney nor law student, you can still <Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_LAW_NOTES)}>subscribe to&nbsp;&nbsp;<em>Law Notes</em>.</Button></span>
         }</p>
         {whatYouGetTxt}
-      </>
+      </>;
     }
     return text;
   }, [memberType, previewUser]);
@@ -116,11 +115,11 @@ const LawNotesArchives = ({
             return <li key={articleIndex}>{chapter}</li>
             // {articleIndex === record.chapters.length -1 && <Link onClick={() => expandArticle(chapter, articleIndex)}>MORE</Link>}
           })
-        }</ul>
+        }</ul>;
       },
       rowExpandable: (record) => record.chapters,
       // expandRowByClick: true,
-    }
+    };
   });
 
   const pdfModal = useMemo(() => {
@@ -130,7 +129,7 @@ const LawNotesArchives = ({
       setvisible={setPdfModalVisible}
       data={dataTransformed}
       datakey={modalKey}
-    />
+    />;
   }, [modalKey, dataTransformed, pdfModalVisible]);
 
   return <div className="law-notes law-notes-archive">
@@ -142,7 +141,7 @@ const LawNotesArchives = ({
       customCols={customCols}
     />
     {pdfModal}
-  </div>
-}
+  </div>;
+};
 
 export default LawNotesArchives;

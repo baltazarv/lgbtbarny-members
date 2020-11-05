@@ -283,8 +283,8 @@ const Signup = ({
               signupType === memberTypes.USER_STUDENT
             ) &&
               <>
-                <div className="mb-2">If you already have an account <Button type="link" onClick={() => setModalType('login')}>log in</Button>.</div>
-                <div>If you are already a member but this is your first time logging in to the new system, <Button type="link" onClick={() => alert('REQUEST ACCESS')}>request access</Button>.</div>
+                <div className="mb-2">If you already have an account <Button size='small' onClick={() => setModalType('login')}>log in</Button>.</div>
+                <div>If you are already a member but this is your first time logging in to the new system, <Button size='small' onClick={() => alert('REQUEST ACCESS')}>request access</Button>.</div>
               </>
             }
             {(
@@ -294,7 +294,7 @@ const Signup = ({
               <>
                 <div className="mb-2">If you are an attorney, get the benefits of a <Button type="link" onClick={() => setSignupType('member')}>full membership,</Button> including Law Notes, CLE material, and discounts.&nbsp;&nbsp;<span className="nowrap"><TitleIcon name="demographic" ariaLabel="Participate" />&nbsp;&nbsp;<TitleIcon name="bookmark" ariaLabel="LGBT Law Notes" />&nbsp;&nbsp;<TitleIcon name="government" ariaLabel="CLE Center" />&nbsp;&nbsp;<TitleIcon name="star" ariaLabel="Discounts" /></span></div>
 
-                <div>If you already have an account <Button type="link" onClick={() => setModalType('login')}>log in</Button>.</div>
+                <div>If you already have an account <Button onClick={() => setModalType('login')}>log in</Button>.</div>
               </>
             }
           </Col>

@@ -162,7 +162,7 @@ const MemberGroups = ({
 
     if (memberType === memberTypes.USER_NON_MEMBER){
       return <>
-        <p>If you are an attorney or law student, <Button type="link" onClick={() => onLink(memberTypes.SIGNUP_MEMBER)}>become a member</Button>.</p>
+        <p>If you are an attorney or law student, <Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_MEMBER)}>become a member</Button>.</p>
 
         <div>See how you can get involved as a member:</div>
         <Radio.Group
@@ -182,13 +182,13 @@ const MemberGroups = ({
     if (memberType === memberTypes.USER_ANON) return <>
       {previewUser === memberTypes.USER_ATTORNEY &&
         <>
-          <p>Become an <Button type="link" onClick={() => onLink(memberTypes.SIGNUP_ATTORNEY)}>attorney member</Button>.</p>
+          <p>Become an <Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_ATTORNEY)}>attorney member</Button>.</p>
           <p>See how you can get involved as a member:</p>
         </>
       }
       {previewUser === memberTypes.USER_STUDENT &&
         <>
-        <p>Become a <Button type="link" onClick={() => onLink(memberTypes.SIGNUP_STUDENT)}>student member</Button>.</p>
+        <p>Become a <Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_STUDENT)}>student member</Button>.</p>
         <p>See what opportunities will be available to you as a member:</p>
       </>
     }

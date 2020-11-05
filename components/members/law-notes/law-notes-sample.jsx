@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Typography } from 'antd';
+import { Typography, Button } from 'antd';
 import './law-notes.less';
 import PdfViewer from '../../pdf-viewer';
 // data
@@ -22,32 +22,31 @@ const LawNotesSample = ({
   }, [data]);
 
   const introText = useMemo(() => {
-    let text = null
+    let text = null;
 
     const whatYouGetTxt = <>
       <p>See what you get with Law Notes &mdash; sample the January edition:</p>
-    </>
+    </>;
 
     if (memberType === memberTypes.USER_NON_MEMBER) {
       text = <>
-        <p><Link onClick={() => onLink(memberTypes.SIGNUP_MEMBER)}>Become a member</Link> to get the <em>LGBT Law Notes</em>. </p>
-        {/* Otherwise, get a <Link onClick={() => onLink(memberTypes.SIGNUP_LAW_NOTES)}>Law Notes subscription</Link>. */}
+        <p><Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_MEMBER)}>Become a member</Button> to get the <em>LGBT Law Notes</em>. </p>
         {whatYouGetTxt}
       </>;
     } else if (memberType === memberTypes.USER_ANON) {
       text = <>
         <p>The <em>LGBT Law Notes</em> magazine is included with membership. {
           previewUser === memberTypes.USER_ATTORNEY &&
-          <Link onClick={() => onLink(memberTypes.SIGNUP_ATTORNEY)}>Become an attorney member!</Link>
+          <><Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_ATTORNEY)}>Become an attorney member</Button>!</>
         }{
           previewUser === memberTypes.USER_STUDENT &&
-          <Link onClick={() => onLink(memberTypes.SIGNUP_STUDENT)}>Become a student member!</Link>
+          <><Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_STUDENT)}>Become a student member</Button>!</>
         }{
           previewUser === memberTypes.USER_NON_MEMBER &&
-          <span>But if you are neither an attorney nor law student, you can still <Link onClick={() => onLink(memberTypes.SIGNUP_LAW_NOTES)}>subscribe to <em>Law Notes</em>.</Link></span>
+          <span>But if you are neither an attorney nor law student, you can still <Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_LAW_NOTES)}>subscribe to&nbsp;&nbsp;<em>Law Notes</em></Button>.</span>
         }</p>
         {whatYouGetTxt}
-      </>
+      </>;
     };
     return text;
   }, [memberType, previewUser]);
@@ -55,7 +54,7 @@ const LawNotesSample = ({
   return <div className="law-notes law-notes-latest">
     {introText}
     <PdfViewer title={title} url={data.url} />
-  </div>
-}
+  </div>;
+};
 
 export default LawNotesSample;

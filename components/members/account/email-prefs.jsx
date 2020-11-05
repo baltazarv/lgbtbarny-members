@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Card, Typography, Switch, Row, Col } from 'antd';
+import { Card, Typography, Switch, Row, Col, Button } from 'antd';
 // data
 import * as memberTypes from '../../../data/member-types';
 import { useEffect } from 'react';
@@ -72,7 +72,7 @@ const EmailPrefs = ({
             />&nbsp;&nbsp;<strong>Association Member emails</strong>
           </Col>
           {userType === memberTypes.USER_NON_MEMBER
-            && <Col><Link onClick={() => onLink(memberTypes.SIGNUP_MEMBER)}>Become a member</Link></Col>
+            && <Col><Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_MEMBER)}>Become a member</Button></Col>
           }
         </Row>
       </div>
@@ -88,7 +88,7 @@ const EmailPrefs = ({
             />&nbsp;&nbsp;<strong>Law Notes emails:</strong> magazine &amp; podcast
           </Col>
           {userType === memberTypes.USER_NON_MEMBER
-            && <Col><Link onClick={() => onLink(memberTypes.SIGNUP_LAW_NOTES)}>Subscribe to Law Notes</Link></Col>
+            && <Col><Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_LAW_NOTES)}>Subscribe to Law Notes</Button></Col>
           }
         </Row>
       </div>
