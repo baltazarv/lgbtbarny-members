@@ -21,7 +21,7 @@ const TabIcon = ({
       height="2em"
       fill={fill}
     />
-  </span>
+  </span>;
 
 const signupLinkText = {
   [memberTypes.SIGNUP_MEMBER]: 'Member Sign-up',
@@ -30,7 +30,7 @@ const signupLinkText = {
   [memberTypes.SIGNUP_NON_MEMBER]: 'Basic Account Sign-up',
   [memberTypes.SIGNUP_LAW_NOTES]: 'Law Notes Subscription',
   'signup-newletter': 'Newsletter sign-up',
-}
+};
 
 const MemberContent = ({
   data,
@@ -71,7 +71,7 @@ const MemberContent = ({
                 <Button type="link" onClick={() => onLinkClick(key)}>
                   {signupLinkText[key]}
                 </Button>{optionalPipe}
-              </span>
+              </span>;
             return <span key={key}><u>{key}</u>{optionalPipe}</span>;
           }
           return <span key={key}>
@@ -179,7 +179,7 @@ const MemberContent = ({
         </Card>
       </Col>
     </Row>
-  </Container>
-}
+  </Container>;
+};
 
 export default MemberContent;

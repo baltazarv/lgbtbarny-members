@@ -99,7 +99,6 @@ const Members = () => {
 
       if (!router.query.type || router.query.type === 'anon' || router.query.type === 'anonymous') {
         _memberType = memberTypes.USER_ANON;
-        setPreviewUser(memberTypes.USER_ATTORNEY);
       } else if (router.query.type === 'attorney') {
         _memberType = memberTypes.USER_ATTORNEY;
         _user = {...users.attorney};
@@ -273,7 +272,7 @@ const Members = () => {
   }
 
   const handleSelectPreviewUser = (user) => {
-    // console.log('handleSelectPreviewUser onLink:', handleContentLink, 'memberType', memberTypes.USER_ANON, 'user:', user);
+    // console.log('handleSelectPreviewUser onLink: memberType', memberTypes.USER_ANON, 'user:', user);
     setPreviewUser(user); // > populates data var >> routes >>> selections
   }
 

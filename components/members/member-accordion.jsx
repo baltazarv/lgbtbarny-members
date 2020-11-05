@@ -31,7 +31,7 @@ const MemberAccordion = ({
 
   const onPanelSelected = key => {
     setActiveKey(key);
-  }
+  };
 
   useEffect(() => {
     const memberContent = (item) => (
@@ -41,7 +41,7 @@ const MemberAccordion = ({
         dataKey={activeKey}
         onLinkClick={setActiveKey}
       />
-    )
+    );
 
     const items = [];
     for (const key in data) {
@@ -121,7 +121,7 @@ const MemberAccordion = ({
       }
       {panels}
     </Collapse>
-  </>
-}
+  </>;
+};
 
 export default MemberAccordion;
