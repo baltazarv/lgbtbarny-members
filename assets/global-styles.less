@@ -104,7 +104,10 @@ body {
 
 } // @END body
 
-// bootstrap re-writes
+
+/**********************
+  bootstrap re-writes
+***********************/
 
 // override link reboot
 a, a:not([href]):not([tabindex]) {
@@ -121,7 +124,9 @@ label {
   color: rgba(0, 0, 0, 0.2)!important;
 }
 
-// antd re-writes
+/****************
+  antd re-writes
+*****************/
 
 .ant-form-item {
   margin-bottom: 1em;
@@ -166,4 +171,14 @@ label {
 
 .ant-card-extra {
   padding: 0;
+}
+
+.ant-modal-header {
+  text-align: center;
+  background-color: #fafafa;
+
+  .ant-modal-title {
+    font-weight: 700;
+    font-size: 20px;
+  }
 }

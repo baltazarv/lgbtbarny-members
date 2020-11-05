@@ -1,59 +1,24 @@
-/** Controls values entered & conversion tables
- * pushes to payment */
-import { useEffect } from 'react';
-import { Form, Select, Button } from 'antd';
+import { useEffect, useMemo } from 'react';
+import { Form, Select, Button, Row, Col } from 'antd';
 import SignupAccountFields from './signup-account-fields';
+import DuesWrapper from '../salary-donation-dues-fields/dues-wrapper';
 // data
 import * as memberTypes from '../../../data/member-types';
 import users from '../../../data/users';
-import { CERTIFY_OPTIONS, LAW_NOTES_PRICE, FORMS,SIGNUP_FORM_FIELDS } from '../../../data/member-data';
-import { SALARIES } from '../../../data/member-plans';
+import { CERTIFY_OPTIONS } from '../../../data/member-values';
+import { FORMS, SIGNUP_FIELDS } from '../../../data/member-form-names';
 
 const { Option } = Select;
 
 const SignupCreateAcctForm = ({
+  formRef,
   signupType,
   setSignupType,
-  setSalary,
-  donationFields,
-  setPaySummValue,
-  paySummList,
+  duesSummList,
   loading,
+  // onFinishFailed,
 }) => {
   const [form] = Form.useForm();
-
-  const setMemberFee = () => {
-    // member and discount fee
-    if (
-      signupType === memberTypes.USER_ATTORNEY &&
-      form.getFieldValue(SIGNUP_FORM_FIELDS.salary)
-    ) {
-      const fee = SALARIES[form.getFieldValue(SIGNUP_FORM_FIELDS.salary)].fee;
-      setPaySummValue({
-        memberFee: fee,
-        discount: fee/2,
-      });
-      setSalary(form.getFieldValue(SIGNUP_FORM_FIELDS.salary))
-    } else {
-      setPaySummValue({
-        memberFee: 0,
-        discount: 0,
-      });
-      setSalary(null);
-    }
-  };
-
-  const setLawNotesAmt = () => {
-    // when switch to non-member, set law notes amount
-    if (
-      signupType === memberTypes.USER_LAW_NOTES ||
-      (signupType === memberTypes.USER_NON_MEMBER && form.getFieldValue('law-notes'))
-    ) {
-      setPaySummValue({ lawNotesAmt: LAW_NOTES_PRICE });
-    } else {
-      setPaySummValue({ lawNotesAmt: 0 });
-    }
-  };
 
   // populate test user: choose 'bar' for attorney or 'student'
   // when switch between account types, save values
@@ -64,21 +29,21 @@ const SignupCreateAcctForm = ({
         for (const field in userData) {
           form.setFieldsValue({ [field]: userData[field]});
         }
-        form.setFieldsValue({ confirmpwd: userData.password })
+        form.setFieldsValue({ confirmpwd: userData.password });
       }
     };
     if (signupType === memberTypes.USER_ATTORNEY) {
-      form.setFieldsValue({ certify: 'bar' });
+      form.setFieldsValue({ [SIGNUP_FIELDS.certify]: 'bar' });
       populateUser('attorney');
     } else if (signupType === memberTypes.USER_STUDENT) {
-      form.setFieldsValue({ certify: 'student' });
+      form.setFieldsValue({ [SIGNUP_FIELDS.certify]: 'student' });
+      form.setFieldsValue({ [SIGNUP_FIELDS.salary]: null });
       populateUser('student');
-    } else if (signupType === memberTypes.USER_MEMBER) {
-      form.setFieldsValue({ certify: null });
+    } else if (signupType === memberTypes.USER_MEMBER || signupType === memberTypes.USER_LAW_NOTES) {
+      form.setFieldsValue({ [SIGNUP_FIELDS.certify]: null });
+      form.setFieldsValue({ [SIGNUP_FIELDS.salary]: null });
+      populateUser('nonMember');
     };
-
-    setLawNotesAmt();
-    setMemberFee();
   }, [signupType]);
 
   // choose between attorney and student membership
@@ -88,39 +53,69 @@ const SignupCreateAcctForm = ({
     } else {
       setSignupType(memberTypes.USER_ATTORNEY);
     }
-  }
+  };
 
   const onFieldsChange = (changedFields, allFields) => {
     // console.log(changedFields, allFields);
-  }
+  };
 
   const onValuesChange = (changedFields, allFields) => {
-    if (changedFields[SIGNUP_FORM_FIELDS.salary]) setMemberFee();
-    if (changedFields.hasOwnProperty(SIGNUP_FORM_FIELDS.lawNotes)) setLawNotesAmt();
-  }
+    // console.log(changedFields, allFields);
+  };
+
+  const duesWrapper = useMemo(() => {
+    // console.log(signupType, memberTypes.USER_MEMBER)
+    let hasDiscount = false;
+    if (signupType === memberTypes.USER_ATTORNEY) {
+      hasDiscount = true;
+    }
+    const _duesWrapper = <DuesWrapper
+      memberType={signupType}
+      hasDiscount={hasDiscount}
+    />;
+    return _duesWrapper;
+  }, [signupType]);
+
+  const signupAccountFields = useMemo(() => {
+    let showEmployment = false;
+    let showStudent = false;
+    if (signupType === memberTypes.USER_ATTORNEY) showEmployment = true;
+    if (signupType === memberTypes.USER_STUDENT) showStudent = true;
+    return <SignupAccountFields
+      signupType={signupType}
+      // form={form}
+      showEmployment={showEmployment}
+      showStudent={showStudent}
+      // salaries={SALARIES}
+      // donationFields={donationFields}
+      loading={loading}
+    />;
+  }, [signupType]);
 
   return <>
     <Form
+      ref={formRef}
       labelCol={{ xs: { span: 24 }, sm: { span: 8 } }}
       wrapperCol={{ xs: { span: 24 }, sm: { span: 16 } }}
       name={FORMS.createAccount}
       form={form}
       initialValues={{
-        [SIGNUP_FORM_FIELDS.donationrecurrence]: SIGNUP_FORM_FIELDS.donationrecurs,
+        [SIGNUP_FIELDS.donationrecurrence]: SIGNUP_FIELDS.donationrecurs,
       }}
       scrollToFirstError
       onFieldsChange={onFieldsChange}
       onValuesChange={onValuesChange}
+      // onFinishFailed={onFinishFailed}
     >
       {
         (
-          (signupType === memberTypes.USER_MEMBER ||
+          signupType === memberTypes.USER_MEMBER ||
           signupType === memberTypes.USER_ATTORNEY ||
-          signupType === memberTypes.USER_STUDENT)
+          signupType === memberTypes.USER_STUDENT
         ) &&
         <Form.Item
           className="text-left"
-          name="certify"
+          name={SIGNUP_FIELDS.certify}
           label="I am applying as"
         >
           <Select
@@ -140,14 +135,15 @@ const SignupCreateAcctForm = ({
         </Form.Item>
       }
 
-      <SignupAccountFields
-        signupType={signupType}
-        salaries={SALARIES}
-        donationFields={donationFields}
-        loading={loading}
-      />
+      {signupAccountFields}
 
-      {paySummList}
+      {duesWrapper}
+
+      <Row justify="end">
+        <Col>
+          {duesSummList}
+        </Col>
+      </Row>
 
       {/* submit button */}
       <Form.Item

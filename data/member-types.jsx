@@ -5,8 +5,8 @@
  * • sign-up account preview on anonymous dashboard.
  */
 export const USER_ANON = 'anonymous-user';
-export const USER_NON_MEMBER = 'non-member-user';
-export const USER_LAW_NOTES = 'ln-subscriber-user';
+export const USER_NON_MEMBER = 'non-member';
+export const USER_LAW_NOTES = 'law-notes-subscriber';
 export const USER_MEMBER = 'member'; // attorneys and students
 export const USER_ATTORNEY = 'attorney';
 export const USER_STUDENT = 'student';

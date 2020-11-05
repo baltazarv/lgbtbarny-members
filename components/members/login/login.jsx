@@ -12,7 +12,7 @@ const Login = ({
   const openSignup = (signupType) => {
     setSignupType(signupType);
     setModalType('signup');
-  }
+  };
 
   return <>
     <Container
@@ -41,7 +41,7 @@ const Login = ({
         <LoginForm />
       </Card>
     </Container>
-  </>
-}
+  </>;
+};
 
 export default Login;

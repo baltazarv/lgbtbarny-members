@@ -25,7 +25,7 @@ const AccountsForm = ({
     const fields = form.getFieldsValue();
     for (const key in fields) {
       if (user[key]) {
-        form.setFieldsValue({ [key]: user[key] })
+        form.setFieldsValue({ [key]: user[key] });
       }
     }
   };

@@ -1,3 +1,4 @@
+// TODO: remove Form from name?
 import { useMemo, useState } from 'react';
 import { Card, Row, Col, Divider, Typography, Button, Tooltip, Modal } from 'antd';
 // modals
@@ -7,7 +8,7 @@ import BillingHistory from './modals/billing-list';
 import CardInfoForm from './modals/card-info-form';
 import CancelPayment from './modals/cancel-payment';
 // data
-import { SALARIES } from '../../../data/member-plans';
+import { SALARIES } from '../../../data/member-values';
 // styles
 import './account.less'; // .member-account-modal
 
@@ -20,7 +21,6 @@ const MembershipDuesForm = ({
   userType,
 }) => {
   const [salaryModalVisible, setSalaryModalVisible] = useState(false);
-  const [donationModalVisible, setDonationModalVisible] = useState(false);
   const [taxDeductModalVisible, setTaxDeductModalVisible] = useState(false);
   const [billingModalVisible, setBillingModalVisible] = useState(false);
   const [cardModalVisible, setCardModalVisible] = useState(false);
@@ -40,72 +40,58 @@ const MembershipDuesForm = ({
     >
       <Divider className="mt-0">Amount</Divider>
 
-      {/* salary */}
       {SALARIES[user.salary]
-        && <div className="mt-2">
+        && <>
           <Row justify="space-between">
             <Col>
-              <label>
-                <Tooltip title="Membership dues are based on the amount of member salaries">
-                  <span style={{ borderBottom: '1px dotted' }}>Annual fee:</span>
-                </Tooltip>
-              </label> ${SALARIES[user.salary].fee.toFixed(2)}/year for {SALARIES[user.salary].label.toLowerCase()}
+
+              {/* salary */}
+              <div>
+                <label>
+                  <Tooltip title="Membership dues are based on the amount of member salaries">
+                    <span style={{ borderBottom: '1px dotted' }}>Annual fee:</span>
+                  </Tooltip>
+                </label> ${SALARIES[user.salary].fee.toFixed(2)}/yr. ({SALARIES[user.salary].label.toLowerCase()})
+              </div>
+
+              {/* donation */}
+              <div>
+                <label>
+                  <Tooltip title="Donations are greatly appreciated but optional">
+                    <span style={{ borderBottom: '1px dotted' }}>Yearly donation:</span>
+                  </Tooltip>
+                </label> {user.donation ? user.donation.toFixed(2) : 0}
+              </div>
+
+              {/* total */}
+              <div>
+                <label>Total yearly charge:</label> {paymentCharge}
+              </div>
+
             </Col>
             <Col>
-              <Button
-                type="primary"
-                ghost
-                size="small"
-                onClick={() => setSalaryModalVisible(true)}
-              >
-                Update salary
-              </Button>
+
+              {/* update salary / doanation */}
+              <div className="mt-2 mt-lg-0">
+                <Button
+                  type="primary"
+                  ghost
+                  size="small"
+                  onClick={() => setSalaryModalVisible(true)}
+                >
+                  Update salary &amp; donation
+                </Button>
+              </div>
+
+              {/* open tax deduct table */}
+              <div className="mt-2">
+                <Link onClick={() => setTaxDeductModalVisible(true)}>Charitable tax deductions</Link>
+              </div>
+
             </Col>
           </Row>
-        </div>
+        </>
       }
-
-      {/* donation */}
-      <div className="mt-2">
-        <Row justify="space-between">
-          <Col
-            xs={{ span: 24 }}
-            md={{ span: 8 }}
-            >
-              <label>
-                <Tooltip title="Donations are greatly appreciated but optional">
-                  <span style={{ borderBottom: '1px dotted' }}>Yearly donation:</span>
-                </Tooltip>
-              </label> {user.donation ? user.donation.toFixed(2) : 0}
-          </Col>
-          <Col
-            xs={{ span: 24 }}
-            md={{ span: 8 }}
-            >
-            <Button
-              ghost
-              type="primary"
-              size="small"
-              onClick={() => setDonationModalVisible(true)}
-              >Update donation</Button>
-          </Col>
-          <Col
-            xs={{ span: 24 }}
-            md={{ span: 8 }}
-          >
-            <Link onClick={() => setTaxDeductModalVisible(true)}>Charitable tax deductions</Link>
-          </Col>
-        </Row>
-      </div>
-
-      {/* total */}
-      <div className="mt-2">
-        <Row justify="space-between">
-          <Col>
-            <label>Total yearly charge:</label> {paymentCharge}
-          </Col>
-        </Row>
-      </div>
 
       <Divider>Payment info</Divider>
 
@@ -156,23 +142,16 @@ const MembershipDuesForm = ({
     {/* modals */}
 
     <Modal
-      title="Update Salary"
+      title="Update Salary &amp; Donation"
       visible={salaryModalVisible}
       okText="Update Renewal Charge"
       onOk={() => setSalaryModalVisible(false)}
       onCancel={() => setSalaryModalVisible(false)}
     >
-      <DuesForm user={user} />
-    </Modal>
-
-    <Modal
-      title="Update Donation"
-      visible={donationModalVisible}
-      okText="Update Renewal Charge"
-      onOk={() => setDonationModalVisible(false)}
-      onCancel={() => setDonationModalVisible(false)}
-    >
-      <DuesForm user={user} updateDonationOnly={true} />
+      <DuesForm
+        user={user}
+        memberType={userType}
+      />
     </Modal>
 
     <Modal

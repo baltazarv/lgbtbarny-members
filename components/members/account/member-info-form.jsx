@@ -4,8 +4,8 @@ import { UserOutlined } from '@ant-design/icons';
 import DuesForm from './modals/dues-form';
 // data
 import * as memberTypes from '../../../data/member-types';
-import { CERTIFY_OPTIONS } from '../../../data/member-data';
-import { SALARIES, PRACTICE_SETTINGS, practiceOptions } from '../../../data/member-plans';
+import { CERTIFY_OPTIONS, SALARIES, PRACTICE_SETTINGS, practiceOptions } from '../../../data/member-values';
+import './account.less';
 
 const { Option } = Select;
 
@@ -64,12 +64,12 @@ const MemberInfoForm = ({
       setIsAttorney(true);
       setIsStudent(false);
     }
-  }
+  };
 
   const onGradYearUpdate = (date) => {
     const thisYear = new Date().getFullYear();
     setStudentHasGraduated(date.year() < thisYear);
-  }
+  };
 
   /**
    * ATTORNEY CONTENT
@@ -97,7 +97,7 @@ const MemberInfoForm = ({
                 size="small"
                 onClick={() => setSalaryModalVisible(true)}
               >
-                Update salary
+                Update salary &amp; donation
               </Button>
             </Col>
           </Row>
@@ -283,10 +283,10 @@ const MemberInfoForm = ({
     if (userType === memberTypes.USER_NON_MEMBER) {
       if (isAttorney) content = <>
         <Button type="primary" onClick={() => alert('Certify you are a lawyer > payment')}>Become an attorney member</Button>
-      </>
+      </>;
       if (isStudent) content = <>
         <Button type="primary" onClick={() => alert('Certify you are a lawyer > payment')}>Become a law student member</Button>
-      </>
+      </>;
     }
     return content;
   }, [userType, user, editing, isStudent, isAttorney]);
@@ -335,15 +335,18 @@ const MemberInfoForm = ({
     </Row>
 
     <Modal
-      title="Update Salary"
+      title="Update Salary &amp; Donation"
       visible={salaryModalVisible}
       okText="Update Renewal Charge"
       onOk={() => setSalaryModalVisible(false)}
       onCancel={() => setSalaryModalVisible(false)}
     >
-      <DuesForm user={user} />
+      <DuesForm
+        user={user}
+        memberType={userType}
+      />
     </Modal>
-  </>
-}
+  </>;
+};
 
 export default MemberInfoForm;

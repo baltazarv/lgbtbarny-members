@@ -1,45 +1,56 @@
-import { useMemo } from 'react';
-import { Form, Input, InputNumber, Select } from 'antd';
+import { useState, useMemo } from 'react';
+import { Form, Input, InputNumber, Select, Radio } from 'antd';
 // data
-import { SIGNUP_FORM_FIELDS, getDonationValues } from '../../../data/member-data';
+import { SIGNUP_FIELDS } from '../../../data/member-form-names';
+import { getDonationValues } from '../../../data/donation-values';
 
 const { Option } = Select;
 
 const DonationFields = ({
-  signupType,
-  label,
-  customSelected,
-  setCustomSelected,
+  suggestedAmounts,
+  label = 'Donation',
+  onChange,
   loading,
+  // labelCol,
+  // wrapperCol,
 }) => {
+  const [customSelected, setCustomSelected] = useState(false);
+  const [customDonation, setCustomDonation] = useState(null);
 
   const handleDonationChange = (value) => {
-    // value can be "optional amount"
     if (typeof value === 'string' && value.toLowerCase().includes('custom')) {
       setCustomSelected(true);
+      onChange(SIGNUP_FIELDS.donation, customDonation);
     } else {
       setCustomSelected(false);
+      onChange(SIGNUP_FIELDS.donation, value);
     }
+  };
+
+  const handleCustomDonationChange = (value) => {
+    setCustomDonation(value);
+    onChange(SIGNUP_FIELDS.donation, value);
   };
 
   // build options for donation select component
   const donationOptions = useMemo(() => {
-    const donationValues = getDonationValues(signupType);
-    const options = donationValues.map((amt) => {
-      let txt = amt;
-      if (typeof amt === 'number') txt = `$${amt.toFixed(2)}`;
-      return <Option
-          key={amt}
-          value={amt}
-        >
-          {txt}
-      </Option>
-    });
+    let options = null;
+    if (suggestedAmounts && suggestedAmounts.length > 0) {
+      options = suggestedAmounts.map((amt) => {
+        let txt = amt;
+        if (typeof amt === 'number') txt = `$${amt.toFixed(2)}`;
+        return <Option
+            key={amt}
+            value={amt}
+          >
+            {txt}
+        </Option>;
+      });
+    }
     return options;
-  }, [signupType])
+  }, [suggestedAmounts]);
 
   return <>
-  {/* donation field repeated! */}
   {customSelected
     ?
       <Form.Item
@@ -50,7 +61,7 @@ const DonationFields = ({
         <Input.Group compact>
           <Form.Item
             className="text-center"
-            name={SIGNUP_FORM_FIELDS.donation}
+            name={SIGNUP_FIELDS.donation}
             noStyle
           >
             <Select
@@ -64,12 +75,13 @@ const DonationFields = ({
             </Select>
           </Form.Item>
           <Form.Item
-            name="customdonation"
+            name={SIGNUP_FIELDS.customDonation}
             noStyle
           >
             <InputNumber
               style={{ width: '50%' }}
               placeholder="Enter amount..."
+              onChange={handleCustomDonationChange}
               min={0}
               formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
               parser={value => value.replace(/\$\s?|(,*)/g, '')}
@@ -98,7 +110,21 @@ const DonationFields = ({
         </Select>
       </Form.Item>
     }
-  </>
-}
+    <Form.Item
+      name={SIGNUP_FIELDS.donationrecurrence}
+      style={{ textAlign: 'left' }}
+      wrapperCol={{
+        xs: { offset: 24 },
+        sm: { offset: 8 },
+      }}
+    >
+      <Radio.Group>
+        {/* defaultValue in Form initialValues */}
+        <Radio value={SIGNUP_FIELDS.donationrecurs}>Recurring donation</Radio>
+        <Radio value={SIGNUP_FIELDS.donationonce}>One-time donation</Radio>
+      </Radio.Group>
+    </Form.Item>
+  </>;
+};
 
 export default DonationFields;

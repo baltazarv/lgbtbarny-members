@@ -14,7 +14,7 @@ import EmailPrefs from './email-prefs';
 import './account.less'
 // data
 import * as memberTypes from '../../../data/member-types';
-import { FORMS } from '../../../data/member-data';
+import { FORMS } from '../../../data/member-form-names';
 
 const MenuIcon = ({
   name,

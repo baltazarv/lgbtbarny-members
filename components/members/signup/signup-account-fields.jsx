@@ -1,14 +1,13 @@
-// TODO: move into SignupCreateAccount?
-
+/**
+ * TODO: move groups of fields to components
+ * 1) name, 2) login, 3) employment/student
+ * * move into SignupCreateAccountForm
+ **/
 import { useMemo } from 'react';
-import { Form, Input, Row, Col, Select, Checkbox, Radio } from 'antd';
+import { Form, Input, Select } from 'antd';
 import { MailOutlined, UserOutlined, LockOutlined } from '@ant-design/icons';
 // data
-import * as memberTypes from '../../../data/member-types';
-import { SIGNUP_FORM_FIELDS } from '../../../data/member-data';
-import { salaryOptions, gradYearOptions } from '../../../data/member-plans';
-
-const { Option } = Select;
+import { salaryOptions, gradYearOptions } from '../../../data/member-values';
 
 const tailFormItemLayout = {
   xs: { span: 24, offset: 0 },
@@ -17,119 +16,13 @@ const tailFormItemLayout = {
 
 const SignupAccountFields = ({
   signupType,
-  donationFields,
+  showEmployment = false,
+  showStudent = false,
   loading,
 }) => {
 
-  // create account fields
-  const userFields = useMemo(() => {
-    let _output = null;
-    let typeSpecificFields = null;
-
-    /**
-     * type-specific fields
-     */
-    if (signupType === memberTypes.USER_NON_MEMBER) {
-
-      // subscription checkbox
-      typeSpecificFields = <Form.Item
-        name={SIGNUP_FORM_FIELDS.lawNotes}
-        valuePropName="checked"
-        wrapperCol={{
-          xs: {
-            span: 24,
-            offset: 0,
-          },
-          sm: {
-            span: 16,
-            offset: 8,
-          },
-        }}
-        style={{ textAlign: 'left' }}
-      >
-        <Checkbox
-          checked={signupType === memberTypes.USER_LAW_NOTES ? true : false}
-        >Subscribe to <span className="font-italic">Law Notes.</span></Checkbox>
-      </Form.Item>
-
-    } else if (signupType === memberTypes.USER_ATTORNEY) {
-      typeSpecificFields = <>
-        <Form.Item
-          name="employer"
-          label="Employer"
-        >
-          <Input
-            placeholder="Employer - if relevant"
-            disabled={loading}
-          />
-        </Form.Item>
-
-        <Form.Item
-          className="text-left"
-          name={SIGNUP_FORM_FIELDS.salary}
-          label="Salary Range"
-          rules={[
-            {
-              required: true,
-              message: 'Enter your salary to calculate fee.',
-            },
-          ]}
-          hasFeedback
-        >
-          <Select
-            placeholder="Choose salary to calculate fee..."
-            disabled={loading}
-          >
-            {salaryOptions()}
-          </Select>
-        </Form.Item>
-
-      </>
-    } else if (signupType === memberTypes.USER_STUDENT) {
-
-      typeSpecificFields = <>
-        <Form.Item
-          name="school"
-          label="Law School"
-          rules={[
-            {
-              required: true,
-              message: 'Enter the name of your law school.',
-              whitespace: true,
-            },
-          ]}
-        >
-          <Input
-            placeholder="Law School"
-            disabled={loading}
-          />
-        </Form.Item>
-
-        <Form.Item
-          className="text-left"
-          name="gradyear"
-          label="Graduation Year"
-          rules={[
-            {
-              required: true,
-              message: 'Enter your year of graduation.',
-            },
-          ]}
-          hasFeedback
-        >
-          <Select
-            style={{ width: '100%' }}
-            placeholder="Choose year..."
-          >
-            {gradYearOptions()}
-          </Select>
-        </Form.Item>
-      </>
-    }
-
-    // shared fields
-    _output = <>
-
+  const nameFields = useMemo(() => {
+    return <>
       <Form.Item
         name="firstname"
         label="First Name"
@@ -165,7 +58,11 @@ const SignupAccountFields = ({
           disabled={loading}
         />
       </Form.Item>
+    </>;
+  });
 
+  const loginFields = useMemo(() => {
+    return <>
       <Form.Item
         name="email"
         label="Email address"
@@ -234,40 +131,76 @@ const SignupAccountFields = ({
           disabled={loading}
         />
       </Form.Item>
+    </>;
+  });
 
-      {typeSpecificFields}
-
-      {donationFields}
-
-      <Form.Item
-        name={SIGNUP_FORM_FIELDS.donationrecurrence}
-        style={{ textAlign: 'left' }}
-        wrapperCol={{
-          xs: { offset: 24 },
-          sm: { offset: 8 },
-        }}
-      >
-        <Radio.Group>
-          {/* defaultValue in Form initialValues */}
-          <Radio value={SIGNUP_FORM_FIELDS.donationrecurs}>Recurring donation</Radio>
-          <Radio value={SIGNUP_FORM_FIELDS.donationonce}>One-time donation</Radio>
-        </Radio.Group>
-      </Form.Item>
-
-      { signupType === memberTypes.USER_ATTORNEY &&
-        <Row className="mb-2">
-          <Col {...tailFormItemLayout}>
-            50% discount for first-time membership!
-          </Col>
-        </Row>
+  const employmentField = useMemo(() => {
+    return <>
+      {showEmployment &&
+        <Form.Item
+          name="employer"
+          label="Employer"
+        >
+          <Input
+            placeholder="Employer - if relevant"
+            disabled={loading}
+          />
+        </Form.Item>
       }
-    </>
-    return _output;
-  }, [signupType, salaryOptions, gradYearOptions, donationFields]);
+    </>;
+  }, [signupType, salaryOptions]);
+
+  const studentFields = useMemo(() => {
+    let fields = null;
+    if (showStudent) {
+      fields = <>
+        <Form.Item
+          name="school"
+          label="Law School"
+          rules={[
+            {
+              required: true,
+              message: 'Enter the name of your law school.',
+              whitespace: true,
+            },
+          ]}
+        >
+          <Input
+            placeholder="Law School"
+            disabled={loading}
+          />
+        </Form.Item>
+
+        <Form.Item
+          className="text-left"
+          name="gradyear"
+          label="Graduation Year"
+          rules={[
+            {
+              required: true,
+              message: 'Enter your year of graduation.',
+            },
+          ]}
+          hasFeedback
+        >
+          <Select
+            style={{ width: '100%' }}
+            placeholder="Choose year..."
+          >
+            {gradYearOptions()}
+          </Select>
+        </Form.Item>
+      </>;
+    }
+    return fields;
+  }, [signupType, gradYearOptions]);
 
   return <>
-    {userFields}
+    {nameFields}
+    {loginFields}
+    {employmentField}
+    {studentFields}
   </>;
-}
+};
 
 export default SignupAccountFields;

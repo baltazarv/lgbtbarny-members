@@ -49,6 +49,6 @@ const users = {
     race: 'Azerbaijan',
     gender: 'gay, trans, he/his/him',
   },
-}
+};
 
 export default users;

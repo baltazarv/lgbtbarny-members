@@ -1,6 +1,6 @@
 import { Form, Input, Select } from 'antd';
 // data
-import { AGE_RANGES, ageOptions } from '../../../data/member-plans';
+import { AGE_RANGES, ageOptions } from '../../../data/member-values';
 
 const AdditionalInfoForm = ({
   user,

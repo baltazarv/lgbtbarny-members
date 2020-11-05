@@ -17,10 +17,18 @@ const buildSelectOptions = (list) => {
         value={key}
       >
         {list[key].label}
-      </Option>)
+      </Option>);
   }
   return options;
-}
+};
+
+export const CERTIFY_OPTIONS = {
+  bar: 'A member of the bar in good standing',
+  graduate: 'A law graduate who intends to be admitted',
+  retired: 'An attorney retired from the practice of law',
+  student: 'A law student',
+  na: 'Not an attorney nor a law student',
+};
 
 export const SALARIES = {
   upTo30K: { label: 'Income Up to $30,000', fee: 40, stripePriceId: 'price_1GqJzwBBKyYy0mbAvT6qs7mY' },
@@ -29,11 +37,11 @@ export const SALARIES = {
   upTo100K: { label: 'Income Up to $100,000', fee: 120, stripePriceId: 'price_1GqJzwBBKyYy0mbAwR6uJDrV' },
   upTo150K: { label: 'Income Up to $150,000', fee: 150, stripePriceId: 'price_1GqJzwBBKyYy0mbAjq7sICqI' },
   over150K: { label: 'Income Over $150,000', fee: 175, stripePriceId: 'price_1GqJzxBBKyYy0mbAq3nGVGIi' },
-}
+};
 
 export const salaryOptions = () => {
   return buildSelectOptions(SALARIES);
-}
+};
 
 export const PRACTICE_SETTINGS = {
   solo: { label: 'Solo Practitioner' },
@@ -52,7 +60,7 @@ export const PRACTICE_SETTINGS = {
 
 export const practiceOptions = () => {
   return buildSelectOptions(PRACTICE_SETTINGS);
-}
+};
 
 export const AGE_RANGES = {
 	twenties: { label: '20-29' },
@@ -62,11 +70,11 @@ export const AGE_RANGES = {
 	sixties: { label: '60-69' },
 	seventies: { label: '70-79' },
 	eightyPlus: { label: '80+' },
-}
+};
 
 export const ageOptions = () => {
   return buildSelectOptions(AGE_RANGES);
-}
+};
 
 export const gradYearOptions = () => {
   const thisYear = new Date().getFullYear();

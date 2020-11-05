@@ -1,11 +1,15 @@
+/** Signup needs to send:
+ *  * donation - state amt to possibly renew
+ *  * user - username...
+ */
 import { useMemo, useState } from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { Card, Divider, Form, Input, Checkbox, Radio, Button, Row, Col } from 'antd';
 import './signup-payment-form.less';
-import { UserOutlined, MailOutlined } from '@ant-design/icons';
+import { UserOutlined } from '@ant-design/icons';
 // data
-import { FORMS, SIGNUP_FORM_FIELDS } from '../../../data/member-data';
-import { STRIPE_MEMBERSHIP_ID, SALARIES } from '../../../data/member-plans'; // STRIPE_PRODUCTS = membership
+import { FORMS, SIGNUP_FIELDS } from '../../../data/member-form-names';
+import { STRIPE_MEMBERSHIP_ID, SALARIES } from '../../../data/member-values'; // STRIPE_PRODUCTS = membership
 import { retryInvoiceWithNewPaymentMethod } from '../../utils/stripe-helpers';
 
 const CARD_ELEMENT_OPTIONS = {
@@ -27,9 +31,9 @@ const CARD_ELEMENT_OPTIONS = {
 };
 
 const SignupPaymentForm = ({
+  // salary needed to get stripe id
   salary,
-  paySummList,
-  donationFields,
+  duesSummList,
   initialValues,
   donation,
   total,
@@ -44,11 +48,13 @@ const SignupPaymentForm = ({
   const [stripeError, setStripeError] = useState('');
 
   const stripePriceId = useMemo(() => {
-    return SALARIES[salary].stripePriceId;
+    let id = '';
+    if(SALARIES[salary]) id = SALARIES[salary].stripePriceId;
+    return id;
   }, [salary]);
 
   const onValuesChange = (changedFields, allFields) => {
-    if (changedFields.hasOwnProperty(SIGNUP_FORM_FIELDS.subscribe)) setSubscribe(changedFields[SIGNUP_FORM_FIELDS.subscribe]);
+    if (changedFields.hasOwnProperty(SIGNUP_FIELDS.subscribe)) setSubscribe(changedFields[SIGNUP_FIELDS.subscribe]);
   };
 
   const displayError = (error) => {
@@ -113,11 +119,11 @@ const SignupPaymentForm = ({
 
     <div className="mt-0 mb-2">Review charges:</div>
 
-    <div>
-      {donationFields}
-    </div>
-
-    {paySummList}
+    <Row justify="center">
+      <Col>
+        {duesSummList}
+      </Col>
+    </Row>
 
     <Divider className="mt-4 mb-2">Credit Card Payment</Divider>
 
@@ -128,7 +134,7 @@ const SignupPaymentForm = ({
       <div className="mt-0 mb-2"></div>
 
       <Form.Item
-        name={SIGNUP_FORM_FIELDS.billingname}
+        name={SIGNUP_FIELDS.billingname}
         className="mb-2 billing-name-input"
         // label="Billing Name"
         rules={[
@@ -154,42 +160,39 @@ const SignupPaymentForm = ({
 
       <Card className="renewal-card mt-4">
 
-        <Row justify="center" className="mb-0">
-          <Col sm={16}>When your membership comes up for renewal next year*:</Col>
-        </Row>
+        <div className="mb-0 mx-2 text-left">
+          When your membership comes up for renewal next&nbsp;year*:
 
-        {donation !== 0 && donation &&
-          <Form.Item
-            name={SIGNUP_FORM_FIELDS.renewDonation}
-            className="mt-1 mb-0"
-            valuePropName="checked"
-            wrapperCol={{
-              xs: { span: 24 },
-              sm: { span: 18, offset: 3 },
-          }}
-          >
-            <Checkbox
-              // defaultChecked={false} // set on form initialValues
+          {donation !== 0 && donation &&
+            <Form.Item
+              name={SIGNUP_FIELDS.renewDonation}
+              className="mt-1 mb-0"
+              valuePropName="checked"
+              // wrapperCol={{ xs: { span: 24 }, sm: { span: 18, offset: 3 } }}
             >
-              <span>Make the same donation of <strong>${donation}</strong>.</span>
-            </Checkbox>
-          </Form.Item>
-        }
+              <Checkbox
+                // defaultChecked={false} // set on form initialValues
+              >
+                <span>Make the same donation of <strong>${donation}</strong>.</span>
+              </Checkbox>
+            </Form.Item>
+          }
+        </div>
 
         <Form.Item
-            name={SIGNUP_FORM_FIELDS.renewChargeOptions}
+            name={SIGNUP_FIELDS.renewChargeOptions}
         >
           <Radio.Group
             className="mt-2"
           >
-            <Radio value={SIGNUP_FORM_FIELDS.renewAutoCharge}>Charge my credit card.</Radio>
-            <Radio value={SIGNUP_FORM_FIELDS.renewEmailInvoice}>Email me an invoice.</Radio>
+            <Radio value={SIGNUP_FIELDS.renewAutoCharge}>Charge my credit card.</Radio>
+            <Radio value={SIGNUP_FIELDS.renewEmailInvoice}>Email me an invoice.</Radio>
           </Radio.Group>
         </Form.Item>
 
-        <Row justify="center" className="mb-0">
-          <Col sm={18} className="mt-3" style={{ fontSize: '0.8em', lineHeight: 1.5 }}>* You will be able to update your subscription settings at any point after signing up.</Col>
-        </Row>
+        <div className="mt-3 mb-0 mx-2 text-left" style={{ fontSize: '0.8em', lineHeight: 1.5 }}>
+          * You will be able to update your subscription settings at any point after signing up.
+        </div>
 
       </Card>
 

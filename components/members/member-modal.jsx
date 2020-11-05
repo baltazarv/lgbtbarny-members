@@ -29,11 +29,11 @@ const MemberModal = ({
         setModalType={setModalType}
         signupType={signupType}
         setSignupType={setSignupType}
-      />
+      />;
     } else if (modalType === 'newsletter') {
       return <NewsletterSignup
         key="newsletter"
-      />
+      />;
     }
   }, [modalType, signupType]);
 
@@ -59,8 +59,8 @@ const MemberModal = ({
     style={{ maxWidth: '576px' }}
   >
     {content}
-  </Modal>
+  </Modal>;
 
-}
+};
 
 export default MemberModal;

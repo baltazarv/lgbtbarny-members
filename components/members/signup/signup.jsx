@@ -1,17 +1,19 @@
-import { useState, useMemo, useReducer, useEffect } from 'react';
+import { useState, useMemo, useReducer, useEffect, useRef } from 'react';
 import { Card, Row, Col, Steps, Divider, Form, Button } from 'antd';
 import { Container } from 'react-bootstrap';
 import SignupCreateAcctForm from './signup-create-acct-form';
 import SignupValidateForm from './signup-validate-form';
 import SignupPaymentForm from './signup-payment-form';
-import DonationFields from './donation-fields';
-import PaySummList from './pay-summ-list';
+import DuesSummList from '../salary-donation-dues-fields/dues-summ-list';
 import '../login-signup.less';
+// utils
+import { duesInit, duesReducer, getMemberFee, setDonation } from '../../utils/dues';
 import { TitleIcon } from '../../utils/icons';
 // data
 import * as memberTypes from '../../../data/member-types';
-import { FORMS, SIGNUP_FORM_FIELDS } from '../../../data/member-data';
+import { FORMS, SIGNUP_FIELDS } from '../../../data/member-form-names';
 import createAccount from '../../../pages/api/create-account';
+import { LAW_NOTES_PRICE } from '../../../data/law-notes-values';
 
 const { Step } = Steps;
 
@@ -20,44 +22,84 @@ const Signup = ({
   signupType,
   setSignupType,
 }) => {
+  const createAcctFormRef = useRef(null);
+  const validateEmailFormRef = useRef(null);
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
-  // saved data
-  const [salary, setSalary] = useState('');
-  // donation fields
-  const [donation, setDonation] = useState(0);
-  const [customDonation, setCustomDonation] = useState(0);
-  const [customDonationSelected, setCustomDonationSelected] = useState(false);
+  const [stepsStatus, setStepsStatus] = useState('process'); // wait process finish error
   const [user, setUser] = useState({});
-
-  const paySummReducer = (state, action) => {
-    switch (action.type) {
-      case 'update':
-        return {...state, ...action.value};
-      default:
-        throw new Error();
-    };
-  };
-
-  const [paySummValues, setPaySummValues] = useReducer(paySummReducer, {
-    memberFee: 0,
-    discount: 0,
-    donation: 0,
-    lawNotesAmt: 0,
-  });
-
-  const setPaySummValue = (value) => {
-    setPaySummValues({
+  const [dues, setDues] = useReducer(duesReducer, duesInit);
+  const updateDues = (value) => {
+    setDues({
       type: 'update',
       value,
     });
   };
 
-  // when donation fields selections change, change donation value
   useEffect(() => {
-    const donationValue = typeof donation === 'string' && donation.toLowerCase().includes('custom') ? customDonation : donation;
-    setPaySummValue({ donation: donationValue });
-  }, [donation, customDonation]); // , customDonationSelected
+    if (createAcctFormRef.current) {
+      createAcctFormRef.current.onFinishFailed = onFinishFailed;
+    }
+  }, [createAcctFormRef]);
+
+  const getLawNotesAmt = (form) => {
+    if (
+      signupType === memberTypes.USER_LAW_NOTES ||
+      (signupType === memberTypes.USER_NON_MEMBER && form && form.getFieldValue(SIGNUP_FIELDS.lawNotes))
+    ) {
+        return { lawNotesAmt: LAW_NOTES_PRICE };
+      } else {
+        return { lawNotesAmt: 0 };
+    }
+  };
+
+  // handle change of values on forms
+  const onFormChange = (formName, info) => {
+    // console.log(formName, 'changedFields', info.changedFields);
+    if (info.changedFields.length > 0) {
+      info.changedFields.forEach((field) => {
+        const fieldName = field.name[0];
+        const fieldValue = field.value;
+        if (fieldName === SIGNUP_FIELDS.salary) {
+          const hasDiscount = true;
+          updateDues(getMemberFee(createAcctFormRef.current, hasDiscount));
+        } else if (
+          fieldName === SIGNUP_FIELDS.donation ||
+          fieldName === SIGNUP_FIELDS.customDonation
+        ) {
+          updateDues(setDonation(createAcctFormRef.current));
+        } else if (fieldName === SIGNUP_FIELDS.lawNotes) {
+          updateDues(getLawNotesAmt(createAcctFormRef.current));
+        } else if (fieldName === SIGNUP_FIELDS.firstName) {
+          updateDues({ [SIGNUP_FIELDS.firstName]: fieldValue });
+        }
+      });
+    };
+  }
+
+  const duesSummList = useMemo(() => {
+    return <DuesSummList
+      fee={dues.memberFee}
+      discount={dues.discount}
+      lawNotesAmt={dues.lawNotesAmt}
+      donation={dues.donation}
+
+      showSalary={signupType === memberTypes.USER_ATTORNEY}
+      showDiscount={signupType === memberTypes.USER_ATTORNEY}
+      showDonation={true}
+      showLawNotes={signupType === memberTypes.USER_LAW_NOTES ||
+        signupType === memberTypes.USER_NON_MEMBER}
+      showTotal={signupType === memberTypes.USER_ATTORNEY}
+      // formItemLayout={{
+      //   xs: { span: 24, offset: 0 },
+      //   sm: { span: 16, offset: 8 },
+      // }}
+    />;
+  }, [dues]);
+
+  const total = useMemo(() => {
+    return (dues.memberFee ? dues.memberFee : 0) - (dues.discount ? dues.discount : 0) + (dues.lawNotesAmt ? dues.lawNotesAmt : 0) + (dues.donation ? dues.donation : 0);
+  }, [dues]);
 
   const title = useMemo(() => {
     if (
@@ -108,100 +150,119 @@ const Signup = ({
     }
   }, [signupType]);
 
-  const donationFields = useMemo(() => {
-    return <DonationFields
-      signupType={signupType}
-      label='Donation'
-      customSelected={customDonationSelected}
-      setCustomSelected={setCustomDonationSelected}
-      loading={loading}
-    />
-  }, [signupType, customDonationSelected, loading]);
+  const onFinishFailed = (values, errorFields, outOfDate) => {
+    console.log('onFinishFailed', values, errorFields, outOfDate);
+  };
 
-  const paySummList = useMemo(() => {
-    let formItemLayout = {
-      xs: { span: 24, offset: 0 },
-      sm: { span: 16, offset: 8 },
-    }
-    // if (step === 2) formItemLayout.sm = { span: 16, offset: 4 };
-    return <PaySummList
-      formItemLayout={formItemLayout}
-      signupType={signupType}
-      fee={paySummValues.memberFee}
-      discount={paySummValues.discount}
-      lawNotesAmt={paySummValues.lawNotesAmt}
-      donation={paySummValues.donation}
-    />
-  }, [signupType, paySummValues, step]);
-
-  const total = useMemo(() => {
-    return (paySummValues.memberFee ? paySummValues.memberFee : 0) - (paySummValues.discount ? paySummValues.discount : 0) + (paySummValues.lawNotesAmt ? paySummValues.lawNotesAmt : 0) + (paySummValues.donation ? paySummValues.donation : 0);
-  }, [paySummValues]);
-
-  const content = useMemo(() => {
-    if (step === 0) return <SignupCreateAcctForm
-      signupType={signupType}
-      setSignupType={setSignupType}
-      setPaySummValue={setPaySummValue}
-      setSalary={setSalary}
-      donationFields={donationFields}
-      paySummList={paySummList}
-      loading={loading}
-    />
-    if (step === 1) return <SignupValidateForm />
-    if (step === 2) return <SignupPaymentForm
-      donationFields={donationFields}
-      paySummList={paySummList}
-      salary={salary}
-      initialValues={{
-        [SIGNUP_FORM_FIELDS.donation]: donation === 0 ? null : donation,
-        [SIGNUP_FORM_FIELDS.customDonation]: customDonation,
-        [SIGNUP_FORM_FIELDS.subscribe]: true,
-        [SIGNUP_FORM_FIELDS.billingname]: `${user.firstname} ${user.lastname}`,
-        [SIGNUP_FORM_FIELDS.renewDonation]: true,
-        [SIGNUP_FORM_FIELDS.renewChargeOptions]: SIGNUP_FORM_FIELDS.renewAutoCharge,
-      }}
-      donation={donation}
-      total={total}
-      user={user}
-      loading={loading}
-    />
-  }, [step, signupType, donationFields, paySummList]);
-
-  // handle change of values on forms
-  const onFormChange = (formName, info) => {
-    // console.log(formName, info.changedFields);
-    // capture donation fields from two forms
+  const steps = useMemo(() => {
+    let _steps = [
+      {
+        title: "Create Account",
+        content: <SignupCreateAcctForm
+          formRef={createAcctFormRef}
+          signupType={signupType}
+          setSignupType={setSignupType}
+          duesSummList={duesSummList}
+          loading={loading}
+          onFinishFailed={onFinishFailed}
+        />,
+      },
+      {
+        title: "Validate",
+        content: <SignupValidateForm
+          formRef={validateEmailFormRef}
+        />,
+      },
+    ];
     if (
-      formName === FORMS.createAccount ||
-      formName === FORMS.pay
+      signupType === memberTypes.USER_ATTORNEY ||
+      signupType === memberTypes.USER_LAW_NOTES || total > 0
     ) {
-      if (info.changedFields.length > 0) {
-        const fieldName = info.changedFields[0].name[0];
-        const fieldValue = info.changedFields[0].value;
-        if (fieldName === SIGNUP_FORM_FIELDS.donation) setDonation(fieldValue);
-        if (fieldName === SIGNUP_FORM_FIELDS.customDonation) setCustomDonation(fieldValue);
-      };
-    };
+      _steps.push({
+        title: "Payment",
+        content: <SignupPaymentForm
+          // salary to get stripe id
+          salary={''} // createAcctFormRef.current.getFieldValue('salary')
+          duesSummList={duesSummList}
 
-    // `setSalary` used by `createAccount` form to push `salary` to `pay` form
-  }
+          initialValues={{
+            // [SIGNUP_FIELDS.donation]: donation === 0 ? null : donation,
+            // [SIGNUP_FIELDS.customDonation]: customDonation,
+            [SIGNUP_FIELDS.subscribe]: true,
+            [SIGNUP_FIELDS.billingname]: `${user.firstname} ${user.lastname}`,
+            [SIGNUP_FIELDS.renewDonation]: true,
+            [SIGNUP_FIELDS.renewChargeOptions]: SIGNUP_FIELDS.renewAutoCharge,
+          }}
+          donation={dues.donation}
+          total={total}
+          user={user}
+          loading={loading}
+        />,
+      });
+    }
+    return _steps;
+  }, [dues, user, loading, signupType]);
 
+  // happens after validation
   const onFormFinish = async (formName, info) => {
     // formName: string, info: { values, forms })
     if (formName === FORMS.createAccount) {
       // create user on stripe and contentful
       setLoading(true);
-      const userData = await createAccount(info.values, signupType);
+      const userData = await createAccount(info.values, (signupType === memberTypes.USER_NON_MEMBER || signupType === memberTypes.USER_LAW_NOTES) ? 'nonMember' : signupType);
       setUser(userData)
       setStep(step + 1);
-      setLoading(false);
     }
-    if (formName === FORMS.validate) {
+    if (formName === FORMS.validate && steps.length === 3) {
+      setLoading(false);
       setStep(step + 1);
     }
     if (formName === FORMS.pay) {
+      setLoading(false);
       // handled on form
+    }
+    // add thank you screen
+  };
+
+  // happens
+  useEffect(() => {
+    if (step === 0) {
+      if (signupType === memberTypes.USER_ATTORNEY) {
+        updateDues(getLawNotesAmt(createAcctFormRef.current));
+      } else {
+        updateDues({ memberFee: 0, discount: 0 });
+      }
+      updateDues(getMemberFee(createAcctFormRef.current, signupType));
+      updateDues(setDonation(createAcctFormRef.current));
+      updateDues(getLawNotesAmt());
+    }
+  }, [step, signupType]);
+
+  // similar to onFormFinish but validation doesn't automatically happen
+  const stepOnChange = (next) => {
+    // don't advance forward unless previous form(s) validate
+    // TODO: mimic submit click?
+    // console.log('step', step, 'next', next)
+
+    if (next < step) {
+      setStep(next);
+    } else if ((step + 1) === next) {
+      let formRef = null;
+      if (step === 0) {
+        formRef = createAcctFormRef;
+      } else if (step === 1) {
+        formRef = validateEmailFormRef;
+      }
+      formRef.current.validateFields()
+        .then(values => {
+          // console.log('values', values);
+          if (step < next) setStep(next);
+          setStepsStatus('process');
+        })
+        .catch(errorInfo => {
+          // console.log('errorInfo', errorInfo)
+          setStepsStatus('error');
+        });
     }
   };
 
@@ -243,20 +304,16 @@ const Signup = ({
           onFormChange={onFormChange}
         >
           <div className="mb-4">
-            <Steps size="small" current={step}>
-              <Step title="Create Account" />
-              <Step title="Validate" />
-              {(
-                signupType === memberTypes.USER_ATTORNEY ||
-                signupType === memberTypes.USER_LAW_NOTES || total > 0
-              ) &&
-                <Step title="Payment" />
-              }
-              {/* <Step title="Log In" /> */}
+            <Steps size="small" current={step} status={stepsStatus}>
+              {/* onChange={stepOnChange} */}
+              {steps.map(item => (
+                <Step key={item.title} title={item.title} />
+              ))}
             </Steps>
           </div>
           <Divider>{memberHeading}</Divider>
-          {content}
+          <div className="steps-content">{steps[step].content}</div>
+          {/* {content} */}
         </Form.Provider>
       </Card>
     </Container>

@@ -1,14 +1,16 @@
 import { useState } from 'react';
 import { Form, Input, Button } from 'antd';
-import { FORMS } from '../../../data/member-data';
+import { FORMS } from '../../../data/member-form-names';
 
 const SignupValidateForm = ({
+  formRef,
 }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
 
   return <>
     <Form
+      ref={formRef}
       labelCol={{ xs: { span: 24 }, sm: { span: 8 } }}
       wrapperCol={{ xs: { span: 24 }, sm: { span: 16 } }}
       name={FORMS.validate}
@@ -40,8 +42,6 @@ const SignupValidateForm = ({
           disabled={loading}
         />
       </Form.Item>
-
-      {/* {paySummList} */}
 
       {/* submit button */}
       <Form.Item
