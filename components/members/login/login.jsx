@@ -33,9 +33,9 @@ const Login = ({
       >
         <Row className="mx-5 mb-2">
           <Col>
-            <p>If you are not a member yet, <Button type="link" onClick={() => openSignup(memberTypes.USER_MEMBER)}>join now</Button>!</p>
+            <p>If you are not a member yet, <Button type="primary" size="small" ghost onClick={() => openSignup(memberTypes.USER_MEMBER)}>join now</Button>!</p>
 
-            <p>If you are already a member but this is your first time logging in to the new system, <Button type="link" onClick={() => console.log('RESET PASSWORD')}>get access</Button>.</p>
+            <p>If you are already a member but this is your first time logging in to the new system, <Button type="primary" size="small" ghost onClick={() => console.log('RESET PASSWORD')}>get access</Button>.</p>
           </Col>
         </Row>
         <LoginForm />

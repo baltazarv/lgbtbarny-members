@@ -1,7 +1,7 @@
 export const FORMS = {
   createAccount: 'create-account',
   validate: 'validate',
-  pay: 'pay',
+  payment: 'payment-form', // "payment-form" added as class
   editProfile: 'edit-profile',
   editLoginSecurity: 'edit-login-security',
   editMemberInfo: 'edit-member-info',

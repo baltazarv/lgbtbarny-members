@@ -3,32 +3,14 @@
  *  * user - username...
  */
 import { useMemo, useState } from 'react';
-import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { Card, Divider, Form, Input, Checkbox, Radio, Button, Row, Col } from 'antd';
+import { useStripe, useElements } from '@stripe/react-stripe-js';
+import { Card, Divider, Form, Checkbox, Radio, Button, Row, Col } from 'antd';
+import PaymentFields from '../payment-fields';
 import './signup-payment-form.less';
-import { UserOutlined } from '@ant-design/icons';
+// utils
+import { getStripePriceId, createStripePaymentMethod } from '../../utils/payments';
 // data
 import { FORMS, SIGNUP_FIELDS } from '../../../data/member-form-names';
-import { STRIPE_MEMBERSHIP_ID, SALARIES } from '../../../data/member-values'; // STRIPE_PRODUCTS = membership
-import { retryInvoiceWithNewPaymentMethod } from '../../utils/stripe-helpers';
-
-const CARD_ELEMENT_OPTIONS = {
-  style: {
-    base: {
-      color: 'rgba(0, 0, 0, 0.65)', // "#32325d",
-      fontFamily: 'Raleway, sans-serif',
-      fontSmoothing: "antialiased",
-      fontSize: '14px',
-      "::placeholder": {
-        color: "#aab7c4",
-      },
-    },
-    invalid: {
-      color: "#fa755a",
-      iconColor: "#fa755a",
-    },
-  },
-};
 
 const SignupPaymentForm = ({
   // salary needed to get stripe id
@@ -48,9 +30,7 @@ const SignupPaymentForm = ({
   const [stripeError, setStripeError] = useState('');
 
   const stripePriceId = useMemo(() => {
-    let id = '';
-    if(SALARIES[salary]) id = SALARIES[salary].stripePriceId;
-    return id;
+    return getStripePriceId(salary);
   }, [salary]);
 
   const onValuesChange = (changedFields, allFields) => {
@@ -58,58 +38,29 @@ const SignupPaymentForm = ({
   };
 
   const displayError = (error) => {
-    console.log('[error]', error, error.message);
-    setStripeError(error.message);
-  }
-
-  const createPaymentMethod = async (customerId, priceId, billingDetails) => {
-    if (!stripe || !elements) {
-      // Stripe.js has not loaded yet. Disabling form submission until Stripe.js has loaded.
-      return;
-    }
-
-    // Elements can find reference to mounted CardElement b/c can only be one of each.
-    const cardElement = elements.getElement(CardElement);
-
-    // Use your card Element with other Stripe.js APIs
-    const { error, paymentMethod } = await stripe.createPaymentMethod({
-      type: 'card',
-      card: cardElement,
-      billing_details: billingDetails,
-    });
-
-    if (error) {
-      displayError(error);
+    if (error && error.message) {
+      console.log('[error]', error);
+      setStripeError(error.message);
     } else {
-      console.log('[PaymentMethod]', paymentMethod, '[created]', paymentMethod.created, '[customerId]', customerId, '[priceId]', stripePriceId);
-      // if (isPaymentRetry) {
-      //   // Update the payment method and retry invoice payment
-      //   retryInvoiceWithNewPaymentMethod({
-      //     customerId,
-      //     paymentMethodId: paymentMethod.id,
-      //     invoiceId,
-      //     priceId,
-      //   });
-      // } else {
-      //   // Create the subscription
-      //   createSubscription({
-      //     customerId,
-      //     paymentMethodId: paymentMethod.id,
-      //     priceId,
-      //   });
-      // }
+      setStripeError('');
     }
-  };
+  }
 
   const onFinish = async () => {
     const billingDetails = {
       email: user.email,
       name: `${user.firstname} ${user.lastname}`,
     }
-    createPaymentMethod(user.stripeCustomerId, stripePriceId, billingDetails);
+    const methodCreated = await createStripePaymentMethod(stripe, elements, user.stripeCustomerId, stripePriceId, billingDetails);
+    if (methodCreated.created) {
+      console.log('[PaymentMethod]', methodCreated);
+      displayError(null);
+    } else {
+      if (methodCreated.type && methodCreated.type) displayError(methodCreated);
+    }
   };
 
-  return <Form className="signup-payment-form"
+  return <Form className={FORMS.payment}
     name={FORMS.pay}
     form={form}
     initialValues={initialValues}
@@ -133,26 +84,9 @@ const SignupPaymentForm = ({
 
       <div className="mt-0 mb-2"></div>
 
-      <Form.Item
-        name={SIGNUP_FIELDS.billingname}
-        className="mb-2 billing-name-input"
-        // label="Billing Name"
-        rules={[
-          {
-            required: true,
-            message: 'Enter the name on your credit card.',
-            whitespace: true,
-          },
-        ]}
-      >
-        <Input
-          prefix={<UserOutlined />}
-          placeholder="Name on Credit Card"
-          disabled={loading}
-        />
-      </Form.Item>
-
-      <CardElement options={CARD_ELEMENT_OPTIONS} />
+      <PaymentFields
+        loading={loading}
+      />
 
       {stripeError &&
         <div className="ant-form-item-explain card-element-error">{stripeError}</div>

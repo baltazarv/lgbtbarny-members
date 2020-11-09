@@ -1,12 +1,13 @@
-const CardInfoForm = () => {
+import PaymentFields from '../../payment-fields';
+
+const CardInfoForm = ({
+  loading,
+}) => {
   return <>
-    <ul>
-      <li>Name</li>
-      <li>Card number</li>
-      <li>MM/YY</li>
-      <li>CVC</li>
-    </ul>
+    <PaymentFields
+      loading={loading}
+    />
   </>;
-}
+};
 
 export default CardInfoForm;
