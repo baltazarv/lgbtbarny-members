@@ -11,6 +11,7 @@
     "@stripe/react-stripe-js": "^1.1.2",
     "@stripe/stripe-js": "^1.7.0",
     "@zeit/next-less": "^1.0.1",
+    "airtable": "^0.10.1",
     "antd": "^4.1.2",
     "babel-plugin-import": "^1.13.0",
     "bootstrap": "^4.4.1",

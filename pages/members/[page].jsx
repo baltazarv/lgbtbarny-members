@@ -10,7 +10,7 @@
  *    * url's query.page value
  *    * -or- user selection
  */
-import { useEffect, useState, useMemo, useReducer } from 'react';
+import { useEffect, useState, useMemo, useReducer, useContext } from 'react';
 import { useRouter } from 'next/router'
 import { Breakpoint } from 'react-socks';
 import { Jumbotron, Container } from 'react-bootstrap';
@@ -30,6 +30,8 @@ import './members.less';
 import { getDashboard, getMemberPageParentKey } from '../../data/member-dashboards';
 import * as memberTypes from '../../data/member-types';
 import users from '../../data/users';
+import { membersTable, minifyRecords } from '../api/utils/Airtable';
+import { MembersContext } from '../../contexts/members-context';
 // utils
 import { isEmpty } from 'lodash/lang';
 
@@ -40,8 +42,12 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
 const menuKeys = ['profile', 'perks', 'account'];
 const notifThemeColor = '#BC1552';
 
-const Members = () => {
+const Members = ({
+  initialMember,
+}) => {
   const router = useRouter();
+
+  const { member, setMember } = useContext(MembersContext);
 
   // menu and main content user views
   const [memberType, setMemberType] = useState('');
@@ -79,7 +85,7 @@ const Members = () => {
   const userReducer = (state, action) => {
     switch (action.type) {
       case 'update':
-        return {...state, ...action.value};
+        return { ...state, ...action.value };
       default:
         throw new Error();
     };
@@ -88,6 +94,10 @@ const Members = () => {
 
   // setUser({ type: 'update', value });
   const [user, setUser] = useReducer(userReducer, {});
+
+  useEffect(() => {
+    setMember(initialMember)
+  }, []);
 
   // set user, memberType, & userType based on router.query.type
   useEffect(() => {
@@ -101,13 +111,13 @@ const Members = () => {
         _memberType = memberTypes.USER_ANON;
       } else if (router.query.type === 'attorney') {
         _memberType = memberTypes.USER_ATTORNEY;
-        _user = {...users.attorney};
+        _user = { ...users.attorney };
       } else if (router.query.type === 'student') {
         _memberType = memberTypes.USER_STUDENT;
-        _user = {...users.student};
+        _user = { ...users.student };
       } else if (router.query.type === 'non-member') {
         _memberType = memberTypes.USER_NON_MEMBER;
-        _user = {...users.nonMember};
+        _user = { ...users.nonMember };
       }
       setMemberType(_memberType);
       setUser({ type: 'update', value: _user });
@@ -118,7 +128,7 @@ const Members = () => {
     if (key === 'login') {
       openModal(key);
 
-    // signup modal
+      // signup modal
     } else if (key === memberTypes.SIGNUP_MEMBER) {
       setSignupType(memberTypes.USER_MEMBER);
       openModal('signup');
@@ -137,7 +147,7 @@ const Members = () => {
     } else if (key === 'signup-newletter') {
       openModal('newsletter');
 
-    // anon account type preview change tab
+      // anon account type preview change tab
     } else if (key === memberTypes.TAB_ATTORNEY) {
       handleSelectPreviewUser(memberTypes.USER_ATTORNEY);
     } else if (key === memberTypes.TAB_STUDENT) {
@@ -145,7 +155,7 @@ const Members = () => {
     } else if (key === memberTypes.TAB_NON_MEMBER) {
       handleSelectPreviewUser(memberTypes.USER_NON_MEMBER);
 
-    // handle navigation
+      // handle navigation
     } else {
       changeRoute(key);
     }
@@ -157,13 +167,15 @@ const Members = () => {
     if (!isEmpty(memberType)) { // user empty for anon & previewType empty for others
       // console.log('user:', user, 'memberType:', memberType, 'previewUser:', previewUser, 'onLink:', handleContentLink)
       if (user && memberType) {
-        _data = {...getDashboard({
-          userType: memberType,
-          user,
-          setUser,
-          onLink: handleContentLink,
-          previewUser,
-        })};
+        _data = {
+          ...getDashboard({
+            userType: memberType,
+            user,
+            setUser,
+            onLink: handleContentLink,
+            previewUser,
+          })
+        };
       }
     };
     setData(_data);
@@ -180,7 +192,7 @@ const Members = () => {
             const route = data[objKey].route;
             _routes[route] = objKey;
           }
-          if(data[objKey].children) {
+          if (data[objKey].children) {
             for (const childObjKey in data[objKey].children) {
               const route = data[objKey].children[childObjKey].route;
               _routes[route] = childObjKey;
@@ -226,7 +238,7 @@ const Members = () => {
   // called from menu & content links
   const changeRoute = (key) => {
     for (const objKey in routes) {
-      if(key === routes[objKey]) {
+      if (key === routes[objKey]) {
         const query = router.query.type ? `?type=${router.query.type}` : '';
         router.push(`/members/[page]${query}`, `/members/${objKey}${query}`, { shallow: true });
       }
@@ -308,8 +320,8 @@ const Members = () => {
 
           <Breakpoint sm up>
             <Layout
-                className="member-page-layout"
-              >
+              className="member-page-layout"
+            >
               <Sider
                 collapsible
                 collapsed={menuCollapsed}
@@ -320,16 +332,16 @@ const Members = () => {
                   <div className="avatar-box" onClick={toggleOpenMenuKeys}>
                     {data && data.options && data.options.user ?
                       <Avatar src={data.options.user.photo} />
-                    :
+                      :
                       <Avatar
-                      icon={<SvgIcon
-                        name="customer-profile"
-                        width="2.2em"
-                        height="2.2em"
-                        fill="rgba(0, 0, 0, 0.65)"
-                      />}
-                      style={{ backgroundColor: 'rgba(0, 0, 0, 0)' }}
-                    />
+                        icon={<SvgIcon
+                          name="customer-profile"
+                          width="2.2em"
+                          height="2.2em"
+                          fill="rgba(0, 0, 0, 0.65)"
+                        />}
+                        style={{ backgroundColor: 'rgba(0, 0, 0, 0)' }}
+                      />
                     }
                   </div>
                 </Tooltip>
@@ -376,3 +388,29 @@ const Members = () => {
 };
 
 export default Members;
+
+export async function getServerSideProps(context) {
+  const email = 'lharper@le-gal.org';
+  try {
+    const records = await membersTable.select({
+      filterByFormula: `SEARCH("${email}", ARRAYJOIN(email))`,
+    }).firstPage();
+    const minifiedRecords = minifyRecords(records);
+    console.log('minifiedRecords', minifiedRecords)
+    // const _member = await getUserByEmail(email);
+    return {
+      props: {
+        initialMember: minifiedRecords,
+        // initialMember: _member,
+      }
+    }
+
+  } catch (error) {
+    console.log(error);
+    return {
+      props: {
+        error,
+      }
+    }
+  }
+};

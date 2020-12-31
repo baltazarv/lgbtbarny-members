@@ -71,7 +71,7 @@ const CleArchive = ({
     if (memberType === memberTypes.USER_ANON) {
       if (previewUser === memberTypes.USER_NON_MEMBER) {
         text = <>
-          <p>If you are not an attorney or a law student you can still register for CLE courses. When you <Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_NON_MEMBER)}>sign up</Button> you can view or download any CLE certificates for courses, which you have attended from the <em>Dashboard</em>.</p>
+          <p>If you are not an attorney or a law student you can still register for CLE courses. When you <Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_NON_MEMBER)}>sign up</Button> you can view or download any CLE certificates for courses, which you have attended.</p>
           <p>{whatYouGetTxt}</p>
         </>;
       } else {
