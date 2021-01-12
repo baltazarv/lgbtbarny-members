@@ -3,8 +3,8 @@ import { Row, Col, Select, Card, Button, Typography, Radio, Modal } from 'antd';
 import { Container } from 'react-bootstrap';
 import './discounts.less';
 // data
-import * as memberTypes from '../../data/member-types';
-import { DISCOUNTS } from '../../data/discount-data';
+import * as memberTypes from '../../data/members/values/member-types';
+import { DISCOUNTS } from '../../data/members/sample/discount-data';
 
 const { Option } = Select;
 const { Meta } = Card;

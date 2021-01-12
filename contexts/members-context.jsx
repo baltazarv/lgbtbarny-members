@@ -4,25 +4,14 @@ const MembersContext = createContext();
 
 const MembersProvider = ({ children }) => {
   const [member, setMember] = useState([]);
+  const [authUser, setAuthUser] = useState([]);
+  const [userEmails, setUserEmails] = useState([]);
+  const [userPayments, setUserPayments] = useState([]);
+  const [memberPlans, setMemberPlans] = useState([]);
 
-  // const getUserByEmail = async (email) => {
-  //   try {
-  //     const res = await fetch('/api/get-member-by-email', {
-  //       method: 'GET',
-  //       body: JSON.stringify({ email }),
-  //       headers: { 'Content-Type': 'application/json' }
-  //     });
-  //     const _user = await res.json();
-  //     // setMember(_user);
-  //     return _user;
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // }
-
-  const refreshUser = async (email) => {
+  const refreshMember = async (email) => {
     try {
-      const res = await fetch('/api/get-member-by-email', {
+      const res = await fetch('/api/members/get-member-by-email', {
         method: 'GET',
         body: JSON.stringify({ email }),
         headers: { 'Content-Type': 'application/json' }
@@ -34,9 +23,9 @@ const MembersProvider = ({ children }) => {
     }
   };
 
-  const addUser = async (user) => {
+  const addMember = async (user) => {
     try {
-      const res = await fetch('/api/create-member', {
+      const res = await fetch('/api/members/create-member', {
         method: 'POST',
         body: JSON.stringify(user),
         headers: { 'Content-Type': 'application/json' }
@@ -48,28 +37,33 @@ const MembersProvider = ({ children }) => {
     }
   };
 
-  const updateUser = async (updatedUser) => {
+  const updateMember = async (userToUpdate) => {
     try {
-      const res = await fetch('/api/update-member', {
+      const res = await fetch('/api/members/update-member', {
         method: 'PUT',
-        body: JSON.stringify(updatedUser),
+        body: JSON.stringify(userToUpdate),
         headers: { 'Content-Type': 'application/json' }
       });
-      await res.json();
+      const updatedUser = await res.json();
       setMember(updatedUser);
+      return updatedUser;
     } catch (error) {
       console.log(error);
     }
   };
 
   return (<MembersContext.Provider value={{
-    member,
-    setMember,
-    // getUserByEmail,
-    refreshUser,
-    updateUser,
-    refreshUser,
-    addUser,
+    // table values for logged-in user
+    authUser, setAuthUser,
+    member, setMember,
+    userEmails, setUserEmails,
+    userPayments, setUserPayments,
+    memberPlans, setMemberPlans,
+
+    // functions
+    refreshMember,
+    updateMember,
+    addMember,
   }}>{children}</MembersContext.Provider>);
 };
 

@@ -1,5 +1,5 @@
-import { SALARIES } from '../../data/member-values';
-import { SIGNUP_FIELDS } from '../../data/member-form-names';
+import { SALARIES } from '../../data/members/values/member-values';
+import { SIGNUP_FIELDS } from '../../data/members/database/member-form-names';
 
 export const duesInit = {
   memberFee: 0,

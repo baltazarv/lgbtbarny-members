@@ -1,22 +1,28 @@
-import { useEffect, useReducer } from 'react';
+// DuesForm < DuesWrapper < SalaryFields
+import { useEffect, useReducer, useContext, useMemo } from 'react';
 import { Typography, Form, Row, Col } from 'antd';
 import DuesWrapper from '../../salary-donation-dues-fields/dues-wrapper';
 import DuesSummList from '../../salary-donation-dues-fields/dues-summ-list';
 // utils
 import { duesInit, duesReducer, getMemberFee, setDonation } from '../../../utils/dues';
 // data
-import { FORMS, SIGNUP_FIELDS } from '../../../../data/member-form-names';
-import * as memberTypes from '../../../../data/member-types';
-import { LAW_NOTES_PRICE } from '../../../../data/law-notes-values';
+import { dbFields } from '../../../../data/members/database/airtable-fields';
+import { MembersContext } from '../../../../contexts/members-context';
+import { FORMS, SIGNUP_FIELDS } from '../../../../data/members/database/member-form-names';
+import * as memberTypes from '../../../../data/members/values/member-types';
+import { LAW_NOTES_PRICE } from '../../../../data/members/values/law-notes-values';
 
 const { Link } = Typography;
 
-const DuesForm = ({
-  user,
-  memberType,
-}) => {
+const DuesForm = () => {
   const [form] = Form.useForm();
+  const { member } = useContext(MembersContext);
   const [dues, setDues] = useReducer(duesReducer, duesInit);
+
+  const memberType = useMemo(() => {
+    return member.fields[dbFields.members.type];
+  }, [member.fields[dbFields.members.type]]);
+
   const updateDues = (value) => {
     setDues({
       type: 'update',
@@ -29,11 +35,9 @@ const DuesForm = ({
       memberType === memberTypes.USER_LAW_NOTES ||
       (memberType === memberTypes.USER_NON_MEMBER && form.getFieldValue(SIGNUP_FIELDS.lawNotes))
     ) {
-        console.log('setLawNotes:', LAW_NOTES_PRICE);
-        updateDues({ lawNotesAmt: LAW_NOTES_PRICE });
-      } else {
-        console.log('setLawNotes:', 0);
-        updateDues({ lawNotesAmt: 0 });
+      updateDues({ lawNotesAmt: LAW_NOTES_PRICE });
+    } else {
+      updateDues({ lawNotesAmt: 0 });
     }
   };
 
@@ -94,6 +98,7 @@ const DuesForm = ({
       name={FORMS.editSalaryDontaion}
       form={form}
       initialValues={{
+        [SIGNUP_FIELDS.salary]: member.fields[dbFields.members.salary],
         [SIGNUP_FIELDS.donationrecurrence]: SIGNUP_FIELDS.donationrecurs,
       }}
       scrollToFirstError
@@ -106,8 +111,8 @@ const DuesForm = ({
       {duesSummList(memberType)}
       <Row>
         <Col sm={{ offset: 8 }}>
-          {user && user.memberstart
-            && <div className="mt-2" style={{fontSize: '.9em'}}>Your payment method will be charged with the updated {memberTypes.USER_ATTORNEY && "fee/"}donation on&nbsp;{user.memberstart}.</div>}
+          {member.fields && member.fields.memberstart
+            && <div className="mt-2" style={{ fontSize: '.9em' }}>Your payment method will be charged with the updated {memberTypes.USER_ATTORNEY && "fee/"}donation on&nbsp;{member.fields.memberstart}.</div>}
         </Col>
       </Row>
     </Form>

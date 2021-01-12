@@ -1,26 +1,45 @@
+import { useContext, useMemo } from 'react';
 import { Row, Col, Form, Input, Avatar, Typography } from 'antd';
 import moment from 'moment';
-import UploadPhoto from '../../utils/upload-photo';
+// import UploadPhoto from '../../utils/upload-photo';
 import { UserOutlined } from '@ant-design/icons';
+// data
+import { dbFields } from '../../../data/members/database/airtable-fields';
+import { MembersContext } from '../../../contexts/members-context';
+import * as memberTypes from '../../../data/members/values/member-types';
+import { getNextDueDate, getMemberStatus } from '../../../data/members/values/member-values';
 
 const { Link } = Typography;
 
 const ProfileForm = ({
-  user,
   loading,
   editing,
 }) => {
-  const getNextDuesDate = (dateString) => {
-    let date = null;
-    if (dateString) date = moment(new Date(dateString));
-    return date.add(1, 'y').format('MMMM Do, YYYY');
-  }
+  const { member, authUser, userPayments } = useContext(MembersContext);
+  const memberFields = useMemo(() => {
+    if (member) return member.fields;
+    return null;
+  }, [member]);
+
+  const statusText = useMemo(() => {
+    const value = getMemberStatus(userPayments);
+    let color = 'danger';
+    if (value === 'active') color = 'success';
+    return <strong className={`text-${color}`}>{value}</strong>;
+  }, [userPayments]);
+
+  const paymentDueText = useMemo(() => {
+    const status = memberFields && memberFields[dbFields.members.status];
+    if (status === 'active') return 'Next membership payment due';
+    return 'Membership payment was due';
+  });
 
   return <>
-    {user && user.lastpayment
-      && <ul>
-        <li>Your account is <strong style={{color: '#389e0d' }}>active</strong>.</li>
-        <li>Next membership payment due: <strong>{getNextDuesDate(user.lastpayment)}</strong>. To update <strong>payment info</strong>, edit in <Link href="#edit-membership-dues">Membership dues</Link> below.</li>
+    {memberFields && memberFields[dbFields.members.paymentLast]
+      && (memberFields[dbFields.members.type] === memberTypes.USER_ATTORNEY) &&
+      <ul>
+        <li>Your account is {statusText}.</li>
+        <li>{paymentDueText}: <strong>{getNextDueDate(memberFields[dbFields.members.paymentLast])}</strong>. To update <strong>payment info</strong>, edit in <Link href="#edit-payment-info">Payment info</Link> section below.</li>
       </ul>
     }
     <Row>
@@ -30,15 +49,15 @@ const ProfileForm = ({
         md={8}
         className="text-left text-sm-center"
       >
-        {editing
-        ?
-          <div className="mt-1"><UploadPhoto /></div>
-        :
+        {/* {editing ? <div className="mt-1"><UploadPhoto /></div> : <Avatar />} */}
         <Avatar
           size={90}
-          src={user && user.photo}
+          src={member && member.sample && member.auth
+            ?
+            member.auth.picture
+            :
+            authUser && authUser.picture}
         />
-      }
       </Col>
       <Col
         xs={24}
@@ -46,9 +65,9 @@ const ProfileForm = ({
         md={16}
       >{editing
         ?
-          <>
-            <Form.Item
-            name="firstname"
+        <>
+          <Form.Item
+            name={dbFields.members.firstName}
             label="First Name"
             rules={[
               {
@@ -66,7 +85,7 @@ const ProfileForm = ({
           </Form.Item>
 
           <Form.Item
-            name="lastname"
+            name={dbFields.members.lastName}
             label="Last Name"
             rules={[
               {
@@ -84,16 +103,16 @@ const ProfileForm = ({
           </Form.Item>
 
         </>
-      :
+        :
         <>
           <div><label className="ant-form-item-label">Name</label></div>
-          {user &&
-            <div style={{ fontSize: 16 }}>{user.firstname} {user.lastname}</div>
+          {memberFields &&
+            <div style={{ fontSize: 16 }}>{memberFields.first_name} {memberFields.last_name}</div>
           }
         </>
-      }</Col>
+        }</Col>
     </Row>
-  </>
+  </>;
 };
 
 export default ProfileForm;

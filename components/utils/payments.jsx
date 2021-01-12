@@ -1,4 +1,4 @@
-import { STRIPE_MEMBERSHIP_ID, SALARIES } from '../../data/member-values';
+import { STRIPE_MEMBERSHIP_ID, SALARIES } from '../../data/members/values/member-values';
 import { CardElement } from '@stripe/react-stripe-js';
 import { retryInvoiceWithNewPaymentMethod } from '../utils/stripe-helpers';
 

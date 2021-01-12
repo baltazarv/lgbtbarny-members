@@ -23,6 +23,10 @@ Ant Design variables can be cusomized on file `/assets/antd-custom.less`.
 
 Default variables can be found in the node_modules `/node_modules/antd/es/style/themes/default.less` or on [GitHub](https://github.com/ant-design/ant-design/blob/master/components/style/themes/default.less) and https://medium.com/anna-coding/how-to-config-ant-design-in-next-js-with-custom-theme-b704022591af.
 
+## Auth0
+
+https://github.com/auth0/nextjs-auth0
+
 # Plugins
 
 # next-compose-plugins

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Form, Input, Button } from 'antd';
-import { FORMS } from '../../../data/member-form-names';
+import { FORMS } from '../../../data/members/database/member-form-names';
 
 const SignupValidateForm = ({
   formRef,

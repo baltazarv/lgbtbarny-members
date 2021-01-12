@@ -1,20 +1,16 @@
 /**
- *** APP START PROCESS
- * 1) non-empty router.query > populates:
- *    * memberType (all) based on query.type
- *    * user (login user, ie, member and non-member)
- *    * previewType (anon user)
- * 2) data populates from user dashboard object
- * 3) routes parsed from data, ie, dashboard objects
- * 4) dasboard menu item selected and content loaded, based on:
- *    * url's query.page value
- *    * -or- user selection
+ * Prototypes can be seen with query strings:`?type=attorney`, `?type=student` and `?type=non-member`.
+ *
+ * When user not logged in, previewType values toggle between different member experiences.
+ *
+ * Different dashboards get loaded from different `memberType` and `previewType` values.
  */
 import { useEffect, useState, useMemo, useReducer, useContext } from 'react';
 import { useRouter } from 'next/router'
 import { Breakpoint } from 'react-socks';
 import { Jumbotron, Container } from 'react-bootstrap';
 import { Layout, Button, Tooltip, Avatar } from 'antd';
+import auth0 from '../api/utils/auth0';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 // custom components
@@ -27,10 +23,11 @@ import SvgIcon from '../../components/utils/svg-icon';
 import NewsNotification from '../../components/utils/open-notification';
 import './members.less';
 // data
-import { getDashboard, getMemberPageParentKey } from '../../data/member-dashboards';
-import * as memberTypes from '../../data/member-types';
-import users from '../../data/users';
-import { membersTable, minifyRecords } from '../api/utils/Airtable';
+import { dbFields } from '../../data/members/database/airtable-fields';
+import { getDashboard, getMemberPageParentKey } from '../../data/members/dashboard/member-dashboards';
+import * as memberTypes from '../../data/members/values/member-types';
+import sampleMembers from '../../data/members/sample/members-sample';
+import { membersTable, emailsTable, paymentsTable, plansTable, minifyRecords } from '../api/utils/Airtable';
 import { MembersContext } from '../../contexts/members-context';
 // utils
 import { isEmpty } from 'lodash/lang';
@@ -43,14 +40,15 @@ const menuKeys = ['profile', 'perks', 'account'];
 const notifThemeColor = '#BC1552';
 
 const Members = ({
-  initialMember,
+  // set server-side
+  loggedInUser,
+  loggedInMember,
+  loggedInMemberEmails,
+  loggedInUserPayments,
+  memberPlans,
 }) => {
   const router = useRouter();
-
-  const { member, setMember } = useContext(MembersContext);
-
-  // menu and main content user views
-  const [memberType, setMemberType] = useState('');
+  const { member, setMember, authUser, setAuthUser, setUserEmails, setUserPayments, setMemberPlans } = useContext(MembersContext);
   // when anon user, select tab to view preview content
   const [previewUser, setPreviewUser] = useState(memberTypes.USER_ATTORNEY);
   // when modalType is 'signup' signupType is a loginUser type
@@ -63,9 +61,36 @@ const Members = ({
 
   const [data, setData] = useState(null);
 
+  // menu and main content user views
+  const memberType = useMemo(() => {
+    let type = memberTypes.USER_ANON;
+    if (member && member.fields) {
+      type = member.fields[dbFields.members.type];
+      return type;
+    }
+    return type;
+  }, [member]);
+
   // modals
   const [modalType, setModalType] = useState('login');
-  const [modalVisible, setModalVisible] = useState(false); // modal
+  const [modalVisible, setModalVisible] = useState(false);
+  const avatar = useMemo(() => {
+    if (member && member.sample && member.auth) {
+      return <Avatar src={member.auth.picture} />
+    }
+    if (authUser) {
+      return <Avatar src={authUser.picture} />
+    }
+    return <Avatar
+      icon={<SvgIcon
+        name="customer-profile"
+        width="2.2em"
+        height="2.2em"
+        fill="rgba(0, 0, 0, 0.65)"
+      />}
+      style={{ backgroundColor: 'rgba(0, 0, 0, 0)' }}
+    />
+  }, [authUser, member])
 
   const [notification, setNotification] = useState({
     message: 'What\'t New',
@@ -82,53 +107,46 @@ const Members = ({
     ),
   });
 
-  const userReducer = (state, action) => {
-    switch (action.type) {
-      case 'update':
-        return { ...state, ...action.value };
-      default:
-        throw new Error();
-    };
-    return state;
-  };
-
-  // setUser({ type: 'update', value });
-  const [user, setUser] = useReducer(userReducer, {});
+  useEffect(() => {
+    setMember(loggedInMember);
+    setAuthUser(loggedInUser);
+  }, [loggedInUser, loggedInMember]);
 
   useEffect(() => {
-    setMember(initialMember)
-  }, []);
+    setUserEmails(loggedInMemberEmails);
+  }, [loggedInMemberEmails]);
 
-  // set user, memberType, & userType based on router.query.type
   useEffect(() => {
-    if (!isEmpty(router.query)) { // query is empty {} at app start
-      // console.log('query:', router.query);
+    setUserPayments(loggedInUserPayments);
+  }, [loggedInUserPayments]);
 
-      let _memberType = '';
-      let _user = {};
+  useEffect(() => {
+    setMemberPlans(memberPlans);
+  }, [memberPlans]);
 
-      if (!router.query.type || router.query.type === 'anon' || router.query.type === 'anonymous') {
-        _memberType = memberTypes.USER_ANON;
-      } else if (router.query.type === 'attorney') {
-        _memberType = memberTypes.USER_ATTORNEY;
-        _user = { ...users.attorney };
+  // FOR PROTOTYPE: set user based on router.query.type
+  useEffect(() => {
+    if (router.query && router.query.type) { //  && !loggedInUser
+      let _member = '';
+      if (router.query.type === 'attorney') {
+        _member = sampleMembers.attorney;
       } else if (router.query.type === 'student') {
-        _memberType = memberTypes.USER_STUDENT;
-        _user = { ...users.student };
+        _member = sampleMembers.student;
       } else if (router.query.type === 'non-member') {
-        _memberType = memberTypes.USER_NON_MEMBER;
-        _user = { ...users.nonMember };
+        _member = sampleMembers.nonMember;
       }
-      setMemberType(_memberType);
-      setUser({ type: 'update', value: _user });
+      setMember(_member);
+
+      // set sample data for prototypes
+      if (_member.sample) {
+        setUserEmails(_member.fields.emails)
+      }
     }
   }, [router.query]);
 
   const handleContentLink = (key) => {
     if (key === 'login') {
-      openModal(key);
-
-      // signup modal
+      logIn();
     } else if (key === memberTypes.SIGNUP_MEMBER) {
       setSignupType(memberTypes.USER_MEMBER);
       openModal('signup');
@@ -163,28 +181,19 @@ const Members = ({
 
   // set data, ie, dashboard, when user info is established
   useEffect(() => {
-    let _data = {};
-    if (!isEmpty(memberType)) { // user empty for anon & previewType empty for others
-      // console.log('user:', user, 'memberType:', memberType, 'previewUser:', previewUser, 'onLink:', handleContentLink)
-      if (user && memberType) {
-        _data = {
-          ...getDashboard({
-            userType: memberType,
-            user,
-            setUser,
-            onLink: handleContentLink,
-            previewUser,
-          })
-        };
-      }
-    };
-    setData(_data);
-  }, [user, memberType, previewUser]);
+    setData(getDashboard({
+      // can get member & setMember from context instead
+      member,
+      setMember,
+
+      onLink: handleContentLink,
+      previewUser
+    }));
+  }, [member, previewUser]);
 
   // parse routes from dashboard data
   const routes = useMemo(() => {
     if (!isEmpty(data)) {
-      // console.log('data:', data)
       let _routes = {};
       for (const objKey in data) {
         if (objKey !== 'options' && objKey !== 'logout') {
@@ -208,7 +217,6 @@ const Members = ({
   // set selected menu item based on dashboard data & routes parsed from it
   useEffect(() => {
     if (routes) { // data var has been populated
-      // console.log('routes:', routes);
       if (!router.query.page || !routes[router.query.page]) {
         setSelectedKey(data.options.defaultSelectedKeys[0]);
         setMenuOpenKeys(data.options.defaultMenuOpenKeys);
@@ -243,7 +251,6 @@ const Members = ({
         router.push(`/members/[page]${query}`, `/members/${objKey}${query}`, { shallow: true });
       }
     }
-    // > useEffect > select menu item and open parent
   }
 
   // triggered by ant-menu-item
@@ -252,7 +259,7 @@ const Members = ({
     if (key === 'logout') {
       logOut();
     } else if (key === 'login') {
-      openModal('login');
+      logIn();
     } else {
       changeRoute(key);
     }
@@ -262,8 +269,16 @@ const Members = ({
     setMenuCollapsed(collapsed);
   };
 
+  const logIn = () => {
+    let page = router.query.page;
+    if (page === 'law-notes-sample') page = 'law-notes-latest';
+    if (page === 'cle-sample') page = 'cle-latest';
+    const loginUrl = `/api/auth/login?redirectTo=/members/${page}`;
+    window.location = loginUrl;
+  };
+
   const logOut = () => {
-    router.push('/');
+    window.location = '/api/auth/logout';
   };
 
   const toggleOpenMenuKeys = () => {
@@ -283,9 +298,8 @@ const Members = ({
     setModalVisible(true);
   }
 
-  const handleSelectPreviewUser = (user) => {
-    // console.log('handleSelectPreviewUser onLink: memberType', memberTypes.USER_ANON, 'user:', user);
-    setPreviewUser(user); // > populates data var >> routes >>> selections
+  const handleSelectPreviewUser = (previewUser) => {
+    setPreviewUser(previewUser); // populates data var >> routes >>> selections
   }
 
   return (
@@ -299,11 +313,11 @@ const Members = ({
             <Container>
               <h1 className="h1">
                 {
-                  memberType !== memberTypes.USER_NON_MEMBER && previewUser !== memberTypes.USER_NON_MEMBER
+                  memberType === memberTypes.USER_NON_MEMBER || (memberType === memberTypes.USER_ANON && previewUser === memberTypes.USER_NON_MEMBER)
                     ?
-                    <>MEMBERS <span className="subtitle">Dashboard</span></>
-                    :
                     <>DASHBOARD</>
+                    :
+                    <>MEMBERS <span className="subtitle">Dashboard</span></>
                 }
               </h1>
             </Container>
@@ -330,19 +344,7 @@ const Members = ({
               >
                 <Tooltip title="toggle opening menu">
                   <div className="avatar-box" onClick={toggleOpenMenuKeys}>
-                    {data && data.options && data.options.user ?
-                      <Avatar src={data.options.user.photo} />
-                      :
-                      <Avatar
-                        icon={<SvgIcon
-                          name="customer-profile"
-                          width="2.2em"
-                          height="2.2em"
-                          fill="rgba(0, 0, 0, 0.65)"
-                        />}
-                        style={{ backgroundColor: 'rgba(0, 0, 0, 0)' }}
-                      />
-                    }
+                    {avatar}
                   </div>
                 </Tooltip>
                 <MemberMenu
@@ -357,12 +359,12 @@ const Members = ({
               <Layout className="site-layout">
                 {/* TODO: render props to manage content types from this component? */}
                 <MemberContent
-                  data={data}
+                  data={data} // dashboard content
                   dataKey={selectedKey}
                   onLinkClick={handleContentLink}
-                  onTabClick={handleSelectPreviewUser}
+                  onPreviewUserTabClick={handleSelectPreviewUser}
                   tabKey={previewUser}
-                  userType={memberType ? memberType : signupType}
+                  userType={memberType}
                 />
               </Layout>
             </Layout>
@@ -390,27 +392,88 @@ const Members = ({
 export default Members;
 
 export async function getServerSideProps(context) {
-  const email = 'lharper@le-gal.org';
-  try {
-    const records = await membersTable.select({
-      filterByFormula: `SEARCH("${email}", ARRAYJOIN(email))`,
-    }).firstPage();
-    const minifiedRecords = minifyRecords(records);
-    console.log('minifiedRecords', minifiedRecords)
-    // const _member = await getUserByEmail(email);
-    return {
-      props: {
-        initialMember: minifiedRecords,
-        // initialMember: _member,
+  const emailField = 'emails';
+
+  const session = await auth0.getSession(context.req);
+  console.log('SESSION', session);
+  let email = '',
+    loggedInUser = null,
+    loggedInMember = null,
+    loggedInMemberEmails = null,
+    loggedInUserPayments = null,
+    memberPlans = null;
+  if (session) {
+    try {
+      email = session.user.name;
+      loggedInUser = session.user;
+      if (email) {// already checking for session!
+        // AUTH0 user
+        console.log('SESSION', session);
+
+        // AIRTABLE
+        // TODO: replace firstPage if not getting all records
+
+        // get membership plans
+        const planRecords = await plansTable.select().firstPage();
+        memberPlans = minifyRecords(planRecords);
+
+        // get members table data
+        const memberRecords = await membersTable.select({
+          filterByFormula: `SEARCH("${email}", ARRAYJOIN(${emailField}))`,
+        }).firstPage();
+        loggedInMember = minifyRecords(memberRecords)[0];
+
+        // find & mark logged-in email as verified
+        let emailRecords = [];
+        emailRecords = await emailsTable.select({
+          filterByFormula: `FIND("${email}", email)`,
+        }).firstPage();
+        if (emailRecords.length > 0) {
+          const id = emailRecords[0].id;
+          const updateRecord = await emailsTable.update([
+            { id, fields: { verified: true } }
+          ]);
+        }
+
+        // get all emails for user
+        const memberEmailIds = loggedInMember.fields.emails.join(',');
+        emailRecords = await emailsTable.select({
+          filterByFormula: `SEARCH(RECORD_ID(), "${memberEmailIds}")`
+        }).firstPage();
+        // add emails variable to members variable
+        loggedInMemberEmails = minifyRecords(emailRecords);
+        // add as separate variable `_emails` member context state
+        loggedInMember.fields.__emails = loggedInMemberEmails;
+
+        // get user's payments
+        let paymentRecords = [];
+        const paymentIds = loggedInMember.fields.payments.join(',');
+        paymentRecords = await paymentsTable.select({
+          filterByFormula: `SEARCH(RECORD_ID(), "${paymentIds}")`
+        }).firstPage();
+        // add emails variable to members variable
+        loggedInUserPayments = minifyRecords(paymentRecords);
+        // add as separate variable `_emails` member context state
+        loggedInMember.fields.__payments = loggedInUserPayments;
+
+        // console.log('loggedInMember', loggedInMember);
+      }
+    } catch (error) {
+      console.log(error);
+      return {
+        props: {
+          error,
+        }
       }
     }
-
-  } catch (error) {
-    console.log(error);
-    return {
-      props: {
-        error,
-      }
+  }
+  return {
+    props: {
+      loggedInUser,
+      loggedInMember,
+      loggedInMemberEmails,
+      loggedInUserPayments,
+      memberPlans,
     }
   }
 };

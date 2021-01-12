@@ -1,15 +1,17 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { Card, Form, Button, Row, Col, Tag, Modal } from 'antd';
 import EmailForm from './modals/email-form';
 import PasswordForm from './modals/password-form';
 // styles
 import './account.less'; // .member-account-modal
+// data
+import { MembersContext } from '../../../contexts/members-context';
 
 const LoginSecurityForm = ({
   title,
-  user,
   loading,
 }) => {
+  const { member } = useContext(MembersContext);
   const [emailModalVisible, setEmailModalVisible] = useState(false);
   const [pwdModalVisible, setPwdModalVisible] = useState(false);
 
@@ -39,7 +41,7 @@ const LoginSecurityForm = ({
         ]}
       >
         <Row justify="space-between">
-          <Col>{user && user.email}&nbsp;&nbsp;&nbsp;<Tag color="green" style={{
+          <Col>{member && member.email}&nbsp;&nbsp;&nbsp;<Tag color="green" style={{
             fontStyle: 'italic',
             padding: '0px 6px 0px 3px',
           }}>Verified</Tag></Col>
@@ -85,7 +87,7 @@ const LoginSecurityForm = ({
       className="member-account-modal"
       >
       <EmailForm
-        currentEmail={user.email}
+        currentEmail={member.email}
         loading={loading}
         />
     </Modal>

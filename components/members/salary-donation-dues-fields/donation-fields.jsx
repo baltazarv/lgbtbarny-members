@@ -1,8 +1,8 @@
 import { useState, useMemo } from 'react';
 import { Form, Input, InputNumber, Select, Radio } from 'antd';
 // data
-import { SIGNUP_FIELDS } from '../../../data/member-form-names';
-import { getDonationValues } from '../../../data/donation-values';
+import { SIGNUP_FIELDS } from '../../../data/members/database/member-form-names';
+import { getDonationValues } from '../../../data/members/values/donation-values';
 
 const { Option } = Select;
 

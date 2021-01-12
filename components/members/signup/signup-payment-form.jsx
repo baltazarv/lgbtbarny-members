@@ -10,7 +10,7 @@ import './signup-payment-form.less';
 // utils
 import { getStripePriceId, createStripePaymentMethod } from '../../utils/payments';
 // data
-import { FORMS, SIGNUP_FIELDS } from '../../../data/member-form-names';
+import { FORMS, SIGNUP_FIELDS } from '../../../data/members/database/member-form-names';
 
 const SignupPaymentForm = ({
   // salary needed to get stripe id

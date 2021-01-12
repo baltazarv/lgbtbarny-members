@@ -3,7 +3,7 @@ import { Typography, Button } from 'antd';
 // custom components
 import PdfViewer from '../../pdf-viewer';
 // data
-import * as memberTypes from '../../../data/member-types';
+import * as memberTypes from '../../../data/members/values/member-types';
 
 const { Link } = Typography;
 

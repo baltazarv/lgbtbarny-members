@@ -9,8 +9,11 @@
 @light-bg-blue: #e8f9ff;
 @med-blue-bg: #c1eafd;
 
+@color-danger: #ff4d4f;
+@color-success: #389e0d;
+
 // type
-@font-family: 'Raleway', sans-serif;
+@font-family: "Raleway", sans-serif;
 
 // ===========================================
 // Breakpoints variables
@@ -38,7 +41,8 @@ body {
   font-size: 16px;
 
   // seo tag resets
-  h1, h2 {
+  h1,
+  h2 {
     margin: 0;
     padding: 0;
     line-height: 1;
@@ -77,51 +81,65 @@ body {
     white-space: nowrap;
   }
 
-  // bootstrap
-
-  .jumbotron {
-    padding: 2.3rem 0;
-    margin: 0;
-    background-attachment: fixed;
-    // background-repeat: no-repeat;
-    background-size: auto;
-
-    @media @sm-up {
-      background-size: cover;
-    }
-
-    .container {
-      h1 {
-        margin-bottom: 0;
-        font-size: 1.6em;
-
-        @media @sm-up {
-          font-size: 3.1rem;
-        }
-      }
-    }
+  .tooltip-underline {
+    border-bottom: 1px dotted;
   }
-
 } // @END body
-
 
 /**********************
   bootstrap re-writes
 ***********************/
 
+body .jumbotron {
+  padding: 2.3rem 0;
+  margin: 0;
+  background-attachment: fixed;
+  // background-repeat: no-repeat;
+  background-size: auto;
+
+  @media @sm-up {
+    background-size: cover;
+  }
+
+  .container {
+    h1 {
+      margin-bottom: 0;
+      font-size: 1.6em;
+
+      @media @sm-up {
+        font-size: 3.1rem;
+      }
+    }
+  }
+}
+
 // override link reboot
-a, a:not([href]):not([tabindex]) {
+a,
+a:not([href]):not([tabindex]) {
   text-decoration: underline;
   color: @link-blue;
 }
 
 label {
-  margin-bottom: .0;
+  margin-bottom: 0;
 }
 
 // darken muted text
 .text-muted {
-  color: rgba(0, 0, 0, 0.2)!important;
+  color: rgba(0, 0, 0, 0.2) !important;
+}
+
+.text-danger {
+  color: @color-danger;
+}
+
+.ant-form {
+  label {
+    font-size: 12px;
+    height: 0;
+    font-weight: bold;
+    color: rgba(0, 0, 0, 0.85);
+  }
 }
 
 /****************
@@ -187,6 +205,10 @@ label {
   }
 }
 
+code {
+  color: rgba(0, 0, 0, 0.65);
+}
+
 /***************
   Stripe styles
 ****************/
@@ -197,7 +219,7 @@ label {
   width: 100%;
   color: rgba(0, 0, 0, 0.65); //#32325d;
   background-color: white;
-  border: 1px solid rgba(0, 0, 0, .2); // transparent
+  border: 1px solid rgba(0, 0, 0, 0.2); // transparent
   border-radius: 4px;
 
   box-shadow: 0 1px 3px 0 #e6ebf1;

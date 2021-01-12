@@ -1,54 +1,73 @@
-import { useEffect, useMemo } from 'react';
+import { useMemo, useContext } from 'react';
 import moment from 'moment';
 import { isEmpty } from 'lodash';
 import PdfTable from '../../../pdf-table';
-import billingData from '../../../../data/billing-data';
+// data
+import { dbFields } from '../../../../data/members/database/airtable-fields';
+import { MembersContext } from '../../../../contexts/members-context';
+// prototype sample
+import paymentsSampleData from '../../../../data/members/sample/payments-sample';
 
-const BillingList = ({
-  user,
-}) => {
+const BillingList = () => {
+  const { member, userPayments, memberPlans } = useContext(MembersContext);
+
+  const getPlanName = (planId) => {
+    const plan = memberPlans && memberPlans.find((plan) => plan.id === planId);
+    return plan.fields.name;
+  };
 
   const userData = useMemo(() => {
-    if (!isEmpty(user)) {
-      return billingData.filter((item) => item.userid === user.id);
+    // prototype sample data
+    if (member.sample) {
+      return paymentsSampleData.map((item) => {
+        let fields = Object.assign({}, item.fields, {
+          key: item.id,
+          url: '/pdfs/billing/invoice-simple-template.pdf',
+        });
+        return fields;
+      });
     };
+
+    if (userPayments) {
+      return userPayments.map(payment => {
+        return {
+          key: payment.id,
+          date: payment.fields.date,
+          plan_name: getPlanName(payment.fields.plan_name[0]),
+          total: payment.fields.total,
+          url: '/pdfs/billing/invoice-simple-template.pdf',
+        };
+      });
+    }
     return null;
-  }, [user, billingData]);
+  }, [userPayments, member]); // , paymentsSampleData
 
   const columns = useMemo(() => {
     return [
       {
-        key: 'date',
+        key: dbFields.payments.date,
         title: 'Date',
-        dataIndex: 'date',
+        dataIndex: dbFields.payments.date,
         render: (date) => <span>{moment(date).format('M/D/YY')}</span>,
       },
       {
-        key: 'type',
-        title: 'Activity',
-        dataIndex: 'type',
-        render: (values) => {
-          return <span>{values.join(', ')}</span>
-        },
+        key: dbFields.payments.planName,
+        title: 'Membership',
+        dataIndex: dbFields.payments.planName,
       },
-      // {
-      //   key: 'card',
-      //   title: 'Payment Method',
-      //   dataIndex: 'card',
-      // },
       {
-        key: 'amount',
+        key: dbFields.payments.total,
         title: 'Amount',
-        dataIndex: 'amount',
+        dataIndex: dbFields.payments.total,
         render: (amt) => `$${amt}`,
       },
-    ]
+    ];
   }, [userData]);
 
   return <PdfTable
     data={userData}
     customCols={columns}
   />;
-}
+};
 
 export default BillingList;

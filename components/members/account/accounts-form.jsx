@@ -1,34 +1,29 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, Form, Button } from 'antd';
 import { EditOutlined } from '@ant-design/icons';
 
+const longFieldFormat = {
+  labelCol: {
+    xs: { span: 24 },
+    sm: { span: 24 },
+  },
+  wrapperCol: {
+    xs :{ span: 24 },
+    sm: { span: 24 },
+  }
+};
+
 const AccountsForm = ({
-  name,
+  name, // form name
   title,
-  user,
-  setUser,
+  initialValues,
+  editable=true,
   render,
-  userType,
 }) => {
   const [form] = Form.useForm();
   // enable submit button
   const [fieldValuesChanged, setFieldValuesChanged] = useState(false);
   const [editing, setEditing] = useState(false);
-
-  useEffect(() => {
-    if (user) {
-      populateFields();
-    }
-  }, [user, editing]);
-
-  const populateFields = () => {
-    const fields = form.getFieldsValue();
-    for (const key in fields) {
-      if (user[key]) {
-        form.setFieldsValue({ [key]: user[key] });
-      }
-    }
-  };
 
   const onFieldsChange = (changedFields, allFields) => {
     // console.log('onFieldsChange', changedFields, allFields);
@@ -40,36 +35,37 @@ const AccountsForm = ({
   };
 
   const toggleEditing = () => {
-    setEditing(prev => !prev)
+    setEditing(prev => !prev);
   };
 
-  const resetFields = () => {
-    populateFields();
+  const cancel = () => {
+    form.resetFields();
     setEditing(false);
     setFieldValuesChanged(false);
   };
 
-  const onSubmit = () => {
-    const fields = form.getFieldsValue();
-    let _user = {};
-    for(const key in fields) {
-      // if property not on user object add it anyway
-      _user[key] = form.getFieldValue(key);
-      setUser({ type: 'update', value: _user});
-    };
-    setEditing(false);
-    setFieldValuesChanged(false);
-    form.submit();
+  const onSave = () => {
+    const formErrors = form.getFieldsError().reduce((acc, cur) => {
+      return acc.concat(cur.errors);
+    }, []);
+    if (formErrors.length === 0) {
+      setEditing(false);
+      setFieldValuesChanged(false);
+      form.submit();
+      return true;
+    }
+    return false; // errors in validation
   };
 
   const formButtons = useMemo(() => {
+    if (!editable) return null;
     // submit button
     if (editing) {
       return <>
         <Button
           style={{ marginRight: '8px' }}
           size="small"
-          onClick={() => resetFields()}
+          onClick={() => cancel()}
         >
           Cancel
         </Button>
@@ -77,15 +73,15 @@ const AccountsForm = ({
           size="small"
           type="primary"
           disabled={!fieldValuesChanged}
-          onClick={onSubmit}
+          onClick={onSave}
         >
           Save
         </Button>
-      </>
+      </>;
     }
 
     // edit button
-    return <Button size="small" onClick={() => toggleEditing()}>Edit<EditOutlined style={{ verticalAlign: '0.17em' }} /></Button>
+    return <Button size="small" onClick={() => toggleEditing()}>Edit<EditOutlined style={{ verticalAlign: '0.17em' }} /></Button>;
   }, [editing, fieldValuesChanged]);
 
   return <>
@@ -94,29 +90,26 @@ const AccountsForm = ({
       extra={formButtons}
       style={{ maxWidth: 600 }}
     >
-      {/* <MenuIcon name="customer-profile" ariaLabel="Profile" />  */}
       <Form
         name={name}
         form={form}
-        // hideRequiredMark={true}
         layout="horizontal"
         scrollToFirstError
         onFieldsChange={onFieldsChange}
         onValuesChange={onValuesChange}
+        initialValues={initialValues}
       >
         {render({
-          form,
-          editing,
-          setEditing,
           name,
           title,
-          user,
-          setUser,
-          userType,
+          form,
+          longFieldFormat, // for fields with label above
+          editing,
+          setEditing,
         })}
       </Form>
     </Card>
-  </>
-}
+  </>;
+};
 
 export default AccountsForm;

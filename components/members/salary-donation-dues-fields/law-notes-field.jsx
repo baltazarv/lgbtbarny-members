@@ -1,6 +1,6 @@
 import { Form, Checkbox } from 'antd';
 // values
-import { SIGNUP_FIELDS } from '../../../data/member-form-names';
+import { SIGNUP_FIELDS } from '../../../data/members/database/member-form-names';
 
 const LawNotesField = ({
   onChange,

@@ -6,11 +6,11 @@ export const FORMS = {
   editLoginSecurity: 'edit-login-security',
   editMemberInfo: 'edit-member-info',
   editAdditionalInfo: 'edit-additional-info',
-  editMembership: 'edit-membership',
+  editPayment: 'edit-membership',
   editEmailPrefs: 'edit-email-prefs',
-  editSalaryDontaion: 'edit-salary-donation',
 };
 
+// TODO: move to airtable-fields
 export const SIGNUP_FIELDS = {
   // create account
   firstName: 'firstname',

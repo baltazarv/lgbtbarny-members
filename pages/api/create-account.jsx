@@ -1,4 +1,5 @@
-import users from '../../data/users';
+// TODO: replace with airtable function
+import users from '../../data/members/sample/members-sample';
 
 const getUser = (signupType) => {
   const user = users[signupType];

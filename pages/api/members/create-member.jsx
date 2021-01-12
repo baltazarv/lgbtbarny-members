@@ -1,4 +1,4 @@
-import { membersTable } from './utils/Airtable';
+import { membersTable } from '../utils/Airtable';
 
 export default async (req, res) => {
   const { first_name, last_name } = req.body;

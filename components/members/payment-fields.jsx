@@ -2,7 +2,7 @@ import { CardElement } from '@stripe/react-stripe-js';
 import { Form, Input } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 // data
-import { SIGNUP_FIELDS } from '../../data/member-form-names';
+import { SIGNUP_FIELDS } from '../../data/members/database/member-form-names';
 
 const CARD_ELEMENT_OPTIONS = {
   style: {

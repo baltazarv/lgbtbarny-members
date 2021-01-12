@@ -3,9 +3,9 @@ import { Row, Col, Select, Card, Button, Typography, Radio, Modal } from 'antd';
 import { Container } from 'react-bootstrap';
 import './member-groups.less';
 // data
-import * as memberTypes from '../../../data/member-types';
-import { ATTORNEY_GROUPS, STUDENT_GROUPS } from '../../../data/member-groups';
-import { groupCategories } from '../../../data/member-groups';
+import * as memberTypes from '../../../data/members/values/member-types';
+import { ATTORNEY_GROUPS, STUDENT_GROUPS } from '../../../data/members/sample/member-groups';
+import { groupCategories } from '../../../data/members/sample/member-groups';
 
 const { Option } = Select;
 const { Meta } = Card;

@@ -1,7 +1,8 @@
+// DuesForm < DuesWrapper < SalaryFields
 import { useState, useMemo } from 'react';
 import { Form, Row, Col, Select } from 'antd';
-// values
-import { SIGNUP_FIELDS } from '../../../data/member-form-names';
+// data
+import { dbFields } from '../../../data/members/database/airtable-fields';
 
 const tailFormItemLayout = {
   xs: { span: 24, offset: 0 },
@@ -22,7 +23,7 @@ const SalaryFields = ({
       salary = <>
         <Form.Item
           className="text-left"
-          name={SIGNUP_FIELDS.salary}
+          name={dbFields.members.salary}
           label="Salary Range"
           rules={[
             {
@@ -35,7 +36,7 @@ const SalaryFields = ({
           <Select
             placeholder="Choose salary to calculate fee..."
             disabled={loading}
-            onChange={(val) => onChange(SIGNUP_FIELDS.salary, val)}
+            onChange={(val) => onChange(dbFields.members.salary, val)}
           >
             {salaryOptions}
           </Select>

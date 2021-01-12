@@ -4,15 +4,15 @@ import { Container, Row, Col, Card } from 'react-bootstrap';
 import './member-content.less';
 import SvgIcon from '../utils/svg-icon';
 // data
-import { getMemberPageParentKey, getMembersPageItem } from '../../data/member-dashboards';
-import * as memberTypes from '../../data/member-types';
+import { getMemberPageParentKey, getMembersPageItem } from '../../data/members/dashboard/member-dashboards';
+import * as memberTypes from '../../data/members/values/member-types';
 
 const { TabPane } = Tabs;
 
 const TabIcon = ({
   name,
   ariaLabel,
-  fill='currentColor'
+  fill = 'currentColor'
 }) =>
   <span role="img" aria-label={ariaLabel}>
     <SvgIcon
@@ -33,10 +33,10 @@ const signupLinkText = {
 };
 
 const MemberContent = ({
-  data,
+  data, // dashboard content
   dataKey,
   onLinkClick,
-  onTabClick,
+  onPreviewUserTabClick,
   tabKey,
   userType,
 }) => {
@@ -68,10 +68,10 @@ const MemberContent = ({
               key === memberTypes.SIGNUP_LAW_NOTES ||
               key === 'signup-newletter'
             ) return <span key={key}>
-                <Button type="link" onClick={() => onLinkClick(key)}>
-                  {signupLinkText[key]}
-                </Button>{optionalPipe}
-              </span>;
+              <Button type="link" onClick={() => onLinkClick(key)}>
+                {signupLinkText[key]}
+              </Button>{optionalPipe}
+            </span>;
             return <span key={key}><u>{key}</u>{optionalPipe}</span>;
           }
           return <span key={key}>
@@ -80,9 +80,9 @@ const MemberContent = ({
         });
         if (_usefulLinks && _usefulLinks.length > 0) {
           return <Card.Footer>
-          <div className="font-weight-bold">Useful Links</div>
-          <div>{_usefulLinks}</div>
-        </Card.Footer>;
+            <div className="font-weight-bold">Useful Links</div>
+            <div>{_usefulLinks}</div>
+          </Card.Footer>;
         } else {
           return null;
         }
@@ -99,7 +99,7 @@ const MemberContent = ({
       if (pageData && pageData.title) setPageTitle(pageData.title);
 
       if (parentData && parentData && pageData.label && parentData.label) {
-        setBreadcrumbs([parentData.label, pageData.label])
+        setBreadcrumbs([parentData.label, pageData.label]);
       } else {
         setBreadcrumbs([]);
       }
@@ -111,9 +111,9 @@ const MemberContent = ({
       }
 
       if (pageData && pageData.links) {
-        setUsefulLinks(getUsefulLinks(pageData.links))
+        setUsefulLinks(getUsefulLinks(pageData.links));
       } else if (parentData && parentData.links) {
-        setUsefulLinks(getUsefulLinks(parentData.links))
+        setUsefulLinks(getUsefulLinks(parentData.links));
       } else {
         setUsefulLinks(null);
       }
@@ -124,10 +124,10 @@ const MemberContent = ({
   return <Container className="member-content">
     <Row>
       <Col className="pt-3">
-      { userType === memberTypes.USER_ANON &&
+        {userType === memberTypes.USER_ANON &&
           <Tabs
-          onChange={onTabClick}
-          activeKey={tabKey}
+            onChange={onPreviewUserTabClick}
+            activeKey={tabKey}
           >
             <TabPane
               tab={
@@ -167,8 +167,8 @@ const MemberContent = ({
             {
               breadcrumbs.length > 0 &&
               <Breadcrumb separator="&gt;">
-              {breadcrumbs.map(crumb => <Breadcrumb.Item key={crumb}>{crumb}</Breadcrumb.Item>)}
-            </Breadcrumb>
+                {breadcrumbs.map(crumb => <Breadcrumb.Item key={crumb}>{crumb}</Breadcrumb.Item>)}
+              </Breadcrumb>
             }
             <Card.Title>
               <h2 className="h2">{pageTitle}</h2>

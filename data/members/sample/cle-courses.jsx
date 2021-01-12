@@ -18,7 +18,6 @@ const cleCourses = [
     key: '3e38306e-9c7c-4679-8d42-c0984319a884',
     title: 'Planning for Unmarried Couples – LGBT and Others',
     date: '9/18/2019',
-    // date: new Date('9/18/2019'),
     credits: [
       {
         number: 1.5,
@@ -63,7 +62,6 @@ const cleCourses = [
     key: 'b89cc1c6-a228-43ab-8176-0390915a6f91',
     title: 'LGBTQ Law 2018 Year In Review',
     date: '1/17/2019',
-    // date: new Date('1/17/2019'),
     agenda: 'This program will cover the key federal and state court decisions and legislative developments of the past year, with some glimpses of what we might expect in 2019.',
     credits: [
       {

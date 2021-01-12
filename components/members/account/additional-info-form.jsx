@@ -1,63 +1,40 @@
+import { useContext } from 'react';
 import { Form, Input, Select } from 'antd';
 // data
-import { AGE_RANGES, ageOptions } from '../../../data/member-values';
+import { dbFields } from '../../../data/members/database/airtable-fields';
+import { MembersContext } from '../../../contexts/members-context';
+import { ageOptions, sexGenderOptions } from '../../../data/members/values/member-values';
 
 const AdditionalInfoForm = ({
-  user,
+  longFieldFormat,
   loading,
   editing,
 }) => {
-
-  const longFieldFormat = {
-    labelCol: {
-      xs: { span: 24 },
-      sm: { span: 24 },
-    },
-    wrapperCol: {
-      xs :{ span: 24 },
-      sm: { span: 24 },
-    }
-  };
+  const { member } = useContext(MembersContext);
 
   return <>
     {/* age range */}
     <Form.Item
-      name="agerange"
+      name={dbFields.members.ageRange}
       label="Age range"
-      labelCol={{
-        sm: { span: 9 },
-        md: { span: 6 },
-      }}
-      wrapperCol={{
-        sm : (editing ? { span: 7 } : { span: 15 }),
-        md : (editing ? { span: 7 } : { span: 18 }),
-      }}
     >
       {editing
-      ?
+        ?
         <Select
-        placeholder="Choose one..."
-        disabled={loading}
-      >
-        {ageOptions()}
-      </Select>
-      :
-      AGE_RANGES[user.agerange] ? AGE_RANGES[user.agerange].label : ''
+          placeholder="Choose one..."
+          disabled={loading}
+        >
+          {ageOptions()}
+        </Select>
+        :
+        member.fields ? member.fields[dbFields.members.ageRange] : ''
       }
     </Form.Item>
 
     {/* race / ethnicity */}
     <Form.Item
-      name="race"
+      name={dbFields.members.race}
       label="Race/Ethnicity"
-      labelCol={{
-        sm: { span: 9 },
-        md: { span: 6 },
-      }}
-      wrapperCol={{
-        sm :{ span: 15 },
-        md: { span: 18 },
-      }}
     >
       {editing
         ?
@@ -66,30 +43,32 @@ const AdditionalInfoForm = ({
           disabled={loading}
           />
         :
-        user.race
+        member.fields && member.fields[dbFields.members.race]
       }
     </Form.Item>
 
     {/* orientation / gender */}
     <Form.Item
-      name="gender"
+      name={dbFields.members.sexGender}
       label="Sexual Orientation, Gender Identity, and Preferred Pronouns"
-      {...longFieldFormat}
     >
       {editing
         ?
-        <Input
-          placeholder="Sexual Orientation, Gender Identity, and Preferred Pronouns"
+        <Select
+          placeholder="Choose one..."
           disabled={loading}
-          />
+          mode='multiple'
+        >
+          {sexGenderOptions()}
+        </Select>
         :
-        user.gender
+        member.fields && member.fields[dbFields.members.sexGender] && member.fields[dbFields.members.sexGender].join(', ')
       }
     </Form.Item>
 
     {/* race / ethnicity */}
     <Form.Item
-      name="specialaccomm"
+      name={dbFields.members.specialAccom}
       label="Do you require any special accommodations?"
       {...longFieldFormat}
       colon={false}
@@ -101,13 +80,13 @@ const AdditionalInfoForm = ({
           disabled={loading}
           />
         :
-        user.specialaccomm
+        member.fields && member.fields[dbFields.members.specialAccom]
       }
     </Form.Item>
 
     {/* how found LeGaL */}
     <Form.Item
-      name="howfound"
+      name={dbFields.members.howFound}
       label="How did you find out about LeGaL?"
       {...longFieldFormat}
       colon={false}
@@ -118,11 +97,11 @@ const AdditionalInfoForm = ({
           disabled={loading}
           />
         :
-        user.howfound
+        member.fields && member.fields[dbFields.members.howFound]
       }
     </Form.Item>
 
-  </>
-}
+  </>;
+};
 
 export default AdditionalInfoForm;

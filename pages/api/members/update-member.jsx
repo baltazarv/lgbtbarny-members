@@ -1,6 +1,7 @@
-import { membersTable, getMinifiedRecord } from './utils/Airtable';
+import { membersTable, getMinifiedRecord } from '../utils/Airtable';
+import auth0 from '../utils/auth0';
 
-export default async (req, res) => {
+export default auth0.requireAuthentication(async (req, res) => {
   const { id, fields } = req.body;
   try {
     const updatedRecords = await membersTable.update([
@@ -13,4 +14,4 @@ export default async (req, res) => {
     res.statusCode = 500;
     res.json(err);
   }
-};
+});

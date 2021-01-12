@@ -1,4 +1,5 @@
-import { membersTable, getMinifiedRecord } from './utils/Airtable';
+// TODO: if don't use, delete
+import { membersTable, getMinifiedRecord } from '../utils/Airtable';
 
 export default async (req, res) => {
   const { id } = req.body;

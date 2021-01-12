@@ -1,4 +1,4 @@
-import { membersTable, minifyRecords } from './utils/Airtable';
+import { membersTable, minifyRecords } from '../utils/Airtable';
 
 export default async (req, res) => {
   const { email } = req.body;

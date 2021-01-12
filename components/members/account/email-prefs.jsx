@@ -1,54 +1,74 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useContext } from 'react';
 import { Card, Typography, Switch, Row, Col, Button } from 'antd';
 // data
-import * as memberTypes from '../../../data/member-types';
+import { dbFields } from '../../../data/members/database/airtable-fields';
+import { MembersContext } from '../../../contexts/members-context';
+import * as memberTypes from '../../../data/members/values/member-types';
 import { useEffect } from 'react';
 
 const { Link } = Typography;
 
 const EmailPrefs = ({
   title,
-  user,
-  userType,
   onLink,
   loading,
 }) => {
+  const { member, userEmails } = useContext(MembersContext);
+
   const [newsletterChecked, setNewsletterChecked] = useState(true);
   const [memberEmailChecked, setMemberEmailChecked] = useState(true);
   const [lawNotesChecked, setLawNotesChecked] = useState(true);
 
+  const memberType = useMemo(() => {
+    return member.fields[dbFields.members.type];
+  }, [member.fields]);
+
+  const newsletterEmail = useMemo(() => {
+    // prototype sample data
+    if (userEmails && userEmails.length > 0) {
+      let newsletterEmail = userEmails[0].fields[dbFields.emails.email];
+      userEmails.forEach(email => {
+        if (email.fields[dbFields.emails.newsletter]) newsletterEmail = email.fields[dbFields.emails.email];
+      });
+      return newsletterEmail;
+    }
+    return '';
+  }, [member, userEmails]);
+
+  // check/uncheck newsletter types
+
+  // uncheck emails non-members not eligible for
   useEffect(() => {
-    if (userType === memberTypes.USER_NON_MEMBER) {
+    if (memberType === memberTypes.USER_NON_MEMBER) {
       setMemberEmailChecked(false);
       setLawNotesChecked(false);
     }
   }, [memberTypes]);
 
-  const allUnchecked = () => {
-    if (newsletterChecked && memberEmailChecked && lawNotesChecked) return true;
-    return false;
+  const areAllChecked = () => {
+    return (newsletterChecked && memberEmailChecked && lawNotesChecked);
   };
 
-  const onCheckAll = (bool) => {
+  const toggleNewsletters = (bool) => {
     setNewsletterChecked(bool);
     setMemberEmailChecked(bool);
     setLawNotesChecked(bool);
   };
 
-  const checkAllLink = useMemo(() => {
-    if (userType !== memberTypes.USER_NON_MEMBER) {
-      return <span>{allUnchecked()
-        ? <Link onClick={() => onCheckAll(false)}>Uncheck all</Link>
-        : <Link onClick={() => onCheckAll(true)}>Check all</Link>
+  const checkLink = useMemo(() => {
+    if (memberType !== memberTypes.USER_NON_MEMBER) {
+      return <span>{areAllChecked()
+        ? <Link onClick={() => toggleNewsletters(false)}>Uncheck all</Link>
+        : <Link onClick={() => toggleNewsletters(true)}>Check all</Link>
       }</span>;
     }
     return null;
-  }, [userType, memberTypes]);
+  }, [memberType, memberTypes, newsletterChecked, memberEmailChecked, lawNotesChecked]);
 
   return <>
     <Card
       title={<span>{title}</span>}
-      extra={checkAllLink}
+      extra={checkLink}
       style={{ maxWidth: 600 }}
     >
       <div>Choose the type of emails that you would like to receive:</div>
@@ -67,11 +87,11 @@ const EmailPrefs = ({
             <Switch
               checked={memberEmailChecked}
               onClick={(checked) => setMemberEmailChecked(checked)}
-              disabled={userType === memberTypes.USER_NON_MEMBER && true}
+              disabled={memberType === memberTypes.USER_NON_MEMBER && true}
               size="small"
             />&nbsp;&nbsp;<strong>Association Member emails</strong>
           </Col>
-          {userType === memberTypes.USER_NON_MEMBER
+          {memberType === memberTypes.USER_NON_MEMBER
             && <Col><Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_MEMBER)}>Become a member</Button></Col>
           }
         </Row>
@@ -83,11 +103,11 @@ const EmailPrefs = ({
             <Switch
               checked={lawNotesChecked}
               onClick={(checked) => setLawNotesChecked(checked)}
-              disabled={userType === memberTypes.USER_NON_MEMBER &&true}
+              disabled={memberType === memberTypes.USER_NON_MEMBER &&true}
               size="small"
             />&nbsp;&nbsp;<strong>Law Notes emails:</strong> magazine &amp; podcast
           </Col>
-          {userType === memberTypes.USER_NON_MEMBER
+          {memberType === memberTypes.USER_NON_MEMBER
             && <Col><Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_LAW_NOTES)}>Subscribe to Law Notes</Button></Col>
           }
         </Row>
@@ -100,16 +120,16 @@ const EmailPrefs = ({
           size="small"
         />&nbsp;&nbsp;<strong>Transactional notifications</strong>, including the following, will always be sent:
         <ul>
-          <li>Password reset emails</li>
+          <li>Magic link emails to log into dashboard.</li>
           <li>Transaction &amp; payment emails (donations, membership, paid events)</li>
           <li>Event registration confirmations</li>
         </ul>
       </div>
 
-      <div className="mt-4">{user.email
-        ? <span>We will email you at <strong>{user.email}</strong>. </span>
+      <div className="mt-4">{newsletterEmail
+        ? <span>We will email you at <strong>{newsletterEmail}</strong>. </span>
         : ''
-      } To update <strong>email address</strong>, edit in <a href="#edit-login-security">Login &amp; security</a> above.</div>
+      }To update <strong>email address</strong>, edit in <a href="#edit-email">Email</a> section above.</div>
 
     </Card>
   </>;

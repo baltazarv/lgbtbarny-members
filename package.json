@@ -2,12 +2,13 @@
   "name": "with-ant-design-less",
   "version": "1.0.0",
   "scripts": {
-    "dev": "next -p 4000",
+    "dev": "next -p 3000",
     "build": "next build",
     "start": "next start"
   },
   "dependencies": {
     "@ant-design/icons": "^4.0.5",
+    "@auth0/nextjs-auth0": "^0.16.0",
     "@stripe/react-stripe-js": "^1.1.2",
     "@stripe/stripe-js": "^1.7.0",
     "@zeit/next-less": "^1.0.1",

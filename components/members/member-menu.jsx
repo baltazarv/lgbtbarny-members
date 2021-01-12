@@ -13,7 +13,7 @@ const LockIcon = () =>
       height="1.0em"
       fill="rgba(0, 0, 0, .5)"
     />
-  </span>
+  </span>;
 
 const MemberMenu = ({
     data,
@@ -53,7 +53,7 @@ const MemberMenu = ({
           title={content}
         >
           <li className={`info-panel${item.heading ? ' info-panel-heading' : ''} mb-2`}>{item.infopanel}</li>
-        </SubMenu>
+        </SubMenu>;
       } else if (!item.children) {
 
         /* menu category w/out subitems */
@@ -63,7 +63,7 @@ const MemberMenu = ({
         let content = <span>
           {item.icon}
           <span>{item.label} {badge} {item.locked && <LockIcon />}</span>
-        </span>
+        </span>;
         return <Menu.Item
           disabled={item.disabled ? item.disabled : false}
           key={item.key}
@@ -73,7 +73,7 @@ const MemberMenu = ({
           :
             <>{content}</>
           }
-        </Menu.Item>
+        </Menu.Item>;
       } else {
 
         /* menu category w/ subitems */
@@ -91,7 +91,7 @@ const MemberMenu = ({
           content = innerContent;
         }
         let arrowIcon = {};
-        if (item.locked) arrowIcon = { expandIcon: <LockIcon /> }
+        if (item.locked) arrowIcon = { expandIcon: <LockIcon /> };
         return <SubMenu
           key={item.key}
           disabled={item.disabled ? item.disabled : false}
@@ -104,9 +104,9 @@ const MemberMenu = ({
             /* menu subitems */
             let subContent = null;
             if (subitem.tooltip) {
-              subContent = <Tooltip title={subitem.tooltip}>{subitem.label}</Tooltip>
+              subContent = <Tooltip title={subitem.tooltip}>{subitem.label}</Tooltip>;
             } else {
-              subContent = <>{subitem.label}</>
+              subContent = <>{subitem.label}</>;
             }
             return <Menu.Item
               key={subitem.key}
@@ -114,9 +114,9 @@ const MemberMenu = ({
               className={subitem.locked && 'locked'}
             >
               {subContent} {subitem.locked && <LockIcon />}
-            </Menu.Item>
+            </Menu.Item>;
           })}
-        </SubMenu>
+        </SubMenu>;
       };
     });
     setMenuChildren(_menuChildren);
@@ -125,7 +125,7 @@ const MemberMenu = ({
   const onMenuSelect = ({ item, key, keyPath, selectedKeys, domEvent }) => {
     // console.log('select', item, key, keyPath, selectedKeys, domEvent);
     setSelectedKey(selectedKeys[0]);
-  }
+  };
 
   return (
     <Menu
@@ -142,6 +142,6 @@ const MemberMenu = ({
       {menuChildren}
     </Menu>
   );
-}
+};
 
 export default MemberMenu;

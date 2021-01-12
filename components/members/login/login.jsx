@@ -3,7 +3,7 @@ import { Card, Row, Col, Button } from 'antd';
 import { Container } from 'react-bootstrap';
 import { LoginOutlined } from '@ant-design/icons';
 import '../login-signup.less';
-import * as memberTypes from '../../../data/member-types';
+import * as memberTypes from '../../../data/members/values/member-types';
 
 const Login = ({
   setModalType,

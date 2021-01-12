@@ -7,7 +7,7 @@ import { useMemo } from 'react';
 import { Form, Input, Select } from 'antd';
 import { MailOutlined, UserOutlined, LockOutlined } from '@ant-design/icons';
 // data
-import { salaryOptions, gradYearOptions } from '../../../data/member-values';
+import { salaryOptions, gradYearOptions } from '../../../data/members/values/member-values';
 
 const tailFormItemLayout = {
   xs: { span: 24, offset: 0 },

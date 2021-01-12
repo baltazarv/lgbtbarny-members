@@ -1,9 +1,8 @@
+// TODO: remove
 import * as memberTypes from './member-types';
 
 export const DONATIONS_SUGGESTED = {
   [memberTypes.USER_ATTORNEY]: [20, 50, 75, 100],
-  // [memberTypes.USER_NON_MEMBER]: [20, 50, 75, 100],
-  // [memberTypes.USER_LAW_NOTES]: [20, 50, 75, 100],
   [memberTypes.USER_STUDENT]: [10, 20, 30, 40],
 };
 

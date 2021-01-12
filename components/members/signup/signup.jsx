@@ -10,10 +10,10 @@ import '../login-signup.less';
 import { duesInit, duesReducer, getMemberFee, setDonation } from '../../utils/dues';
 import { TitleIcon } from '../../utils/icons';
 // data
-import * as memberTypes from '../../../data/member-types';
-import { FORMS, SIGNUP_FIELDS } from '../../../data/member-form-names';
+import * as memberTypes from '../../../data/members/values/member-types';
+import { FORMS, SIGNUP_FIELDS } from '../../../data/members/database/member-form-names';
 import createAccount from '../../../pages/api/create-account';
-import { LAW_NOTES_PRICE } from '../../../data/law-notes-values';
+import { LAW_NOTES_PRICE } from '../../../data/members/values/law-notes-values';
 
 const { Step } = Steps;
 

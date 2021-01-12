@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import moment from 'moment';
 import { isEmpty } from 'lodash';
 import PdfTable from '../../../pdf-table';
-import taxDeductData from '../../../../data/tax-deduct-data';
+import taxDeductData from '../../../../data/members/sample/tax-deduct-data';
 
 const TaxDeductList = ({
   user,

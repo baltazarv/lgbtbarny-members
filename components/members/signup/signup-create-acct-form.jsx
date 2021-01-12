@@ -3,10 +3,10 @@ import { Form, Select, Button, Row, Col } from 'antd';
 import SignupAccountFields from './signup-account-fields';
 import DuesWrapper from '../salary-donation-dues-fields/dues-wrapper';
 // data
-import * as memberTypes from '../../../data/member-types';
-import users from '../../../data/users';
-import { CERTIFY_OPTIONS } from '../../../data/member-values';
-import { FORMS, SIGNUP_FIELDS } from '../../../data/member-form-names';
+import * as memberTypes from '../../../data/members/values/member-types';
+import users from '../../../data/members/sample/members-sample';
+import { certifyOptions } from '../../../data/members/values/member-values';
+import { FORMS, SIGNUP_FIELDS } from '../../../data/members/database/member-form-names';
 
 const { Option } = Select;
 
@@ -127,10 +127,7 @@ const SignupCreateAcctForm = ({
             // suffixIcon={<UserOutlined/>}
             disabled={loading}
           >
-            <Option value="bar">{CERTIFY_OPTIONS.bar}</Option>
-            <Option value="graduate">{CERTIFY_OPTIONS.graduate}</Option>
-            <Option value="retired">{CERTIFY_OPTIONS.retired}</Option>
-            <Option value="student">{CERTIFY_OPTIONS.student}</Option>
+            {certifyOptions()}
           </Select>
         </Form.Item>
       }

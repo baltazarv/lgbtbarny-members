@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import PdfTable from '../../pdf-table';
 // data
-import certData from '../../../data/cle-certs-data';
-import certCourses from '../../../data/cle-courses';
+import certData from '../../../data/members/sample/cle-certs-data';
+import certCourses from '../../../data/members/sample/cle-courses';
 
 const CleCerts = ({
   user,
@@ -14,7 +14,7 @@ const CleCerts = ({
       if (course) {
         const credits = course.credits.reduce((acc, cur) => {
           return acc + Number(cur.number);
-        }, 0)
+        }, 0);
         return {
           key: cert.id,
           date: course.date,
@@ -45,7 +45,7 @@ const CleCerts = ({
         title: 'Total Credits',
         dataIndex: 'credits',
       },
-    ]
+    ];
   }, []);
 
   return <>
@@ -55,7 +55,7 @@ const CleCerts = ({
       data={dataTransformed}
       customCols={columns}
     />
-  </>
-}
+  </>;
+};
 
 export default CleCerts;

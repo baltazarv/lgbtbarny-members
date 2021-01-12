@@ -6,7 +6,7 @@ import PdfTable from '../../pdf-table';
 import PdfModal from '../../pdfs/pdf-modal';
 import SvgIcon from '../../utils/svg-icon';
 // data
-import * as memberTypes from '../../../data/member-types';
+import * as memberTypes from '../../../data/members/values/member-types';
 
 const { Link } = Typography;
 
