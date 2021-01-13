@@ -8,7 +8,7 @@ import MemberMenu from '../components/members/member-menu';
 import Signup from '../components/members/signup/signup';
 import './members/members.less';
 // data
-import { loginData } from '../data/member-dashboards';
+import { loginData } from '../data/members/dashboard/member-dashboards';
 
 const { Sider } = Layout;
 
