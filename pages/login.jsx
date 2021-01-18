@@ -8,7 +8,7 @@ import MemberMenu from '../components/members/member-menu';
 import Signup from '../components/members/signup/signup';
 import './members/members.less';
 // data
-import { loginData } from '../data/members/dashboard/member-dashboards';
+import { altAnonDashboard } from '../data/members/dashboard/member-dashboards';
 
 const { Sider } = Layout;
 
@@ -22,7 +22,7 @@ const Login = () => {
   }
 
   useEffect(() => {
-    let _data = {...loginData(handleSignUp)}
+    let _data = {...altAnonDashboard(handleSignUp)}
     setData(_data);
     setSelectedKey(_data.options.defaultSelectedKeys[0]);
     setMenuOpenKeys(_data.options.defaultMenuOpenKeys);

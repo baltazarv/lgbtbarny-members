@@ -9,6 +9,7 @@ import CancelPayment from '../modals/cancel-payment';
 import { dbFields } from '../../../../data/members/database/airtable-fields';
 import { MembersContext } from '../../../../contexts/members-context';
 import { getFee, getNextDueDate, getLastPayment, getMemberStatus } from '../../../../data/members/values/member-values';
+import paymentSample from '../../../../data/members/sample/payments-sample';
 
 const { Link } = Typography;
 
@@ -23,8 +24,14 @@ const PaymentInfoForm = ({
   const [cancelModalVisible, setCancelModalVisible] = useState(false);
 
   const lastPayment = useMemo(() => {
-    return getLastPayment(userPayments);
-  }, [userPayments]);
+    let payment = null;
+    if (member.sample) {
+      payment = getLastPayment(paymentSample);
+    } else {
+      payment = getLastPayment(userPayments);
+    }
+    return payment;
+  }, [member, userPayments]);
 
   const memberStatus = useMemo(() => {
     return getMemberStatus(userPayments);
@@ -46,7 +53,7 @@ const PaymentInfoForm = ({
 
     {/* last payment + history */}
     <Row justify="space-between mt-2">
-      <Col><span className={memberStatus === 'expired' ? 'text-danger' : ''}><label className={memberStatus === 'expired' ? 'text-danger' : ''}>Last payment:</label> on {moment(lastPayment.fields.date).format('MMMM Do, YYYY')}.</span></Col>
+      <Col><span className={memberStatus === 'expired' ? 'text-danger' : ''}><label className={memberStatus === 'expired' ? 'text-danger' : ''}>Last payment:</label> on {lastPayment.fields && moment(lastPayment.fields.date).format('MMMM Do, YYYY')}.</span></Col>
       <Col><Link onClick={() => setBillingModalVisible(true)}>Payment history</Link></Col>
     </Row>
 
