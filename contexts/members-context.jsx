@@ -9,6 +9,21 @@ const MembersProvider = ({ children }) => {
   const [userPayments, setUserPayments] = useState([]);
   const [memberPlans, setMemberPlans] = useState([]);
 
+
+  const addEmail = async (body) => {
+    try {
+      const res = await fetch('/api/members/create-email', {
+        method: 'POST',
+        body: JSON.stringify(body), // { userid, email }
+        headers: { 'Content-Type': 'application/json' }
+      })
+      const newEmails = await res.json();
+      setUserEmails(userEmails.concat(newEmails));
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   const refreshMember = async (email) => {
     try {
       const res = await fetch('/api/members/get-member-by-email', {
@@ -61,6 +76,7 @@ const MembersProvider = ({ children }) => {
     memberPlans, setMemberPlans,
 
     // functions
+    addEmail,
     refreshMember,
     updateMember,
     addMember,

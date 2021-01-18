@@ -129,7 +129,7 @@ const EmailPrefs = ({
       <div className="mt-4">{newsletterEmail
         ? <span>We will email you at <strong>{newsletterEmail}</strong>. </span>
         : ''
-      }To update <strong>email address</strong>, edit in <a href="#edit-email">Email</a> section above.</div>
+      }To update <strong>email address</strong>, edit in <a href="#edit-emails">Email</a> section above.</div>
 
     </Card>
   </>;

@@ -1,7 +1,6 @@
-@import '../../../assets/global-styles.less';
+@import "../../../assets/global-styles.less";
 
 .members-account {
-
   .ant-card-body {
     padding: 16px;
   }
@@ -17,13 +16,23 @@
   }
 
   .ant-form {
-
     .ant-form-item-label {
       padding-bottom: 0;
     }
 
     .ant-form-item-control-input {
       min-height: 0;
+    }
+
+    td.ant-table-column-sort {
+      background-color: white;
+    }
+    .ant-table-tbody > tr.ant-table-row-selected > td {
+      background-color: #e6f7ff;
+    }
+    .ant-table-small .ant-table-selection-column {
+      text-align: left;
+      white-space: nowrap;
     }
   } // @END .ant-form
 
@@ -38,7 +47,6 @@
   //     }
   //   }
   // }
-
 } // @END .members-account
 
 .member-account-modal {

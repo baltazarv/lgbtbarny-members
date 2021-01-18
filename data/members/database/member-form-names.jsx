@@ -3,7 +3,7 @@ export const FORMS = {
   validate: 'validate',
   payment: 'payment-form', // "payment-form" added as class
   editProfile: 'edit-profile',
-  editLoginSecurity: 'edit-login-security',
+  editEmails: 'edit-emails',
   editMemberInfo: 'edit-member-info',
   editAdditionalInfo: 'edit-additional-info',
   editPayment: 'edit-membership',

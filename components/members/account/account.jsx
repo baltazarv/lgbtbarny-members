@@ -6,7 +6,7 @@ import moment from 'moment';
 import AccountsForm from './accounts-form';
 // render functions in AccountsForm
 import ProfileForm from './profile-form';
-import LoginSecurityForm from './login-security-form';
+import EmailsForm from './forms/emails-form';
 import MemberInfoFields from './member-info-fields';
 import AdditionalInfoForm from './additional-info-form';
 import PaymentInfoForm from './forms/payment-info-form';
@@ -79,13 +79,14 @@ const Account = ({
         />
       </div>
 
-      {/* <div id="edit-login-security" className="mb-3">
-        <LoginSecurityForm
-          // name={FORMS.editLoginSecurity}
-          title="Login &amp; security"
+      <div id="edit-emails" className="mb-3">
+        <AccountsForm
+          name={FORMS.editEmails}
+          title="Email addresses"
           loading={loading}
+          render={(args) => <EmailsForm {...args} />}
         />
-      </div> */}
+      </div>
 
       {(
         member.fields && member.fields[dbFields.members.type] !== memberTypes.USER_ANON

@@ -436,25 +436,29 @@ export async function getServerSideProps(context) {
         }
 
         // get all emails for user
-        const memberEmailIds = loggedInMember.fields.emails.join(',');
-        emailRecords = await emailsTable.select({
-          filterByFormula: `SEARCH(RECORD_ID(), "${memberEmailIds}")`
-        }).firstPage();
-        // add emails variable to members variable
-        loggedInMemberEmails = minifyRecords(emailRecords);
-        // add as separate variable `_emails` member context state
-        loggedInMember.fields.__emails = loggedInMemberEmails;
+        if (loggedInMember.fields.emails) {
+          const memberEmailIds = loggedInMember.fields.emails.join(',');
+          emailRecords = await emailsTable.select({
+            filterByFormula: `SEARCH(RECORD_ID(), "${memberEmailIds}")`
+          }).firstPage();
+          // add emails variable to members variable
+          loggedInMemberEmails = minifyRecords(emailRecords);
+          // add as separate variable `_emails` member context state
+          loggedInMember.fields.__emails = loggedInMemberEmails;
+        }
 
         // get user's payments
-        let paymentRecords = [];
-        const paymentIds = loggedInMember.fields.payments.join(',');
-        paymentRecords = await paymentsTable.select({
-          filterByFormula: `SEARCH(RECORD_ID(), "${paymentIds}")`
-        }).firstPage();
-        // add emails variable to members variable
-        loggedInUserPayments = minifyRecords(paymentRecords);
-        // add as separate variable `_emails` member context state
-        loggedInMember.fields.__payments = loggedInUserPayments;
+        if (loggedInMember.fields.payments) {
+          let paymentRecords = [];
+          const paymentIds = loggedInMember.fields.payments.join(',');
+          paymentRecords = await paymentsTable.select({
+            filterByFormula: `SEARCH(RECORD_ID(), "${paymentIds}")`
+          }).firstPage();
+          // add emails variable to members variable
+          loggedInUserPayments = minifyRecords(paymentRecords);
+          // add as separate variable `_emails` member context state
+          loggedInMember.fields.__payments = loggedInUserPayments;
+        }
 
         // console.log('loggedInMember', loggedInMember);
       }
