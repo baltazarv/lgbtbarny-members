@@ -2,7 +2,7 @@ import { useMemo, useContext } from 'react';
 import moment from 'moment';
 // data
 import { MembersContext } from '../../../../contexts/members-context';
-import { getLastPayment } from '../../../../data/members/values/member-values';
+import { getLastPayment } from '../../../../data/members/airtable/utils';
 
 const CancelMembership = () => {
   const { userPayments } = useContext(MembersContext);

@@ -3,38 +3,44 @@ import LawNotesSample from '../../../components/members/law-notes/law-notes-samp
 import LawNotesArchive from '../../../components/members/law-notes/law-notes-archive';
 // parts
 import banners from './banners';
-import { linkText, MenuIcon } from './utils';
+import { MenuIcon } from './utils';
 // data
 import * as memberTypes from '../values/member-types';
 import lawNotesData from '../sample/law-notes-data';
 
-const lawNotes = (memberType, onLink, previewUser) => {
+const lawNotes = ({
+  memberType,
+  memberStatus,
+  onLink,
+  previewUser
+}) => {
   // let redirect = '';
   let locked = false;
   let banner = null;
   let links = [];
   let children = null;
-  if (memberType === memberTypes.USER_ATTORNEY || memberType === memberTypes.USER_STUDENT) {
+  if (
+    memberType === memberTypes.USER_ATTORNEY ||
+    (memberType === memberTypes.USER_STUDENT && memberStatus === 'active')
+  ) {
     // redirect = 'lnlatest';
     children = {
-      lnlatest: lnLatest(memberType, onLink, previewUser),
-      lnarchive: lnArchive(memberType, onLink, previewUser),
+      lnlatest: lnLatest({ memberType, onLink, previewUser }),
+      lnarchive: lnArchive({ memberType, memberStatus, onLink, previewUser }),
     };
   } else {
     // redirect = 'lnsample';
     children = {
-      lnsample: lnSample(memberType, onLink, previewUser),
-      lnarchive: lnArchive(memberType, onLink, previewUser),
+      lnsample: lnSample({ memberType, memberStatus, onLink, previewUser }),
+      lnarchive: lnArchive({ memberType, memberStatus, onLink, previewUser }),
     };
   }
   if (memberType === memberTypes.USER_ANON) {
     banner = banners('login', onLink);
-    links = [linkText.memberSignup];
-    if (previewUser === memberTypes.USER_NON_MEMBER) links = [linkText.memberSignup, linkText.lnSignup];
   } else if (memberType === memberTypes.USER_NON_MEMBER) {
     banner = banners('lawnotes', onLink);
-    links = [linkText.memberSignup, linkText.lnSignup];
   };
+  if (memberStatus === 'graduated') banner = banners('graduated', onLink);
 
   return {
     // redirect to `law-notes-latest?
@@ -48,7 +54,7 @@ const lawNotes = (memberType, onLink, previewUser) => {
 };
 
 // member only
-const lnLatest = (memberType, onLink, previewUser) => {
+const lnLatest = ({ memberType, onLink }) => {
   const data = lawNotesData.find((item) => item.latest === true);
   let title = 'Latest Law Notes';
   let label = 'Latest';
@@ -73,33 +79,60 @@ const lnLatest = (memberType, onLink, previewUser) => {
   };
 };
 
-// non-member & anon
-const lnSample = (memberType, onLink, previewUser) => {
+const getLinks = (memberType, previewUser, defaultValues) => {
+  let links = defaultValues || [];
+  if ((memberType === memberTypes.USER_ANON && previewUser === memberTypes.USER_NON_MEMBER) ||
+    memberType === memberTypes.USER_NON_MEMBER) {
+    links = ['signup', 'law-notes-subscribe'].concat(defaultValues);
+  } else if (memberType === memberTypes.USER_ANON) {
+    links = ['signup'].concat(defaultValues);
+  };
+  return links;
+};
+
+// non-member & anon & not active
+const lnSample = ({
+  memberType,
+  memberStatus,
+  onLink,
+  previewUser
+}) => {
   const data = lawNotesData.find((item) => item.sample === true);
   let content = <div>Error loading latest Law Notes.</div>;
   if (data) {
     content = <LawNotesSample
       data={data}
       memberType={memberType}
+      memberStatus={memberStatus}
       onLink={onLink}
       previewUser={previewUser}
     />;
   };
+  const links = getLinks(memberType, previewUser, ['lnarchive']);
   return {
     route: 'law-notes-sample',
     title: 'Sample Law Notes - January Edition',
     label: 'Sample',
     content,
-    links: ['lnarchive'],
+    links,
   };
 };
 
-const lnArchive = (memberType, onLink, previewUser) => {
+const lnArchive = ({
+  memberType,
+  memberStatus,
+  onLink,
+  previewUser
+}) => {
   let locked = false;
-  let links = ['lnlatest'];
-  if (memberType === memberTypes.USER_NON_MEMBER || memberType === memberTypes.USER_ANON) {
+  let links = getLinks(memberType, previewUser, ['lnlatest']);
+  if (
+    memberType === memberTypes.USER_NON_MEMBER ||
+    memberType === memberTypes.USER_ANON ||
+    memberStatus === 'graduated'
+  ) {
     locked = true;
-    links = ['lnsample'];
+    links = getLinks(memberType, previewUser, ['lnsample']);
   }
 
   return {
@@ -110,6 +143,7 @@ const lnArchive = (memberType, onLink, previewUser) => {
     content: <LawNotesArchive
       data={lawNotesData}
       memberType={memberType}
+      memberStatus={memberStatus}
       previewUser={previewUser}
       onLink={onLink}
     />,

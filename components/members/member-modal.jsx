@@ -1,8 +1,11 @@
 import { useMemo } from 'react';
 import { Modal, Button } from 'antd';
 import Signup from './signup/signup';
-import Login from './login/login';
-import NewsletterSignup from '../newsletter-signup';
+import LoginPwdLess from './login/login-pwdless';
+// deprecated for passwordless-login
+import LoginPassword from './login/login-password';
+import LawNotesSubscribe from './law-notes/law-notes-subscribe';
+import NewsletterSignup from './newsletter-signup';
 
 const MemberModal = ({
   modalType,
@@ -13,10 +16,19 @@ const MemberModal = ({
   signupType,
   setSignupType,
   cancelLabel,
+  okButton,
 }) => {
   const content = useMemo(() => {
     if (modalType === 'login') {
-      return <Login
+      return <LoginPwdLess
+        key="login"
+        // setModalType={setModalType}
+        // setSignupType={setSignupType}
+      />;
+    } else if (modalType === 'login-password') {
+      // deprecated for passwordless-login
+      return <LoginPassword
+        key="login-password"
         // navigate to other modals
         setModalType={setModalType}
         // for signup modal
@@ -30,12 +42,32 @@ const MemberModal = ({
         signupType={signupType}
         setSignupType={setSignupType}
       />;
+    } else if (modalType === 'law-notes-subscribe') {
+      return <LawNotesSubscribe
+        key="law-notes-subscribe"
+        setModalType={setModalType}
+      />;
     } else if (modalType === 'newsletter') {
+      // TODO: come back to
       return <NewsletterSignup
         key="newsletter"
       />;
     }
   }, [modalType, signupType]);
+
+  const footer = useMemo(() => {
+    let footer = [];
+    if (okButton) footer.push(okButton);
+    footer.push(<Button
+      key="custom-cancel"
+      onClick={() => setModalVisible(false)}
+      type="danger"
+      ghost
+    >
+      {cancelLabel}
+    </Button>);
+    return footer;
+  }, [okButton]);
 
   return <Modal
     key="member-modal"
@@ -45,16 +77,7 @@ const MemberModal = ({
     // centered={true} // vertically
     // destroyOnClose={true}
     // maskClosable={false}
-    footer={[
-      <Button
-        key="custom-cancel"
-        onClick={() => setModalVisible(false)}
-        type="danger"
-        ghost
-      >
-        {cancelLabel}
-      </Button>
-    ]}
+    footer={footer}
     width="88%"
     style={{ maxWidth: '576px' }}
   >

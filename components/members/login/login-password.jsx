@@ -1,3 +1,6 @@
+/**
+ * Not currently using. Using Auth0 Universal Login: https://auth0.com/docs/universal-login
+ */
 import LoginForm from './login-form';
 import { Card, Row, Col, Button } from 'antd';
 import { Container } from 'react-bootstrap';
@@ -16,15 +19,15 @@ const Login = ({
 
   return <>
     <Container
-    className="login-signup"
+      className="login-signup"
     >
       <Card
         className="mt-4 mb-2 login-signup-card"
         style={{ width: '100%' }}
         title={<>
-            <div><strong>Log In</strong>&nbsp;&nbsp;<LoginOutlined style={{ fontSize: '23px' }} />
-            </div>
-          </>
+          <div><strong>Log In</strong>&nbsp;&nbsp;<LoginOutlined style={{ fontSize: '23px' }} />
+          </div>
+        </>
         }
         tabProps={{
           type: "card",

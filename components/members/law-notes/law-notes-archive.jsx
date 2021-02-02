@@ -12,6 +12,7 @@ const { Link } = Typography;
 const LawNotesArchives = ({
   data,
   memberType,
+  memberStatus,
   previewUser,
   onLink,
 }) => {
@@ -32,14 +33,16 @@ const LawNotesArchives = ({
       row.issue = issue;
 
       // locked
-      if (
-        row.sample ||
-        memberType === memberTypes.USER_ATTORNEY ||
-        memberType === memberTypes.USER_STUDENT
-      ) {
+      if (row.sample) {
         row.locked = false;
-      } else {
+      } else if (
+        memberType === memberTypes.USER_NON_MEMBER ||
+        memberType === memberTypes.USER_ANON ||
+        memberStatus !== 'active'
+      ) {
         row.locked = true;
+      } else {
+        row.locked = false;
       };
 
       return row;
@@ -52,31 +55,41 @@ const LawNotesArchives = ({
   const introText = useMemo(() => {
     let text = null;
 
-    const whatYouGetTxt = <>
-      <p>See what you get with Law Notes &mdash; See the contents of any of the editions. Or read the <Link onClick={() => onLink('lnsample')}>sample January edition</Link>:</p>
+    let whatYouGetTxt = <>
+      <p>See what you get with <em>LGBT Law Notes</em> &mdash; See the contents of any of the editions. Or read the <Link onClick={() => onLink('lnsample')}>sample January edition</Link>:</p>
     </>;
 
-    if (memberType === memberTypes.USER_ATTORNEY || memberType === memberTypes.USER_STUDENT) {
+    if (memberStatus === 'graduated' || memberStatus === 'expired') {
+      let signUpBtnLabel = 'Renew your membership';
+      if (memberStatus === 'graduated') signUpBtnLabel = 'Upgrade your membership';
+      whatYouGetTxt = <>
+        <p>To remind you what you get with <em>LGBT Law Notes</em> &mdash; See the contents of any of the editions. Or read the <Link onClick={() => onLink('lnsample')}>sample January edition</Link>:</p>
+      </>;
       text = <>
-        <p>Read any past editions of the <em>The LGBT Law Notes</em>. Or read the <Link onClick={() => onLink('lnlatest')}>latest issue</Link>.</p>
+        <p><Button type="primary" size="small" onClick={() => onLink('signup')}>{signUpBtnLabel}</Button> to keep on getting the <em>LGBT Law Notes</em>. </p>
+        {whatYouGetTxt}
       </>;
     } else if (memberType === memberTypes.USER_NON_MEMBER) {
       text = <>
-        <p><Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_MEMBER)}>Become a member</Button> to get the <em>LGBT Law Notes</em>. </p>
+        <p><Button type="primary" size="small" onClick={() => onLink('signup')}>Become a member</Button> to get the <em>LGBT Law Notes</em>. </p>
         {whatYouGetTxt}
+      </>;
+    } else if (memberType === memberTypes.USER_ATTORNEY || memberType === memberTypes.USER_STUDENT) {
+      text = <>
+        <p>Read any past editions of the <em>The LGBT Law Notes</em>. Or read the <Link onClick={() => onLink('lnlatest')}>latest issue</Link>.</p>
       </>;
     } else if (memberType === memberTypes.USER_ANON) {
       text = <>
         <p>The <em>LGBT Law Notes</em> magazine is included with membership. {
           previewUser === memberTypes.USER_ATTORNEY &&
-          <Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_ATTORNEY)}>Become an attorney member!</Button>
+          <Button type="primary" size="small" onClick={() => onLink('signup')}>Become a member!</Button>
         }{
-          previewUser === memberTypes.USER_STUDENT &&
-          <Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_STUDENT)}>Become a student member!</Button>
-        }{
-          previewUser === memberTypes.USER_NON_MEMBER &&
-          <span>But if you are neither an attorney nor law student, you can still <Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_LAW_NOTES)}>subscribe to&nbsp;&nbsp;<em>Law Notes</em>.</Button></span>
-        }</p>
+            previewUser === memberTypes.USER_STUDENT &&
+            <Button type="primary" size="small" onClick={() => onLink('signup')}>Become a member!</Button>
+          }{
+            previewUser === memberTypes.USER_NON_MEMBER &&
+            <span>But if you are neither an attorney nor law student, you can still <Button type="primary" size="small" onClick={() => onLink('law-notes-subscribe')}>subscribe to&nbsp;&nbsp;<em>LGBT Law Notes</em>.</Button></span>
+          }</p>
         {whatYouGetTxt}
       </>;
     }
@@ -105,17 +118,17 @@ const LawNotesArchives = ({
     return {
       expandedRowRender: (record, index, indent, expanded) => {
         const expandArticle = (chapter, articleIndex) => {
-          console.log(record, index, indent, expanded, chapter, articleIndex)
-        }
+          console.log(record, index, indent, expanded, chapter, articleIndex);
+        };
         return <ul style={{
-            maxHeight: '200px',
-            overflow: 'auto'
-          }}>{record.chapters && record.chapters.length > 0 &&
+          maxHeight: '200px',
+          overflow: 'auto'
+        }}>{record.chapters && record.chapters.length > 0 &&
           record.chapters.map((chapter, articleIndex) => {
-            return <li key={articleIndex}>{chapter}</li>
+            return <li key={articleIndex}>{chapter}</li>;
             // {articleIndex === record.chapters.length -1 && <Link onClick={() => expandArticle(chapter, articleIndex)}>MORE</Link>}
           })
-        }</ul>;
+          }</ul>;
       },
       rowExpandable: (record) => record.chapters,
       // expandRowByClick: true,

@@ -1,6 +1,6 @@
 import { useMemo, useContext } from 'react';
 import moment from 'moment';
-import { isEmpty } from 'lodash';
+// import { isEmpty } from 'lodash';
 import PdfTable from '../../../pdf-table';
 // data
 import { dbFields } from '../../../../data/members/database/airtable-fields';
@@ -33,7 +33,7 @@ const BillingList = () => {
         return {
           key: payment.id,
           date: payment.fields.date,
-          plan_name: getPlanName(payment.fields.plan_name[0]),
+          [dbFields.payments.plans]: getPlanName(payment.fields[dbFields.payments.plans][0]),
           total: payment.fields.total,
           url: '/pdfs/billing/invoice-simple-template.pdf',
         };
@@ -51,9 +51,9 @@ const BillingList = () => {
         render: (date) => <span>{moment(date).format('M/D/YY')}</span>,
       },
       {
-        key: dbFields.payments.planName,
+        key: dbFields.payments.plans,
         title: 'Membership',
-        dataIndex: dbFields.payments.planName,
+        dataIndex: dbFields.payments.plans,
       },
       {
         key: dbFields.payments.total,

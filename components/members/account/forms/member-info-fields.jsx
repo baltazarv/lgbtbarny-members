@@ -1,19 +1,21 @@
 import { useState, useEffect, useMemo, useContext } from 'react';
-import { Form, Input, Select, Button, Row, Col, Tooltip, DatePicker, Divider, Modal, Typography } from 'antd';
+import { Form, Input, Select, Button, Row, Col, Tooltip, DatePicker, Divider, Typography } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 // data
-import { dbFields } from '../../../data/members/database/airtable-fields';
-import { MembersContext } from '../../../contexts/members-context';
-import * as memberTypes from '../../../data/members/values/member-types';
-import { practiceSettingOptions, salaryOptions, getFee, certifyOptions, getCertifyType } from '../../../data/members/values/member-values';
+import { MembersContext } from '../../../../contexts/members-context';
+import { dbFields } from '../../../../data/members/database/airtable-fields';
+import * as memberTypes from '../../../../data/members/values/member-types';
+import { practiceSettingOptions, salaryOptions, getFee, certifyOptions, getCertifyType } from '../../../../data/members/airtable/value-lists';
 // styles
-import './account.less';
+import '../account.less';
 
 const { Option } = Select;
 const { Text } = Typography;
 
 const MemberInfoFields = ({
+  memberType,
   longFieldFormat,
+  onLink,
   loading,
   editing,
 }) => {
@@ -23,11 +25,6 @@ const MemberInfoFields = ({
   const [isStudent, setIsStudent] = useState(false);
   // student graduated
   const [studentHasGraduated, setStudentHasGraduated] = useState(false);
-
-  // member type determined by last payment plan
-  const memberType = useMemo(() => {
-    return member.fields[dbFields.members.type];
-  }, [member.fields[dbFields.members.type]]);
 
   /**
    * CERTIFY STATUS - ALL MEMBERS
@@ -287,7 +284,7 @@ const MemberInfoFields = ({
           && <Row justify="center">
             <Col xs={{ span: 20, offset: 2 }} sm={{ span: 18, offset: 3 }} className="text-center">
               <div className="my-2 text-danger">Since you are no longer a student, please upgrade your membership to an Attorney Membership:</div>
-              <Button type="primary" onClick={() => alert('Pay for membership....')}>Upgrade membership...</Button>
+              <Button type="primary" onClick={() => onLink('signup')}>Upgrade membership</Button>
             </Col>
           </Row>
         }
@@ -303,11 +300,8 @@ const MemberInfoFields = ({
   const nonMemberContent = useMemo(() => {
     let content = null;
     if (memberType === memberTypes.USER_NON_MEMBER) {
-      if (isAttorney) content = <>
-        <Button type="primary" onClick={() => alert('Certify you are a lawyer > payment')}>Become an attorney member</Button>
-      </>;
-      if (isStudent) content = <>
-        <Button type="primary" onClick={() => alert('Certify you are a lawyer > payment')}>Become a law student member</Button>
+      if (isAttorney || isStudent) content = <>
+        <Button type="primary" onClick={() => onLink('signup')}>Become a member</Button>
       </>;
     }
     return content;

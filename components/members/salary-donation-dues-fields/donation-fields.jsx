@@ -1,3 +1,4 @@
+/** Not currently used b/c donations no longer added to member dues */
 import { useState, useMemo } from 'react';
 import { Form, Input, InputNumber, Select, Radio } from 'antd';
 // data

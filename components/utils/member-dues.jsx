@@ -1,5 +1,9 @@
-import { SALARIES } from '../../data/members/values/member-values';
+// TODO: move to /member/utils
+import { SALARIES } from '../../data/members/airtable/value-lists';
 import { SIGNUP_FIELDS } from '../../data/members/database/member-form-names';
+// data
+import { dbFields } from '../../data/members/database/airtable-fields';
+import { getFee } from '../../data/members/airtable/value-lists';
 
 export const duesInit = {
   memberFee: 0,
@@ -18,12 +22,11 @@ export const duesReducer = (state, action) => {
   };
 };
 
-// TODO: rename to getMemberFees
 export const getMemberFee = (form, hasDiscount) => {
   let memberFee = null;
-  const salary = form.getFieldValue(SIGNUP_FIELDS.salary);
-  if (SALARIES[salary]) {
-    memberFee = SALARIES[form.getFieldValue(SIGNUP_FIELDS.salary)].fee;
+  const salary = form.getFieldValue(dbFields.members.salary);
+  if (getFee(salary)) {
+    memberFee = getFee(salary);
     if (hasDiscount) {
       return { memberFee, discount: memberFee/2 };
     } else {

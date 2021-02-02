@@ -10,8 +10,8 @@ const Members = () => {
 
   useEffect(() => {
     router.push('/members/home');
-  })
+  });
   return null;
-}
+};
 
 export default Members;

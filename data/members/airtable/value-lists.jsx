@@ -1,8 +1,11 @@
 import moment from 'moment';
+import { Select } from 'antd';
 // data
-import { dbFields } from '../../../data/members/database/airtable-fields';
+import { dbFields } from '../database/airtable-fields';
 // utils
 import { selectOptionsFromArray, selectOptionsFromObject } from '../../../components/utils/select-options';
+
+const { Option } = Select;
 
 /**
  * STRIPE VALUES >> move to own file
@@ -14,27 +17,38 @@ export const getStripePlan = (salaryKey) => {
 
 export const STRIPE_MEMBERSHIP_ID = 'prod_HP8GWNCnMR7Qoy';
 
-/**
- * ATTORNEY VALUES
- */
 
 export const CERTIFY_OPTIONS = {
   bar: { label: 'A member of the bar in good standing', type: 'attorney' },
   graduate: { label: 'A law graduate who intends to be admitted', type: 'attorney' },
   retired: { label: 'An attorney retired from the practice of law', type: 'attorney' },
   student: { label: 'A law student', type: 'student' },
-  judge: { label: 'judge', type: 'attorney' },
-  retiredJudge: { label: 'retired judge', type: 'attorney' },
+  judge: { label: 'A judge', type: 'attorney' },
+  retiredJudge: { label: 'A retired judge', type: 'attorney' },
   na: { label: 'Not an attorney nor a law student', type: 'non-member' },
+};
+
+// minus the student option for student upgrades and attorney renewals
+export const certifyOptionsMinusStudent = () => {
+  let options = {};
+  for (const option in CERTIFY_OPTIONS) {
+    if (option !== 'student') options[option] = CERTIFY_OPTIONS[option];
+  }
+  return options;
 };
 
 export const certifyOptions = () => {
   return selectOptionsFromObject(CERTIFY_OPTIONS);
 };
 
-// given certify status, eg, bar or student, get type, eg `attorney` or `student`
-export const getCertifyType = (label) => {
-  for (const key in CERTIFY_OPTIONS) {
+export const certifyOptionsNoStudent = () => {
+  return selectOptionsFromObject(certifyOptionsMinusStudent());
+};
+
+// given certify label, ie, value, get type, eg `attorney` or `student`
+export const getCertifyType = (label, list) => {
+  const valueList = list || CERTIFY_OPTIONS;
+  for (const key in valueList) {
     if (CERTIFY_OPTIONS[key].label === label) return CERTIFY_OPTIONS[key].type;
   }
   return '';
@@ -53,12 +67,12 @@ export const salaryOptions = () => {
   return selectOptionsFromObject(SALARIES);
 };
 
-// uses SALARIES var
 export const getFee = (label) => {
   for (const key in SALARIES) {
     if (SALARIES[key].label === label) return SALARIES[key].fee;
   }
-  return 'Salary value not found!';
+  console.log('Warning: Salary value not found!');
+  return 0;
 };
 
 export const practiceSettingOptions = () => {
@@ -69,7 +83,6 @@ export const ageOptions = () => {
   return selectOptionsFromArray(dbFields.members.valueLists.ageRanges);
 };
 
-// signup-account-fields
 export const gradYearOptions = () => {
   const thisYear = new Date().getFullYear();
   let years = [];
@@ -87,30 +100,4 @@ export const gradYearOptions = () => {
 
 export const sexGenderOptions = () => {
   return selectOptionsFromArray(dbFields.members.valueLists.sexGenders);
-};
-
-// returns date one year after last pay date
-export const getNextDueDate = (lastPayDate) => {
-  let date = null;
-  if (lastPayDate) date = moment(new Date(lastPayDate));
-  return date.add(1, 'y').format('MMMM Do, YYYY');
-};
-
-// given userPayments object, returns the last payment record
-export const getLastPayment = (userPayments) => {
-  if (!userPayments) return {};
-  return userPayments.reduce((acc, cur) => {
-    return acc.fields.date > cur.fields.date ? Object.assign({}, acc) : Object.assign({}, cur);
-  });
-};
-
-// given userPayments object, get member status
-// also `_status` field on airtable `members` table
-export const getMemberStatus = (userPayments) => {
-  if (!userPayments || (userPayments.length && userPayments.length === 0)) return 'pending';
-  const lastPayDate = getLastPayment(userPayments).fields.date;
-  const nextDueDate = moment(lastPayDate).add(1, 'years');
-  const isPastDue = moment().isAfter(nextDueDate); // compare to today
-  if (isPastDue) return 'expired';
-  return 'active';
 };

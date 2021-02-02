@@ -1,16 +1,16 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { Form, Tooltip } from 'antd';
 import SvgIcon from '../../utils/svg-icon';
 import moment from 'moment';
 // main component
-import AccountsForm from './accounts-form';
+import AccountsForm from './forms/accounts-form';
 // render functions in AccountsForm
-import ProfileForm from './profile-form';
+import ProfileForm from './forms/profile-form';
 import EmailsForm from './forms/emails-form';
-import MemberInfoFields from './member-info-fields';
-import AdditionalInfoForm from './additional-info-form';
+import MemberInfoFields from './forms/member-info-fields';
+import AdditionalInfoForm from './forms/additional-info-form';
 import PaymentInfoForm from './forms/payment-info-form';
-import EmailPrefs from './email-prefs';
+import EmailPrefs from './forms/email-prefs';
 // styles
 import './account.less';
 // data
@@ -34,7 +34,8 @@ const MenuIcon = ({
   </span>
 
 const Account = ({
-  onLink, // become member from email prefs
+  memberType,
+  onLink, // become member from email prefs, upgrade for graduated students
 }) => {
 
   const { member, updateMember } = useContext(MembersContext);
@@ -74,6 +75,7 @@ const Account = ({
             [dbFields.members.firstName]: member.fields && member.fields[dbFields.members.firstName],
             [dbFields.members.lastName]: member.fields && member.fields[dbFields.members.lastName],
           }}
+          onLink={onLink} // signup button when student graduated
           loading={loading}
           render={(args) => <ProfileForm {...args} />}
         />
@@ -89,12 +91,12 @@ const Account = ({
       </div>
 
       {(
-        member.fields && member.fields[dbFields.members.type] !== memberTypes.USER_ANON
+        memberType !== memberTypes.USER_ANON
       ) &&
         <div className="mb-3">
           <AccountsForm
             name={FORMS.editMemberInfo}
-            title={member.fields[dbFields.members.type] === memberTypes.USER_NON_MEMBER ? 'Membership qualification' : 'Member info'}
+            title={memberType === memberTypes.USER_NON_MEMBER ? 'Membership qualification' : 'Member info'}
             initialValues={{
               [dbFields.members.certify]: member.fields[dbFields.members.certify],
               [dbFields.members.salary]: member.fields[dbFields.members.salary],
@@ -104,6 +106,8 @@ const Account = ({
               [dbFields.members.lawSchool]: member.fields[dbFields.members.lawSchool],
               [dbFields.members.gradYear]: member.fields[dbFields.members.gradYear] ? moment(member.fields[dbFields.members.gradYear], 'YYYY') : null,
             }}
+            memberType={memberType}
+            onLink={onLink} // signup button when student graduated
             loading={loading}
             render={(args) => <MemberInfoFields {...args} />}
           />
@@ -126,7 +130,7 @@ const Account = ({
         />
       </div>
 
-      {member.fields[dbFields.members.type] === memberTypes.USER_ATTORNEY
+      {memberType === memberTypes.USER_ATTORNEY
         && <div className="mb-3" id="edit-payment-info">
           <AccountsForm
             name={FORMS.editPayment}
@@ -141,6 +145,7 @@ const Account = ({
       <div className="mb-3">
         <EmailPrefs
           title="Email preferences"
+          memberType={memberType}
           onLink={onLink}
           loading={loading}
         />

@@ -1,3 +1,4 @@
+// TODO: remove this component from Accounts page for free membership plans, eg, Volunteer
 import { useState, useContext, useMemo } from 'react';
 import { Row, Col, Typography, Modal, Button, Tooltip } from 'antd';
 import moment from 'moment';
@@ -8,7 +9,8 @@ import CancelPayment from '../modals/cancel-payment';
 // data
 import { dbFields } from '../../../../data/members/database/airtable-fields';
 import { MembersContext } from '../../../../contexts/members-context';
-import { getFee, getNextDueDate, getLastPayment, getMemberStatus } from '../../../../data/members/values/member-values';
+import { getFee } from '../../../../data/members/airtable/value-lists';
+import { getMemberStatus, getLastPayment, getNextPaymentDate } from '../../../../data/members/airtable/utils';
 import paymentSample from '../../../../data/members/sample/payments-sample';
 
 const { Link } = Typography;
@@ -17,7 +19,7 @@ const PaymentInfoForm = ({
   loading,
   editing,
 }) => {
-  const { member, userPayments } = useContext(MembersContext);
+  const { member, userPayments, memberPlans } = useContext(MembersContext);
   // modals
   const [billingModalVisible, setBillingModalVisible] = useState(false);
   const [cardModalVisible, setCardModalVisible] = useState(false);
@@ -34,8 +36,26 @@ const PaymentInfoForm = ({
   }, [member, userPayments]);
 
   const memberStatus = useMemo(() => {
-    return getMemberStatus(userPayments);
-  }, [userPayments]);
+    return getMemberStatus({
+      userPayments,
+      memberPlans,
+      member,
+    });
+  }, [userPayments, memberPlans, member]);
+
+  const accountIsActive = useMemo(() => {
+    return getMemberStatus(userPayments, memberPlans, member);
+  }, [userPayments, memberPlans, member]);
+
+  // no due date for plans with no term limits, eg, Volunteer
+  const nextPaymentDate = useMemo(() => {
+    if (userPayments) return getNextPaymentDate({
+      userPayments,
+      memberPlans,
+      format: 'MMMM Do, YYYY',
+    });
+    return null;
+  }, [userPayments, memberPlans]);
 
   return <>
     {/* annual fee */}
@@ -44,7 +64,7 @@ const PaymentInfoForm = ({
         <div>
           <label>
             <Tooltip title="Membership dues are based on the amount of member salaries">
-              <span className="tooltip-underline">{memberStatus === 'active' ? 'Current annual' : 'Annual'} fee:</span>
+              <span className="tooltip-underline">{accountIsActive ? 'Current annual' : 'Annual'} fee:</span>
             </Tooltip>
           </label> ${getFee(member.fields[dbFields.members.salary])} per year
         </div>
@@ -67,21 +87,21 @@ const PaymentInfoForm = ({
         <Col>
           <Button
             type="primary"
-            ghost={memberStatus === 'active' ? true : false}
+            ghost={accountIsActive ? true : false}
             size="small"
             onClick={() => setCardModalVisible(true)}
           >
-            {memberStatus === 'active' ? 'Update card' : 'Schedule payment'}
+            {accountIsActive ? 'Update card' : 'Schedule payment'}
             </Button>
         </Col>
       </Row>
     </div>
 
     {/* membership renewal */}
-    {memberStatus === 'active' && <div className="mt-2">
+    {accountIsActive && <div className="mt-2">
       <Row justify="space-between">
         <Col>
-          <Tooltip title="You will get a reminder email a week before your membership renews"><label>1-Year membership:</label></Tooltip> renews on {getNextDueDate(lastPayment.fields.date)}.
+          <Tooltip title="You will get a reminder email a week before your membership renews"><label>1-Year membership:</label></Tooltip> renews on {nextPaymentDate}.
           </Col>
         <Col>
           <Button
@@ -117,9 +137,9 @@ const PaymentInfoForm = ({
     </Modal>
 
     <Modal
-      title={memberStatus === 'active' ? 'Update Credit Card Info' : 'Schedule Membership Payment'}
+      title={accountIsActive ? 'Update Credit Card Info' : 'Schedule Membership Payment'}
       visible={cardModalVisible}
-      okText={memberStatus === 'active' ? 'Update Card Info' : 'Schedule Payment'}
+      okText={accountIsActive ? 'Update Card Info' : 'Schedule Payment'}
       onOk={() => setCardModalVisible(false)}
       onCancel={() => setCardModalVisible(false)}
     >

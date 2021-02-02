@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, Form, Button } from 'antd';
 import { EditOutlined } from '@ant-design/icons';
 
@@ -18,6 +18,8 @@ const AccountsForm = ({
   title,
   initialValues,
   editable=true,
+  memberType,
+  onLink,
   render,
 }) => {
   const [form] = Form.useForm();
@@ -103,7 +105,9 @@ const AccountsForm = ({
           name,
           title,
           form,
+          memberType,
           longFieldFormat, // for fields with label above
+          onLink,
           editing,
           setEditing,
         })}

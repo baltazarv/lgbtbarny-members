@@ -5,15 +5,25 @@ import { MenuIcon } from './utils';
 // data
 import * as memberTypes from '../values/member-types';
 
-export const discounts = (memberType, onLink, previewUser) => {
+export const discounts = ({
+  memberType,
+  memberStatus,
+  onLink,
+  previewUser
+}) => {
   let locked = false;
   let title = 'Discounts';
   let banner = null;
 
-  if (memberType === memberTypes.USER_ANON || memberType === memberTypes.USER_NON_MEMBER) {
+  if (
+    memberType === memberTypes.USER_ANON ||
+    memberType === memberTypes.USER_NON_MEMBER ||
+    memberStatus === 'graduated'
+  ) {
     locked = true;
     title = 'Member Discounts';
-    banner = banners('login', onLink);
+    banner = banners('membership', onLink);
+    if (memberStatus === 'graduated') banner = banners('graduated', onLink);
   }
 
   return {
@@ -25,6 +35,7 @@ export const discounts = (memberType, onLink, previewUser) => {
     title,
     content: <Discounts
       memberType={memberType}
+      memberStatus={memberStatus}
       onLink={onLink}
       previewUser={previewUser}
     />,

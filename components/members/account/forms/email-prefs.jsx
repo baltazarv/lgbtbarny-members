@@ -1,28 +1,35 @@
 import { useState, useMemo, useContext } from 'react';
 import { Card, Typography, Switch, Row, Col, Button } from 'antd';
 // data
-import { dbFields } from '../../../data/members/database/airtable-fields';
-import { MembersContext } from '../../../contexts/members-context';
-import * as memberTypes from '../../../data/members/values/member-types';
+import { dbFields } from '../../../../data/members/database/airtable-fields';
+import { getAccountIsActive } from '../../../../data/members/airtable/utils';
+import { MembersContext } from '../../../../contexts/members-context';
+import * as memberTypes from '../../../../data/members/values/member-types';
 import { useEffect } from 'react';
 
 const { Link } = Typography;
 
 const EmailPrefs = ({
   title,
+  memberType,
   onLink,
   loading,
 }) => {
-  const { member, userEmails } = useContext(MembersContext);
+  const { member, userEmails, userPayments, memberPlans } = useContext(MembersContext);
 
   const [newsletterChecked, setNewsletterChecked] = useState(true);
   const [memberEmailChecked, setMemberEmailChecked] = useState(true);
   const [lawNotesChecked, setLawNotesChecked] = useState(true);
 
-  const memberType = useMemo(() => {
-    return member.fields[dbFields.members.type];
-  }, [member.fields]);
+  const accountIsActive = useMemo(() => {
+    return getAccountIsActive({
+      userPayments,
+      memberPlans,
+      member,
+    });
+  }, [userPayments, memberPlans, member]);
 
+  // get email address confirmed for email comm
   const newsletterEmail = useMemo(() => {
     // prototype sample data
     if (userEmails && userEmails.length > 0) {
@@ -39,7 +46,7 @@ const EmailPrefs = ({
 
   // uncheck emails non-members not eligible for
   useEffect(() => {
-    if (memberType === memberTypes.USER_NON_MEMBER) {
+    if (memberType === memberTypes.USER_NON_MEMBER || !accountIsActive) {
       setMemberEmailChecked(false);
       setLawNotesChecked(false);
     }
@@ -56,7 +63,7 @@ const EmailPrefs = ({
   };
 
   const checkLink = useMemo(() => {
-    if (memberType !== memberTypes.USER_NON_MEMBER) {
+    if (memberType !== memberTypes.USER_NON_MEMBER && accountIsActive) {
       return <span>{areAllChecked()
         ? <Link onClick={() => toggleNewsletters(false)}>Uncheck all</Link>
         : <Link onClick={() => toggleNewsletters(true)}>Check all</Link>
@@ -87,12 +94,15 @@ const EmailPrefs = ({
             <Switch
               checked={memberEmailChecked}
               onClick={(checked) => setMemberEmailChecked(checked)}
-              disabled={memberType === memberTypes.USER_NON_MEMBER && true}
+              disabled={(memberType === memberTypes.USER_NON_MEMBER || !accountIsActive) && true}
               size="small"
             />&nbsp;&nbsp;<strong>Association Member emails</strong>
           </Col>
           {memberType === memberTypes.USER_NON_MEMBER
-            && <Col><Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_MEMBER)}>Become a member</Button></Col>
+            && <Col><Button type="primary" size="small" onClick={() => onLink('signup')}>Become a member</Button></Col>
+          }
+          {memberType !== memberTypes.USER_NON_MEMBER && !accountIsActive
+            && <Col><Button type="primary" size="small" onClick={() => onLink('signup')}>Upgrade membership</Button></Col>
           }
         </Row>
       </div>
@@ -103,12 +113,12 @@ const EmailPrefs = ({
             <Switch
               checked={lawNotesChecked}
               onClick={(checked) => setLawNotesChecked(checked)}
-              disabled={memberType === memberTypes.USER_NON_MEMBER &&true}
+              disabled={(memberType === memberTypes.USER_NON_MEMBER || !accountIsActive) && true}
               size="small"
             />&nbsp;&nbsp;<strong>Law Notes emails:</strong> magazine &amp; podcast
           </Col>
-          {memberType === memberTypes.USER_NON_MEMBER
-            && <Col><Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_LAW_NOTES)}>Subscribe to Law Notes</Button></Col>
+          {memberType === memberTypes.USER_NON_MEMBER &&
+            <Col><Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_LAW_NOTES)}>Subscribe to Law Notes</Button></Col>
           }
         </Row>
       </div>

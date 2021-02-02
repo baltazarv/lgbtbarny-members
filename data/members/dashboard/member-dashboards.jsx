@@ -12,6 +12,7 @@ import SvgIcon from '../../../components/utils/svg-icon';
 // data
 import { dbFields } from '../database/airtable-fields';
 import * as memberTypes from '../values/member-types';
+import { getMemberPageParentKey, getMembersPageItem } from './utils';
 
 // for alt anon dashboard
 const anonPromoTxt = {
@@ -25,42 +26,53 @@ const anonPromoTxt = {
 
 export const getDashboard = ({
   member,
+  memberType,
   setMember, // when making edits on user object
+  memberStatus, // student graduated, show attorney
   onLink,
   previewUser,
 }) => {
-  if (!member || isEmpty(member)) return anonDashboard({
-    userType: memberTypes.USER_ANON,
-    user: member,
-    onLink,
-    previewUser,
-  });
-  const memberType = member.fields && member.fields[dbFields.members.type];
-  if (memberType === memberTypes.USER_ATTORNEY) return attorneyDashboard({
-    user: member,
-    setMember,
-    onLink,
-  });
-  if (memberType === memberTypes.USER_NON_MEMBER) return nonMemberDashboard({
-    user: member,
-    setMember,
-    onLink,
-  });
-  if (memberType === memberTypes.USER_STUDENT) return studentDashboard({
-    user: member,
-    setMember,
-    onLink,
-  });
-  return;
+  // if no member ojbect or if memberType is anon
+  if (!member || isEmpty(member)) {
+    return anonDashboard({
+      userType: memberTypes.USER_ANON,
+      user: member,
+      onLink,
+      previewUser,
+    });
+  } else {
+    if (
+      memberType === memberTypes.USER_ATTORNEY ||
+      (memberType === memberTypes.USER_STUDENT && memberStatus === 'graduated')
+    ) return attorneyDashboard({
+      member,
+      memberType,
+      setMember,
+      memberStatus,
+      onLink,
+    });
+    if (memberType === memberTypes.USER_NON_MEMBER) return nonMemberDashboard({
+      member,
+      memberType,
+      setMember,
+      onLink,
+    });
+    if (memberType === memberTypes.USER_STUDENT) return studentDashboard({
+      user: member,
+      memberType,
+      setMember,
+      onLink,
+    });
+  }
 };
 
 const anonDashboard = ({
   onLink,
   previewUser = memberTypes.USER_ATTORNEY,
 }) => {
-  const userType = memberTypes.USER_ANON;
+  const memberType = memberTypes.USER_ANON;
   const options = {
-    key: userType,
+    key: memberType,
     defaultSelectedKeys: ['participate'], //
     defaultMenuOpenKeys: [],
     avatar: <Avatar
@@ -75,65 +87,66 @@ const anonDashboard = ({
   };
   return {
     options,
-    participate: participate(userType, onLink, previewUser),
-    lawnotes: lawNotes(userType, onLink, previewUser),
-    clecenter: cleCenter({ userType, onLink, previewUser }),
-    discounts: discounts(userType, onLink, previewUser),
+    participate: participate({ memberType, onLink, previewUser }),
+    lawnotes: lawNotes({ memberType, onLink, previewUser }),
+    clecenter: cleCenter({ memberType, onLink, previewUser }),
+    discounts: discounts({ memberType, onLink, previewUser }),
     login: login(),
   };
 };
 
 const attorneyDashboard = ({
-  user,
-  setUser,
+  member,
+  setMember, // needed?
+  memberType,
+  memberStatus,
   onLink,
 }) => {
-  const memberType = user.fields[dbFields.members.type];
   return {
     options: {
       key: memberType,
       defaultSelectedKeys: ['participate'],
       defaultMenuOpenKeys: [], //
-      user, // TODO: move outside options
+      user: member, // TODO: move outside options
     },
-    participate: participate(memberType, onLink),
-    lawnotes: lawNotes(memberType, onLink),
-    clecenter: cleCenter({ memberType, user, onLink }),
-    discounts: discounts(memberType, onLink),
-    account: account({ memberType, user, setUser, onLink }),
+    account: account({ memberType, user: member, setUser: setMember, onLink }),
+    participate: participate({ memberType, memberStatus, onLink }),
+    lawnotes: lawNotes({ memberType, memberStatus, onLink }),
+    clecenter: cleCenter({ member, memberType, memberStatus, onLink }),
+    discounts: discounts({ memberType, memberStatus, onLink }),
     logout: logout(memberType, onLink),
   };
 };
 
 const nonMemberDashboard = ({
-  user,
-  setUser,
+  member,
+  setUser, // needed?
+  memberType,
   onLink,
   previewUser,
 }) => {
-  const memberType = user.fields[dbFields.members.type];
   return {
     options: {
       key: memberType,
       defaultSelectedKeys: ['participate'],
       defaultMenuOpenKeys: [],
-      user, // TODO: move outside options
+      user: member, // TODO: move outside options
     },
-    participate: participate(memberType, onLink),
-    lawnotes: lawNotes(memberType, onLink, previewUser),
-    clecenter: cleCenter({ memberType, user, onLink }),
-    discounts: discounts(memberType, onLink),
-    account: account({ memberType, user, setUser, onLink }),
+    account: account({ memberType, user: member, setUser, onLink }),
+    participate: participate({ memberType, onLink }),
+    lawnotes: lawNotes({ memberType, onLink, previewUser }),
+    clecenter: cleCenter({ memberType, user: member, onLink }),
+    discounts: discounts({ memberType, onLink }),
     logout: logout(memberType, onLink),
   };
 };
 
 const studentDashboard = ({
   user,
-  setUser,
+  memberType,
+  setUser, // needed?
   onLink,
 }) => {
-  const memberType = user.fields[dbFields.members.type];
   return {
     options: {
       key: memberType,
@@ -141,10 +154,10 @@ const studentDashboard = ({
       defaultMenuOpenKeys: [], //
       user, // TODO: move outside options
     },
-    participate: participate(memberType, onLink),
-    lawnotes: lawNotes(memberType, onLink),
-    clecenter: cleCenter({ memberType, onLink }),
     account: account({ memberType, user, setUser, onLink }),
+    participate: participate({ memberType, onLink }),
+    lawnotes: lawNotes({ memberType, onLink }),
+    clecenter: cleCenter({ memberType, onLink }),
     logout: logout(memberType, onLink),
   };
 };
@@ -197,28 +210,7 @@ export const altAnonDashboard = (onLink) => {
   };
 };
 
-export const getMemberPageParentKey = (data, key) => {
-  for (const parentKey in data) {
-    if (parentKey === key) return '';
-    if (data[parentKey].children) {
-      for (const childKey in data[parentKey].children) {
-        if (childKey === key) {
-          return parentKey;
-        }
-      }
-    }
-  }
-  return '';
-};
-
-export const getMembersPageItem = (data, key) => {
-  for (const parentKey in data) {
-    if (parentKey === key) return data[parentKey];
-    if (data[parentKey].children) {
-      for (const childKey in data[parentKey].children) {
-        if (childKey === key) return data[parentKey].children[childKey];
-      }
-    }
-  }
-  return null;
+export {
+  getMemberPageParentKey,
+  getMembersPageItem,
 };

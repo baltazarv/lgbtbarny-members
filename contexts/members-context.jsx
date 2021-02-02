@@ -3,11 +3,11 @@ import { createContext, useState } from 'react';
 const MembersContext = createContext();
 
 const MembersProvider = ({ children }) => {
-  const [member, setMember] = useState([]);
-  const [authUser, setAuthUser] = useState([]);
-  const [userEmails, setUserEmails] = useState([]);
-  const [userPayments, setUserPayments] = useState([]);
-  const [memberPlans, setMemberPlans] = useState([]);
+  const [member, setMember] = useState(null);
+  const [authUser, setAuthUser] = useState(null);
+  const [userEmails, setUserEmails] = useState(null);
+  const [userPayments, setUserPayments] = useState(null);
+  const [memberPlans, setMemberPlans] = useState(null);
 
 
   const addEmail = async (body) => {

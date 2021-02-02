@@ -6,6 +6,7 @@ export const DONATIONS_SUGGESTED = {
   [memberTypes.USER_STUDENT]: [10, 20, 30, 40],
 };
 
+// Not currently used b/c donations no longer added to member dues
 export const getDonationValues = (signupType) => {
   let donations = [];
   // add custom amount line to donations list

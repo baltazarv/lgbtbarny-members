@@ -1,22 +1,22 @@
-// DuesForm < DuesWrapper < SalaryFields
-import { useState, useMemo } from 'react';
+import { useMemo, useContext, useState } from 'react';
 import { Form, Row, Col, Select } from 'antd';
+
 // data
+import { MembersContext } from '../../../contexts/members-context';
 import { dbFields } from '../../../data/members/database/airtable-fields';
+import { salaryOptions } from '../../../data/members/airtable/value-lists';
+import * as memberTypes from '../../../data/members/values/member-types';
 
-const tailFormItemLayout = {
-  xs: { span: 24, offset: 0 },
-  sm: { span: 16, offset: 8 },
-};
-
-const SalaryFields = ({
-  salaryOptions,
-  hasDiscount,
-  onChange,
+const SalaryField = ({
+  hasDiscount=false,
 }) => {
+  const { userPayments, memberPlans } = useContext(MembersContext);
   const [loading, setLoading] = useState(false);
 
-  // create account fields
+  const onFieldChange = (field, value) => {
+    // console.log('onFieldChange field', field, 'val', value);
+  };
+
   const salaryField = useMemo(() => {
     let salary = null;
     if (salaryOptions) {
@@ -36,15 +36,20 @@ const SalaryFields = ({
           <Select
             placeholder="Choose salary to calculate fee..."
             disabled={loading}
-            onChange={(val) => onChange(dbFields.members.salary, val)}
+            onChange={onFieldChange}
+            // onChange={(val) => onChange(dbFields.members.salary, val)}
           >
-            {salaryOptions}
+            {salaryOptions()}
           </Select>
         </Form.Item>
 
         {hasDiscount &&
           <Row className="mb-2">
-            <Col {...tailFormItemLayout}>
+            <Col
+              xs={{ span: 24, offset: 0 }}
+              sm={{ span: 16, offset: 8 }}
+            // {...tailFormItemLayout}
+            >
               50% discount for first-time membership!
             </Col>
           </Row>
@@ -59,4 +64,4 @@ const SalaryFields = ({
   </>;
 };
 
-export default SalaryFields;
+export default SalaryField;

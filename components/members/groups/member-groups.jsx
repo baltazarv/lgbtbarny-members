@@ -1,9 +1,11 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useContext } from 'react';
 import { Row, Col, Select, Card, Button, Typography, Radio, Modal } from 'antd';
 import { Container } from 'react-bootstrap';
 import './member-groups.less';
 // data
+import { MembersContext } from '../../../contexts/members-context';
 import * as memberTypes from '../../../data/members/values/member-types';
+import { dbFields } from '../../../data/members/database/airtable-fields';
 import { ATTORNEY_GROUPS, STUDENT_GROUPS } from '../../../data/members/sample/member-groups';
 import { groupCategories } from '../../../data/members/sample/member-groups';
 
@@ -21,6 +23,7 @@ const MemberGroups = ({
   onLink,
   previewUser,
 }) => {
+  const { member, userEmails, userPayments, memberPlans } = useContext(MembersContext);
   const [groupsData, setGroupsData] = useState({});
   const [categories, setCategories] = useState(Object.keys(groupCategories));
   const [memberTypeView, setMemberTypeView] = useState('');
@@ -44,24 +47,24 @@ const MemberGroups = ({
   const filters = useMemo(() => {
     let _filter = null;
     if (
-        memberType === memberTypes.USER_ATTORNEY ||
-        (
-          memberType === memberTypes.USER_NON_MEMBER &&
-          memberTypeView === memberTypes.USER_ATTORNEY
-        ) ||
-        previewUser === memberTypes.USER_ATTORNEY
-      ) {
+      memberType === memberTypes.USER_ATTORNEY ||
+      (
+        memberType === memberTypes.USER_NON_MEMBER &&
+        memberTypeView === memberTypes.USER_ATTORNEY
+      ) ||
+      previewUser === memberTypes.USER_ATTORNEY
+    ) {
       _filter = <div className="mb-3">
-      <Select
-        mode="multiple"
-        style={{ width: '100%' }}
-        placeholder="Please select"
-        defaultValue={Object.keys(groupCategories)}
-        onChange={onSetFilter}
-      >
-        {categoryOptions}
-      </Select>
-    </div>;
+        <Select
+          mode="multiple"
+          style={{ width: '100%' }}
+          placeholder="Please select"
+          defaultValue={Object.keys(groupCategories)}
+          onChange={onSetFilter}
+        >
+          {categoryOptions}
+        </Select>
+      </div>;
     }
     return _filter;
   }, [categoryOptions, groupCategories, memberTypes, previewUser, memberTypeView]);
@@ -106,14 +109,14 @@ const MemberGroups = ({
           // backgroundAttachment: 'fixed',
           backgroundSize: '100%',
         };
-        if (item.imageOptions) coverStyles = {...coverStyles, ...item.imageOptions};
+        if (item.imageOptions) coverStyles = { ...coverStyles, ...item.imageOptions };
         let cover = <div style={coverStyles} className="cover"></div>;
         // if (item.image) cover = <img alt={item.title} className="cover" src={item.image} />;
         _groupCards.push(<Col
-            key={key}
-            xs={24} md={12} lg={8}
-            className="mb-3"
-          >
+          key={key}
+          xs={24} md={12} lg={8}
+          className="mb-3"
+        >
           <Card
             hoverable
             cover={cover}
@@ -160,11 +163,9 @@ const MemberGroups = ({
 
     if (memberType === memberTypes.USER_STUDENT) return <p>See the opportunities available to you:</p>;
 
-    if (memberType === memberTypes.USER_NON_MEMBER){
+    if (memberType === memberTypes.USER_NON_MEMBER) {
       return <>
-        <p>If you are an attorney or law student, <Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_MEMBER)}>become a member</Button>.</p>
-
-        <div>See how you can get involved as a member:</div>
+        <div>See how you can get involved as a <Button type="primary" size="small" onClick={() => onLink('signup')}>member</Button>:</div>
         <Radio.Group
           // defaultValue={memberTypes.USER_ATTORNEY}
           value={memberTypeView}
@@ -188,10 +189,10 @@ const MemberGroups = ({
       }
       {previewUser === memberTypes.USER_STUDENT &&
         <>
-        <p>Become a <Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_STUDENT)}>student member</Button>.</p>
-        <p>See what opportunities will be available to you as a member:</p>
-      </>
-    }
+          <p>Become a <Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_STUDENT)}>student member</Button>.</p>
+          <p>See what opportunities will be available to you as a member:</p>
+        </>
+      }
       {previewUser === memberTypes.USER_NON_MEMBER &&
         <div>
           Committee, section, and program participation is restricted to <Button type="link" onClick={() => onLink(memberTypes.TAB_ATTORNEY)}>Attorney Members</Button> and <Button type="link" onClick={() => onLink(memberTypes.TAB_STUDENT)}>Law Student Members.</Button>
@@ -227,7 +228,7 @@ const MemberGroups = ({
         backgroundPosition: `center top`,
         backgroundSize: '100%',
       };
-      if (data.imageOptions) coverStyles = {...coverStyles, ...data.imageOptions};
+      if (data.imageOptions) coverStyles = { ...coverStyles, ...data.imageOptions };
 
       let actions = null;
       if (data.links && data.links.length > 0) {

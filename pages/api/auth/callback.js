@@ -23,5 +23,6 @@ export default async function callback(req, res) {
   } catch (error) {
     console.error(error);
     res.status(error.status || 400).end(error.message);
+    // TODO: handle error, such as `error: 'unauthorized', error_description: 'Wrong email or verification code.'`
   }
 }

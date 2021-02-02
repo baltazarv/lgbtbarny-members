@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Breadcrumb, Button, Tabs } from 'antd';
 import { Container, Row, Col, Card } from 'react-bootstrap';
 import './member-content.less';
@@ -23,13 +23,9 @@ const TabIcon = ({
     />
   </span>;
 
-const signupLinkText = {
-  [memberTypes.SIGNUP_MEMBER]: 'Member Sign-up',
-  [memberTypes.SIGNUP_ATTORNEY]: 'Attorney Member Sign-up',
-  [memberTypes.SIGNUP_STUDENT]: 'Student Member Sign-up',
-  [memberTypes.SIGNUP_NON_MEMBER]: 'Basic Account Sign-up',
-  [memberTypes.SIGNUP_LAW_NOTES]: 'Law Notes Subscription',
-  'signup-newletter': 'Newsletter sign-up',
+const linkText = {
+  signup: 'Become a Member',
+  'law-notes-subscribe': 'Subscribe to Law Notes',
 };
 
 const MemberContent = ({
@@ -41,85 +37,71 @@ const MemberContent = ({
   userType,
 }) => {
 
-  const [banner, setBanner] = useState(null);
-  const [breadcrumbs, setBreadcrumbs] = useState([]);
-  const [pageTitle, setPageTitle] = useState('');
-  const [pageContent, setPageContent] = useState(null);
-  const [usefulLinks, setUsefulLinks] = useState(null);
+  const pageData = useMemo(() => {
+    const _pageData = getMembersPageItem(data, dataKey);
+    return _pageData;
+  }, [dataKey, data]);
 
-  useEffect(() => {
-    // do not replace content with login/logout calls
-    if (dataKey === 'login' || dataKey === 'logout') return;
+  const parentData = useMemo(() => {
+    const _parentData = getMembersPageItem(data, getMemberPageParentKey(data, dataKey));
+    return _parentData;
+  }, [dataKey, data]);
 
+  const banner = useMemo(() => {
+    if (pageData) {
+      if (pageData.banner) return pageData.banner;
+      if (parentData && parentData.banner) return parentData.banner;
+    }
+    return null;
+  }, [pageData]);
+
+  const pageTitle = useMemo(() => {
+    if (pageData && pageData.title) return pageData.title;
+    return '';
+  }, [pageData]);
+
+  const breadcrumbs = useMemo(() => {
+    if (parentData && parentData && pageData.label && parentData.label) return [parentData.label, pageData.label];
+    return [];
+  }, [parentData, pageData]);
+
+  const pageContent = useMemo(() => {
+    if (pageData && pageData.content) return pageData.content;
+    return null;
+  }, [pageData]);
+
+  const getUsefulLinks = (keys) => {
+    const _usefulLinks = keys.map((key, index) => {
+      const link = getMembersPageItem(data, key);
+      const optionalPipe = index !== keys.length - 1 ? " | " : null;
+
+      let text = '';
+      if (link && link.title) text = link.title;
+      if (!link && linkText[key]) text = linkText[key];
+
+      return <span key={key}>
+        <Button type="link" onClick={() => onLinkClick(key)}>{text}</Button>{optionalPipe}
+      </span>;
+    });
+
+    if (_usefulLinks && _usefulLinks.length > 0) {
+      return <Card.Footer>
+        <div className="font-weight-bold">Useful Links</div>
+        <div>{_usefulLinks}</div>
+      </Card.Footer>;
+    } else {
+      return null;
+    }
+  };
+
+  const usefulLinks = useMemo(() => {
     if (dataKey) {
-      const pageData = getMembersPageItem(data, dataKey);
-      const parentData = getMembersPageItem(data, getMemberPageParentKey(data, dataKey));
-
-      const getUsefulLinks = keys => {
-        const _usefulLinks = keys.map((key, index) => {
-          const link = getMembersPageItem(data, key);
-          const optionalPipe = index !== keys.length - 1 ? " | " : null;
-          if (!link) {
-            if (
-              key === memberTypes.SIGNUP_MEMBER ||
-              key === memberTypes.SIGNUP_ATTORNEY ||
-              key === memberTypes.SIGNUP_STUDENT ||
-              key === memberTypes.SIGNUP_NON_MEMBER ||
-              key === memberTypes.SIGNUP_LAW_NOTES ||
-              key === 'signup-newletter'
-            ) return <span key={key}>
-              <Button type="link" onClick={() => onLinkClick(key)}>
-                {signupLinkText[key]}
-              </Button>{optionalPipe}
-            </span>;
-            return <span key={key}><u>{key}</u>{optionalPipe}</span>;
-          }
-          return <span key={key}>
-            <Button type="link" onClick={() => onLinkClick(key)}>{link.title}</Button>{optionalPipe}
-          </span>;
-        });
-        if (_usefulLinks && _usefulLinks.length > 0) {
-          return <Card.Footer>
-            <div className="font-weight-bold">Useful Links</div>
-            <div>{_usefulLinks}</div>
-          </Card.Footer>;
-        } else {
-          return null;
-        }
-      };
-
-      if (pageData && pageData.banner) {
-        setBanner(pageData.banner);
-      } else if (parentData && parentData.banner) {
-        setBanner(parentData.banner);
-      } else {
-        setBanner(null);
-      }
-
-      if (pageData && pageData.title) setPageTitle(pageData.title);
-
-      if (parentData && parentData && pageData.label && parentData.label) {
-        setBreadcrumbs([parentData.label, pageData.label]);
-      } else {
-        setBreadcrumbs([]);
-      }
-
-      if (pageData && pageData.content) {
-        setPageContent(pageData.content);
-      } else {
-        setPageContent(null);
-      }
-
-      if (pageData && pageData.links) {
-        setUsefulLinks(getUsefulLinks(pageData.links));
-      } else if (parentData && parentData.links) {
-        setUsefulLinks(getUsefulLinks(parentData.links));
-      } else {
-        setUsefulLinks(null);
-      }
+      if (pageData && pageData.links) return getUsefulLinks(pageData.links);
+      if (parentData && parentData.links) return getUsefulLinks(parentData.links);
+      return null;
 
     }
-  }, [dataKey, data]);
+  }, [dataKey, data, pageData, parentData]);
 
   return <Container className="member-content">
     <Row>

@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { List, Row, Col } from 'antd';
-import './dues-summ-list.less';
+import './dues-summary.less';
 
-const DuesSummList = ({
+const DuesSummary = ({
   fee = 0,
   discount = 0,
   donation = 0,
@@ -68,7 +68,9 @@ const DuesSummList = ({
     return _duesList;
   }, [fee, discount, donation, lawNotesAmt, showSalary, showTotal]);
 
-  return duesList;
+  return <>
+    {duesList}
+  </>;
 };
 
-export default DuesSummList;
+export default DuesSummary;

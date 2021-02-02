@@ -2,13 +2,14 @@ import Account from '../../../components/members/account/account';
 import { MenuIcon } from './utils';
 // data
 import * as memberTypes from '../values/member-types';
+import banners from '../dashboard/banners';
 
 export const account = ({
-  userType,
+  memberType,
   onLink,
 }) => {
   let banner = null;
-  if (userType === memberTypes.USER_NON_MEMBER) {
+  if (memberType === memberTypes.USER_NON_MEMBER) {
     banner = banners('membership', onLink);
   };
 
@@ -21,6 +22,7 @@ export const account = ({
     // title: `Welcome, ${user.firstname} ${user.lastname}`,
     content: <Account
       onLink={onLink}
+      memberType={memberType}
     />,
   };
 };

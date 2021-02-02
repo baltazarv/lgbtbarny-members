@@ -5,14 +5,24 @@ import { MenuIcon } from './utils';
 // data
 import * as memberTypes from '../values/member-types';
 
-export const participate = (memberType, onLink, previewUser) => {
+export const participate = ({
+  memberType,
+  memberStatus,
+  onLink,
+  previewUser,
+}) => {
   let locked = false;
   let banner = null;
   let title = 'Member Participation';
-  if (memberType === memberTypes.USER_STUDENT) {
+
+  if (memberType === memberTypes.USER_STUDENT && memberStatus !== 'graduated') {
     title = 'Law Student Programs & Events';
   }
+  if (memberStatus === 'graduated') {
+    banner = banners('graduated', onLink);
+  }
   if (memberType === memberTypes.USER_NON_MEMBER) {
+    banner = banners('membership', onLink);
     locked = true;
   }
   if (memberType === memberTypes.USER_ANON) {

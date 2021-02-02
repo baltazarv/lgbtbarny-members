@@ -1,8 +1,11 @@
+/**
+ * Link to this form from banner
+ */
 import { useMemo, useState } from 'react';
 import { Card, Form, Input, Button, Steps, Checkbox } from 'antd';
 import { Container } from 'react-bootstrap';
 import { UserOutlined, MailOutlined } from '@ant-design/icons';
-import { TitleIcon } from './utils/icons';
+import { TitleIcon } from '../utils/icons';
 // import './members/login-signup.less';
 
 const { Step } = Steps;

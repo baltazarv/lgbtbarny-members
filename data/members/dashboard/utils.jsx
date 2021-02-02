@@ -1,14 +1,6 @@
 import SvgIcon from '../../../components/utils/svg-icon';
-import * as memberTypes from '../values/member-types';
+// import * as memberTypes from '../values/member-types';
 import { LoginOutlined } from '@ant-design/icons';
-
-export const linkText = {
-  memberSignup: memberTypes.SIGNUP_MEMBER,
-  nonMemberSignup: memberTypes.SIGNUP_NON_MEMBER,
-  lnSignup: memberTypes.SIGNUP_LAW_NOTES,
-  newsletter: 'signup-newletter',
-  currentCle: 'Current CLE Event',
-};
 
 export const MenuIcon = ({
   name,
@@ -38,4 +30,31 @@ export const login = () => {
     icon: <LoginOutlined style={{ fontSize: '23px' }} />,
     label: 'Log In',
   };
+};
+
+export const getMemberPageParentKey = (data, key) => {
+  for (const parentKey in data) {
+    if (parentKey === key) return '';
+    if (data[parentKey].children) {
+      for (const childKey in data[parentKey].children) {
+        if (childKey === key) {
+          return parentKey;
+        }
+      }
+    }
+  }
+  return '';
+};
+
+export const getMembersPageItem = (data, key) => {
+  // console.log('getMembersPageItem data', data, 'key', key)
+  for (const parentKey in data) {
+    if (parentKey === key) return data[parentKey];
+    if (data[parentKey].children) {
+      for (const childKey in data[parentKey].children) {
+        if (childKey === key) return data[parentKey].children[childKey];
+      }
+    }
+  }
+  return null;
 };

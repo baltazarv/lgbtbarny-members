@@ -10,6 +10,7 @@ const { Link } = Typography;
 const LawNotesSample = ({
   data, // one item
   memberType,
+  memberStatus,
   previewUser,
   onLink,
 }) => {
@@ -24,27 +25,35 @@ const LawNotesSample = ({
   const introText = useMemo(() => {
     let text = null;
 
-    const whatYouGetTxt = <>
+    let whatYouGetTxt = <>
       <p>See what you get with Law Notes &mdash; sample the January edition:</p>
     </>;
 
-    if (memberType === memberTypes.USER_NON_MEMBER) {
+    if (memberStatus === 'expired' || memberStatus === 'graduated') {
+      let signUpBtnLabel = 'Renew your membership';
+      if (memberStatus === 'graduated') signUpBtnLabel = 'Upgrade your membership';
+      whatYouGetTxt = <>
+        <p>To remind you what you get with Law Notes &mdash; sample the January edition:</p>
+      </>;
       text = <>
-        <p><Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_MEMBER)}>Become a member</Button> to get the <em>LGBT Law Notes</em>. </p>
+        <p><Button type="primary" size="small" onClick={() => onLink('signup')}>{signUpBtnLabel}</Button> to keep on getting the <em>LGBT Law Notes</em>. </p>
+        {whatYouGetTxt}
+      </>;
+    } else if (memberType === memberTypes.USER_NON_MEMBER) {
+      text = <>
+        <p><Button type="primary" size="small" onClick={() => onLink('signup')}>Become a member</Button> to get the <em>LGBT Law Notes</em>. </p>
         {whatYouGetTxt}
       </>;
     } else if (memberType === memberTypes.USER_ANON) {
       text = <>
         <p>The <em>LGBT Law Notes</em> magazine is included with membership. {
-          previewUser === memberTypes.USER_ATTORNEY &&
-          <><Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_ATTORNEY)}>Become an attorney member</Button>!</>
+          (previewUser === memberTypes.USER_ATTORNEY ||
+            previewUser === memberTypes.USER_STUDENT) &&
+          <><Button type="primary" size="small" onClick={() => onLink('signup')}>Become a member</Button>!</>
         }{
-          previewUser === memberTypes.USER_STUDENT &&
-          <><Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_STUDENT)}>Become a student member</Button>!</>
-        }{
-          previewUser === memberTypes.USER_NON_MEMBER &&
-          <span>But if you are neither an attorney nor law student, you can still <Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_LAW_NOTES)}>subscribe to&nbsp;&nbsp;<em>Law Notes</em></Button>.</span>
-        }</p>
+            previewUser === memberTypes.USER_NON_MEMBER &&
+            <span>But if you are neither an attorney nor law student, you can still <Button type="primary" size="small" onClick={() => onLink('law-notes-subscribe')}>subscribe to&nbsp;&nbsp;<em>Law Notes</em></Button>.</span>
+          }</p>
         {whatYouGetTxt}
       </>;
     };

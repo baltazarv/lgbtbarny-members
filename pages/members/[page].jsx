@@ -1,9 +1,11 @@
 /**
+ * Props:
+ * * authUser.name = logged in email.
+ * * members has logged-in user.
+ *
  * Prototypes can be seen with query strings:`?type=attorney`, `?type=student` and `?type=non-member`.
  *
  * When user not logged in, previewType values toggle between different member experiences.
- *
- * Different dashboards get loaded from different `memberType` and `previewType` values.
  */
 import { useEffect, useState, useMemo, useReducer, useContext } from 'react';
 import { useRouter } from 'next/router'
@@ -20,10 +22,10 @@ import MemberAccordion from '../../components/members/member-accordion';
 import MemberContent from '../../components/members/member-content';
 import MemberModal from '../../components/members/member-modal';
 import SvgIcon from '../../components/utils/svg-icon';
-import NewsNotification from '../../components/utils/open-notification';
+// import NewsNotification from '../../components/utils/open-notification';
 import './members.less';
 // data
-import { dbFields } from '../../data/members/database/airtable-fields';
+import { getMemberType, getMemberStatus } from '../../data/members/airtable/utils';
 import { getDashboard, getMemberPageParentKey } from '../../data/members/dashboard/member-dashboards';
 import * as memberTypes from '../../data/members/values/member-types';
 import sampleMembers from '../../data/members/sample/members-sample';
@@ -45,31 +47,37 @@ const Members = ({
   loggedInMember,
   loggedInMemberEmails,
   loggedInUserPayments,
-  memberPlans,
+  plans,
 }) => {
   const router = useRouter();
-  const { member, setMember, authUser, setAuthUser, setUserEmails, setUserPayments, setMemberPlans } = useContext(MembersContext);
+  const { member, setMember, authUser, setAuthUser, setUserEmails, userPayments, setUserPayments, memberPlans, setMemberPlans } = useContext(MembersContext);
   // when anon user, select tab to view preview content
   const [previewUser, setPreviewUser] = useState(memberTypes.USER_ATTORNEY);
   // when modalType is 'signup' signupType is a loginUser type
-  const [signupType, setSignupType] = useState('');
 
   // menu & main content page/section selections
   const [selectedKey, setSelectedKey] = useState('');
   const [menuOpenKeys, setMenuOpenKeys] = useState([]);
   const [menuCollapsed, setMenuCollapsed] = useState(false);
+  // key sent to login API to open with query string, ie, 'login' or 'law-notes-subscribe'
+  const [queryKey, setQueryKey] = useState('');
 
   const [data, setData] = useState(null);
+  // TODO: remove setSignupType from all children
+  const [signupType, setSignupType] = useState('');
 
-  // menu and main content user views
+
   const memberType = useMemo(() => {
-    let type = memberTypes.USER_ANON;
-    if (member && member.fields) {
-      type = member.fields[dbFields.members.type];
-      return type;
-    }
-    return type;
-  }, [member]);
+    return getMemberType({ member, userPayments, memberPlans });
+  }, [member, userPayments, memberPlans]);
+
+  const memberStatus = useMemo(() => {
+    return getMemberStatus({
+      userPayments,
+      memberPlans,
+      member,
+    });
+  }, [userPayments, memberPlans, member]);
 
   // modals
   const [modalType, setModalType] = useState('login');
@@ -107,6 +115,8 @@ const Members = ({
     ),
   });
 
+  // set data from airtable into MemberContext vars
+
   useEffect(() => {
     setMember(loggedInMember);
     setAuthUser(loggedInUser);
@@ -121,60 +131,109 @@ const Members = ({
   }, [loggedInUserPayments]);
 
   useEffect(() => {
-    setMemberPlans(memberPlans);
-  }, [memberPlans]);
+    setMemberPlans(plans);
+  }, [plans]);
 
-  // FOR PROTOTYPE: set user based on router.query.type
+  /** When query string changes
+   *  * Open signup & subscribe motals.
+   *  * Show prototype users.
+   */
   useEffect(() => {
-    if (router.query && router.query.type) { //  && !loggedInUser
-      let _member = '';
-      if (router.query.type === 'attorney') {
-        _member = sampleMembers.attorney;
-      } else if (router.query.type === 'student') {
-        _member = sampleMembers.student;
-      } else if (router.query.type === 'non-member') {
-        _member = sampleMembers.nonMember;
+    if (router.query) {
+      // if not logged in
+      if (router.query.hasOwnProperty('signup')) {
+        openModal('signup');
+      } else if (router.query.hasOwnProperty('law-notes-subscribe')) {
+        openModal('law-notes-subscribe')
+      } else if (router.query.hasOwnProperty('newsletter')) {
+        // TODO: revisit
+        openModal('newsletter')
+      } else if (router.query.hasOwnProperty('login-password')) {
+        // deprecated for login (password-less)
+        openModal('login-password')
       }
-      setMember(_member);
 
-      // set sample data for prototypes
-      if (_member.sample) {
-        setUserEmails(_member.fields.emails)
+      // if (router.query.page) console.log('QUERY', router.query.page)
+
+      // FOR PROTOTYPE: set user based on router.query.type
+      if (router.query.type) { // && !loggedInUser
+        let _member = '';
+        if (router.query.type === 'attorney') {
+          _member = sampleMembers.attorney;
+        } else if (router.query.type === 'student') {
+          _member = sampleMembers.student;
+        } else if (router.query.type === 'non-member') {
+          _member = sampleMembers.nonMember;
+        }
+        setMember(_member);
+
+        // set sample data for prototypes
+        if (_member.sample) {
+          setUserEmails(_member.fields.emails)
+        }
       }
     }
-  }, [router.query]);
+  }, [router.query, member, authUser]); // , member, authUser
 
+  /** On clicking links in content:
+   *  * Go to login page.
+   *  * Add query string >> useEffect(() => {...}, [router.query])
+   *  * Navigate between anon preview users
+   *  *
+   */
   const handleContentLink = (key) => {
+    // go to auth0 page
     if (key === 'login') {
       logIn();
-    } else if (key === memberTypes.SIGNUP_MEMBER) {
-      setSignupType(memberTypes.USER_MEMBER);
-      openModal('signup');
-    } else if (key === memberTypes.SIGNUP_ATTORNEY) {
-      setSignupType(memberTypes.USER_ATTORNEY);
-      openModal('signup');
-    } else if (key === memberTypes.SIGNUP_STUDENT) {
-      setSignupType(memberTypes.USER_STUDENT);
-      openModal('signup');
-    } else if (key === memberTypes.SIGNUP_NON_MEMBER) {
-      setSignupType(memberTypes.USER_NON_MEMBER);
-      openModal('signup');
-    } else if (key === memberTypes.SIGNUP_LAW_NOTES) {
-      setSignupType(memberTypes.USER_LAW_NOTES);
-      openModal('signup');
-    } else if (key === 'signup-newletter') {
-      openModal('newsletter');
+    }
 
-      // anon account type preview change tab
-    } else if (key === memberTypes.TAB_ATTORNEY) {
+    // add query string to url, useEffect will open modal
+    else if (key === 'signup' ||
+      key === 'law-notes-subscribe') {
+      // add key as query string
+      let asPath = router.asPath;
+      let query = `?${key}`; //'?signup';
+      // if router.query actually has query string
+      if (asPath.split('?').length > 1) {
+        // split query string from url
+        asPath = router.asPath.split('?')[0];
+        // split query string into parts and remove key
+        const otherQueries = router.asPath.split('?')[1].split('&').reduce((acc, cur, index) => {
+          if (!cur.startsWith(key)) {
+            if (acc.length === 0) {
+              acc.push(`?${cur}`);
+            } else {
+              acc.push(`&${cur}`);
+            }
+          }
+          return acc;
+        }, []);
+        // add key to query
+        if (otherQueries.length > 0) {
+          query = `${otherQueries.join().replace(',', '')}&${key}`
+        }
+      }
+      router.replace(`${router.pathname}${query}`, `${asPath}${query}`, { shallow: true });
+      // send query string to login API if not logged in; when loggin in will add query string
+      setQueryKey(key);
+
+      // TODO: closing signup window removes '?signup' query string
+    }
+
+    // anon account type preview change tabs
+    else if (key === memberTypes.TAB_ATTORNEY) {
       handleSelectPreviewUser(memberTypes.USER_ATTORNEY);
+
     } else if (key === memberTypes.TAB_STUDENT) {
       handleSelectPreviewUser(memberTypes.USER_STUDENT);
+
     } else if (key === memberTypes.TAB_NON_MEMBER) {
       handleSelectPreviewUser(memberTypes.USER_NON_MEMBER);
+    }
 
-      // handle navigation
-    } else {
+    // handle navigation
+    else {
+      selectItem(key);
       changeRoute(key);
     }
   }
@@ -182,21 +241,21 @@ const Members = ({
   // set data, ie, dashboard, when user info is established
   useEffect(() => {
     setData(getDashboard({
-      // can get member & setMember from context instead
       member,
       setMember,
-
+      memberType,
+      memberStatus,
       onLink: handleContentLink,
       previewUser
     }));
-  }, [member, previewUser]);
+  }, [member, memberType, memberStatus, previewUser]);
 
   // parse routes from dashboard data
   const routes = useMemo(() => {
     if (!isEmpty(data)) {
       let _routes = {};
       for (const objKey in data) {
-        if (objKey !== 'options' && objKey !== 'logout') {
+        if (objKey !== 'options' && objKey !== 'logout'&& objKey !== 'login') {
           if (data[objKey].route) {
             const route = data[objKey].route;
             _routes[route] = objKey;
@@ -226,10 +285,10 @@ const Members = ({
     }
   }, [routes]);
 
-  // build notifications
-  useEffect(() => {
-    NewsNotification(notification);
-  }, [notification]);
+  // // build notifications
+  // useEffect(() => {
+  //   NewsNotification(notification);
+  // }, [notification]);
 
   // select page/section from menu
   const selectItem = key => {
@@ -245,17 +304,19 @@ const Members = ({
 
   // called from menu & content links
   const changeRoute = (key) => {
+    console.log('changeRoute', key, 'routes', routes);
     for (const objKey in routes) {
       if (key === routes[objKey]) {
         const query = router.query.type ? `?type=${router.query.type}` : '';
-        router.push(`/members/[page]${query}`, `/members/${objKey}${query}`, { shallow: true });
+        router.push(`/members/[page]${query}`, `/members/${objKey}${query}`, { shallow: true, scroll: true }).then(() => window.scrollTo(0, 0)); // force scroll to to b/c scroll: true not working
       }
     }
   }
 
   // triggered by ant-menu-item
   const onMenuClick = ({ item, key, keyPath, domEvent }) => {
-    // console.log('onMenuClick', item, key, keyPath, domEvent);
+    // console.log('onMenuClick item:', item, 'key', key);
+    // console.log('onMenuClick item:', item, 'key', key, 'keyPath', keyPath, 'domEvent', domEvent);
     if (key === 'logout') {
       logOut();
     } else if (key === 'login') {
@@ -269,11 +330,12 @@ const Members = ({
     setMenuCollapsed(collapsed);
   };
 
-  const logIn = () => {
+  const logIn = (query) => {
     let page = router.query.page;
     if (page === 'law-notes-sample') page = 'law-notes-latest';
     if (page === 'cle-sample') page = 'cle-latest';
-    const loginUrl = `/api/auth/login?redirectTo=/members/${page}`;
+    let loginUrl = `/api/auth/login?redirectTo=/members/${page}`;
+    if (query) loginUrl = `${loginUrl}?${query}`
     window.location = loginUrl;
   };
 
@@ -294,7 +356,10 @@ const Members = ({
   };
 
   const openModal = (type) => {
-    setModalType(type);
+    let _type = type;
+    if (!member || !authUser) _type = 'login';
+    console.log('openModal', _type)
+    setModalType(_type);
     setModalVisible(true);
   }
 
@@ -381,6 +446,14 @@ const Members = ({
           signupType={signupType}
           setSignupType={setSignupType}
           cancelLabel="Cancel"
+          okButton={!member &&
+            <Button
+              key="signup"
+              type="primary"
+              onClick={() => logIn(queryKey ? queryKey : '')}
+            >
+              Validate email &amp; log in
+            </Button>}
         />
 
       </div>
@@ -401,21 +474,21 @@ export async function getServerSideProps(context) {
     loggedInMember = null,
     loggedInMemberEmails = null,
     loggedInUserPayments = null,
-    memberPlans = null;
+    plans = null;
   if (session) {
     try {
       email = session.user.name;
       loggedInUser = session.user;
       if (email) {// already checking for session!
         // AUTH0 user
-        console.log('SESSION', session);
+        // console.log('SESSION', session);
 
         // AIRTABLE
         // TODO: replace firstPage if not getting all records
 
         // get membership plans
         const planRecords = await plansTable.select().firstPage();
-        memberPlans = minifyRecords(planRecords);
+        plans = minifyRecords(planRecords);
 
         // get members table data
         const memberRecords = await membersTable.select({
@@ -477,7 +550,7 @@ export async function getServerSideProps(context) {
       loggedInMember,
       loggedInMemberEmails,
       loggedInUserPayments,
-      memberPlans,
+      plans,
     }
   }
 };

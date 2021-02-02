@@ -24,6 +24,7 @@ for (const key in groupCategories) {
 
 const Discounts = ({
   memberType,
+  memberStatus,
   onLink,
   previewUser,
 }) => {
@@ -45,16 +46,16 @@ const Discounts = ({
     let _filters = null;
     if (memberType === memberTypes.USER_ATTORNEY) {
       _filters = <div className="mb-3">
-      <Select
-        mode="multiple"
-        style={{ width: '100%' }}
-        placeholder="Please select"
-        defaultValue={Object.keys(groupCategories)}
-        onChange={onSetFilter}
-      >
-        {categoryOptions}
-      </Select>
-    </div>;
+        <Select
+          mode="multiple"
+          style={{ width: '100%' }}
+          placeholder="Please select"
+          defaultValue={Object.keys(groupCategories)}
+          onChange={onSetFilter}
+        >
+          {categoryOptions}
+        </Select>
+      </div>;
     }
     return _filters;
   }, [categoryOptions, groupCategories]);
@@ -89,14 +90,14 @@ const Discounts = ({
             // backgroundAttachment: 'fixed',
             backgroundSize: '100%',
           };
-          if (item.imageOptions) coverStyles = {...coverStyles, ...item.imageOptions};
+          if (item.imageOptions) coverStyles = { ...coverStyles, ...item.imageOptions };
           let cover = <div style={coverStyles} className="cover"></div>;
           // if (item.image) cover = <img alt={item.title} className="cover" src={item.image} />;
           _cards.push(<Col
-              key={key}
-              xs={24} md={12} lg={8}
-              className="mb-3"
-            >
+            key={key}
+            xs={24} md={12} lg={8}
+            className="mb-3"
+          >
             <Card
               hoverable
               cover={cover}
@@ -124,17 +125,24 @@ const Discounts = ({
   const introText = useMemo(() => {
     let joinText = null;
 
-    if (memberType === memberTypes.USER_ANON && previewUser !== memberTypes.USER_ATTORNEY) {
+    if (
+      memberType === memberTypes.USER_ANON &&
+      previewUser !== memberTypes.USER_ATTORNEY
+    ) {
       return <>
-          Only <Link onClick={() => onLink(memberTypes.TAB_ATTORNEY)}>attorney members</Link> are eligible for discounts.
-        </>
+        Only <Link onClick={() => onLink(memberTypes.TAB_ATTORNEY)}>attorney members</Link> are eligible for discounts.
+      </>
     };
 
     if (
       memberType === memberTypes.USER_NON_MEMBER ||
       (memberType === memberTypes.USER_ANON && previewUser === memberTypes.USER_ATTORNEY)
     ) {
-      joinText = <>&nbsp;<Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_MEMBER)}>Become a member</Button> to get member discounts</>
+      joinText = <>.&nbsp;<Button type="primary" size="small" onClick={() => onLink('signup')}>Become a member</Button> to get member discounts</>
+    };
+
+    if (memberStatus === 'graduated') {
+      joinText = <>.&nbsp;<Button type="primary" size="small" onClick={() => onLink('signup')}>Upgrade your membership</Button> to get attorney member discounts</>
     };
 
     if (
@@ -143,7 +151,8 @@ const Discounts = ({
       (
         memberType === memberTypes.USER_ANON &&
         previewUser === memberTypes.USER_ATTORNEY
-      )
+      ) ||
+      memberStatus === 'graduated'
     ) {
       return <>
         <p>LeGaL is pleased to offer its members a variety of discounts {joinText}:</p>
@@ -153,7 +162,9 @@ const Discounts = ({
           <li>National LGBT Bar Association discount.</li>
           <li>Corporate and community partner benefits.</li>
         </ul>
-        <p>A brief description of our member benefits, along with relevant discount codes and/or benefit contact information in relation is provided below.</p>
+        {memberType === memberTypes.USER_ATTORNEY &&
+          <p>A brief description of our member benefits, along with relevant discount codes and/or benefit contact information in relation is provided below.</p>
+        }
       </>
     }
   }, [memberType, previewUser]);
@@ -170,7 +181,7 @@ const Discounts = ({
         backgroundPosition: `center top`,
         backgroundSize: '100%',
       };
-      if (_data.imageOptions) coverStyles = {...coverStyles, ..._data.imageOptions};
+      if (_data.imageOptions) coverStyles = { ...coverStyles, ..._data.imageOptions };
 
       let actions = null;
       if (_data.links && _data.links.length > 0) {

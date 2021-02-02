@@ -1,9 +1,12 @@
 export const dbFields = {
   members: {
     emails: 'emails',
-    type: '_payment_last_type', // attorney, student, law-notes
-    paymentLast: '_payment_last_date',
-    status: '_status',
+
+    // // calculating on this app instead
+    // type: '_payment_last_type',
+    // paymentLast: '_payment_last_date',
+    // status: '_status', // _status on Airtable needs to be modified to return 'student' and 'attorney' instead of 'active'
+
     firstName: 'first_name',
     lastName: 'last_name',
     certify: 'certify',
@@ -68,7 +71,11 @@ export const dbFields = {
   },
   payments: {
     date: 'date',
-    planName: 'plan_name',
+    plans: 'plans',
     total: 'total',
   },
+  plans: {
+    type: 'type',
+    termYears: 'term_years'
+  }
 };

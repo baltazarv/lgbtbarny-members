@@ -77,7 +77,7 @@ const CleArchive = ({
       } else {
         text = <>
           <p>{previewUser === memberTypes.USER_ATTORNEY &&
-              <Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_ATTORNEY)}>Become an attorney member</Button>
+              <Button type="primary" size="small" onClick={() => onLink('signup')}>Become a member</Button>
             }{previewUser === memberTypes.USER_STUDENT &&
               <Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_STUDENT)}>Become a law student member</Button>
             } to get access to all CLE materials, current materials, as well as the archives.&nbsp;
@@ -89,7 +89,7 @@ const CleArchive = ({
       }
     } else if (memberType === memberTypes.USER_NON_MEMBER) {
       text = <>
-        <p><Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_MEMBER)}>Become a member</Button> to get access to all CLE materials, current materials as well as the archives.</p>
+        <p><Button type="primary" size="small" onClick={() => onLink('signup')}>Become a member</Button> to get access to all CLE materials, current materials as well as the archives.</p>
         <p>{whatYouGetTxt}</p>
         <p>{registeredText} You can view the entire content for the materials or all courses that you have signed up for.</p>
         {certTxt}

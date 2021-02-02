@@ -12,4 +12,4 @@ export const TitleIcon = ({
       height="1em"
       fill={fill}
     />
-  </span>
+  </span>;
