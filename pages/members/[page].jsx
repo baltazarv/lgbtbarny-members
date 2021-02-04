@@ -153,8 +153,6 @@ const Members = ({
         openModal('login-password')
       }
 
-      // if (router.query.page) console.log('QUERY', router.query.page)
-
       // FOR PROTOTYPE: set user based on router.query.type
       if (router.query.type) { // && !loggedInUser
         let _member = '';
@@ -304,7 +302,6 @@ const Members = ({
 
   // called from menu & content links
   const changeRoute = (key) => {
-    console.log('changeRoute', key, 'routes', routes);
     for (const objKey in routes) {
       if (key === routes[objKey]) {
         const query = router.query.type ? `?type=${router.query.type}` : '';
@@ -316,7 +313,6 @@ const Members = ({
   // triggered by ant-menu-item
   const onMenuClick = ({ item, key, keyPath, domEvent }) => {
     // console.log('onMenuClick item:', item, 'key', key);
-    // console.log('onMenuClick item:', item, 'key', key, 'keyPath', keyPath, 'domEvent', domEvent);
     if (key === 'logout') {
       logOut();
     } else if (key === 'login') {
@@ -358,7 +354,6 @@ const Members = ({
   const openModal = (type) => {
     let _type = type;
     if (!member || !authUser) _type = 'login';
-    console.log('openModal', _type)
     setModalType(_type);
     setModalVisible(true);
   }

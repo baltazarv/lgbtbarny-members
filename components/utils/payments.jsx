@@ -1,10 +1,10 @@
-import { STRIPE_MEMBERSHIP_ID, SALARIES } from '../../data/members/airtable/value-lists';
+import { STRIPE_MEMBERSHIP_ID, PLANS } from '../../data/members/airtable/value-lists';
 import { CardElement } from '@stripe/react-stripe-js';
 import { retryInvoiceWithNewPaymentMethod } from '../utils/stripe-helpers';
 
 export const getStripePriceId = (salary) => {
   let id = '';
-  if(SALARIES[salary]) id = SALARIES[salary].stripePriceId;
+  if(PLANS[salary]) id = PLANS[salary].stripePriceId;
   return id;
 };
 

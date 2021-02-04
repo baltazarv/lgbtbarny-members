@@ -144,7 +144,7 @@ const SignupPaymentForm = ({
           htmlType="submit"
           disabled={loading || !stripe}
         >
-          Pay for Membership Subscription
+          Pay Member Dues
         </Button>
       </Form.Item>
     </Card>

@@ -28,7 +28,6 @@ const NewsletterSignup = ({
 
   const onFinish = async (values) => {
     setLoading(true);
-    // const user = await createAccount(values);
     // setStep(1);
     // setLoading(false);
   };

@@ -98,13 +98,13 @@ const Account = ({
             name={FORMS.editMemberInfo}
             title={memberType === memberTypes.USER_NON_MEMBER ? 'Membership qualification' : 'Member info'}
             initialValues={{
-              [dbFields.members.certify]: member.fields[dbFields.members.certify],
-              [dbFields.members.salary]: member.fields[dbFields.members.salary],
-              [dbFields.members.employer]: member.fields[dbFields.members.employer],
-              [dbFields.members.practiceSetting]: member.fields[dbFields.members.practiceSetting],
-              [dbFields.members.practiceAreas]: member.fields[dbFields.members.practiceAreas],
-              [dbFields.members.lawSchool]: member.fields[dbFields.members.lawSchool],
-              [dbFields.members.gradYear]: member.fields[dbFields.members.gradYear] ? moment(member.fields[dbFields.members.gradYear], 'YYYY') : null,
+              [dbFields.members.certify]: member && member.fields[dbFields.members.certify],
+              [dbFields.members.salary]: member && member.fields[dbFields.members.salary],
+              [dbFields.members.employer]: member && member.fields[dbFields.members.employer],
+              [dbFields.members.practiceSetting]: member && member.fields[dbFields.members.practiceSetting],
+              [dbFields.members.practiceAreas]: member && member.fields[dbFields.members.practiceAreas],
+              [dbFields.members.lawSchool]: member && member.fields[dbFields.members.lawSchool],
+              [dbFields.members.gradYear]: member && member.fields[dbFields.members.gradYear] ? moment(member.fields[dbFields.members.gradYear], 'YYYY') : null,
             }}
             memberType={memberType}
             onLink={onLink} // signup button when student graduated

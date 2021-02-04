@@ -2,6 +2,7 @@
 import moment from 'moment';
 import * as memberTypes from '../values/member-types';
 import { dbFields } from '../database/airtable-fields';
+import { PLANS } from './value-lists';
 
 // given userPayments object, returns the last payment record
 export const getLastPayment = (userPayments) => {
@@ -62,7 +63,6 @@ export const getNextPaymentDate = ({
       const lastPlan = memberPlans.find((plans) => plans.id === lastPlanId);
       let termInYears = lastPlan.fields[dbFields.plans.termYears];
       if (termInYears) {
-        console.log('termInYears', termInYears, 'what to do if missing?!');
         if (format) return lastPayDate.add(termInYears, 'y').format(format); // 'MMMM Do, YYYY'
         return lastPayDate.add(termInYears, 'y');
       } // if no term limit, return null
@@ -135,4 +135,35 @@ export const memberHasDiscount = (userPayments, memberPlans) => {
     return true;
   }
   return false;
+};
+
+/**
+ * if no salary, assume a student plan
+ * @param {String} userid
+ * @param {Number} salary
+ */
+export const getPaymentPayload = (userid, salary) => {
+  let plan = '';
+  let type = 'Website Payment';
+  let status = 'Paid';
+  let discount = null;
+  let fee = null;
+  if (!salary) {
+    plan = PLANS.student.id;
+    fee = PLANS.student.fee;
+  } else {
+    console.log('attorney plan based on salary');
+    // plan
+    // fee
+    // discount
+  }
+  let payload = {
+    userid,
+    plan,
+    type,
+    status,
+    total: 0,
+  };
+  if (salary) payload.discount = discount;
+  return payload;
 };

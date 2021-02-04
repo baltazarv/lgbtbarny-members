@@ -1,4 +1,3 @@
-// TODO: rename SignupMemberInfo
 import { useEffect, useMemo, useContext } from 'react';
 import { Form, Button, Row, Col, Select } from 'antd';
 import MemberFields from './member-fields';
@@ -80,7 +79,7 @@ const MemberInfoForm = ({
       ref={formRef}
       labelCol={{ xs: { span: 24 }, sm: { span: 8 } }}
       wrapperCol={{ xs: { span: 24 }, sm: { span: 16 } }}
-      name={FORMS.createAccount}
+      name={FORMS.signupMemberInfo}
       form={form}
       initialValues={initialValues}
       scrollToFirstError
@@ -142,7 +141,7 @@ const MemberInfoForm = ({
             htmlType="submit"
             disabled={loading}
           >
-            Submit info
+            {memberSignUpType === memberTypes.USER_STUDENT ? 'Create Membership' : 'Submit Info'}
         </Button>
         </Form.Item>
       }

@@ -1,7 +1,6 @@
 // Users will only see this if they are logged in
 import { useState, useMemo, useContext, useReducer, useEffect, useRef } from 'react';
-import { Card, Steps, Form, Divider, Button } from 'antd';
-import moment from 'moment';
+import { Card, Steps, Form, Divider, Button, Row, Col } from 'antd';
 import { Container } from 'react-bootstrap';
 import MemberInfoForm from './member-info-form';
 import SignupPaymentForm from './signup-payment-form';
@@ -15,11 +14,10 @@ import { MembersContext } from '../../../contexts/members-context';
 import * as memberTypes from '../../../data/members/values/member-types';
 import { FORMS, SIGNUP_FIELDS } from '../../../data/members/database/member-form-names';
 import { dbFields } from '../../../data/members/database/airtable-fields';
-import { getMemberStatus, getNextPaymentDate } from '../../../data/members/airtable/utils';
-import { getCertifyType, CERTIFY_OPTIONS } from '../../../data/members/airtable/value-lists';
+import { getMemberStatus, getNextPaymentDate, getPaymentPayload } from '../../../data/members/airtable/utils';
+import { getCertifyType, CERTIFY_OPTIONS, PLANS } from '../../../data/members/airtable/value-lists';
 import { LAW_NOTES_PRICE } from '../../../data/members/values/law-notes-values';
 
-import createAccount from '../../../pages/api/create-account';
 // import DonationFields from './donation-fields';
 // import { getDonationValues } from '../../../data/members/values/donation-values';
 
@@ -39,10 +37,13 @@ const Signup = ({
   setModalType,
   // setSignupType,
 }) => {
-  const { member, authUser, userPayments, memberPlans } = useContext(MembersContext);
+  const { member, authUser, userPayments, memberPlans, updateMember, addPayment } = useContext(MembersContext);
   const memberInfoFormRef = useRef(null);
   const [certifyChoice, setCertifyChoice] = useState('');
   const [step, setStep] = useState(0);
+  // show confirmation text
+  const [isConfirmation, setIsConfirmation] = useState(false);
+  const [isServerError, setIsServerError] = useState(false);
   // review
   const [stepsStatus, setStepsStatus] = useState('process'); // wait process finish error
   const [loading, setLoading] = useState(false);
@@ -262,7 +263,124 @@ const Signup = ({
     />;
   }, [dues, memberSignUpType, hasDiscount]);
 
+  // handle change of values on forms
+  const onFormChange = (formName, info) => {
+    // console.log(formName, 'changedFields', info.changedFields);
+    if (info.changedFields.length > 0) {
+      info.changedFields.forEach((field) => {
+        const fieldName = field.name[0];
+        const fieldValue = field.value;
+        if (fieldName === dbFields.members.salary) {
+          updateDues(getMemberFee(memberInfoFormRef.current, hasDiscount));
+        } else if (
+          fieldName === SIGNUP_FIELDS.donation ||
+          fieldName === SIGNUP_FIELDS.customDonation
+        ) {
+          updateDues(setDonation(memberInfoFormRef.current));
+        } else if (fieldName === SIGNUP_FIELDS.lawNotes) {
+          updateDues(getLawNotesAmt(memberInfoFormRef.current));
+        } else if (fieldName === SIGNUP_FIELDS.firstName) {
+          updateDues({ [SIGNUP_FIELDS.firstName]: fieldValue });
+        }
+      });
+    };
+  }
+
+  const onFinishFailed = (values, errorFields, outOfDate) => {
+    console.log('onFinishFailed', values, errorFields, outOfDate);
+  };
+
+  // happens after validation
+  const onFormFinish = async (formName, info) => {
+    // console.log('onFormFinish formName:', formName, 'info:', info) // formName: string, info: { values, forms })
+    if (formName === FORMS.signupMemberInfo) {
+      try {
+        setLoading(true);
+        let fields = Object.assign({}, info.values);
+        const _member = { id: member.id, fields };
+        const updatedMember = await updateMember(_member); // >> setMember(updatedMember)
+        if (memberSignUpType === memberTypes.USER_STUDENT) {
+          const _payment = getPaymentPayload(member.id);
+          const payment = await addPayment(_payment);
+          if (payment.error) {
+            console.log(payment);
+            setIsServerError(true);
+          } else {
+            setStep(step + 1);
+            setIsConfirmation(true);
+            setIsServerError(false);
+          }
+          setLoading(false);
+        }
+        if (memberSignUpType === memberTypes.USER_ATTORNEY) {
+          setLoading(false);
+          setStep(step + 1);
+        }
+      } catch (error) {
+        console.log(error);
+        setLoading(false);
+      }
+      // setUser(userData)
+    }
+    if (formName === FORMS.pay) {
+      // setLoading(true);
+      // setLoading(false);
+      // TODO: create user on stripe and contentful
+      // handled on form
+    }
+    // TODO: add thank you screen
+  };
+
   /** content */
+
+  const activeAttorneyContent = useMemo(() => {
+    if (memberStatus === memberStatus.USER_ATTORNEY) return null;
+    return <>
+      <p>{member.fields[dbFields.members.firstName] ? member.fields[dbFields.members.firstName] : 'Hi'}, your membership is up-to-date. {nextPaymentDate && <>Your next payment is due on&nbsp;<strong>{nextPaymentDate}</strong>.</>}</p>
+    </>;
+  }, [memberStatus]);
+
+  const activeStudentContent = useMemo(() => {
+    if (member) return <>
+      <p>We hope that you're enjoying your student membership.</p>
+      <p>You will be able to update to an attorney membership when you graduate in <strong>{member.fields[dbFields.members.gradYear]}</strong>.</p>
+    </>;
+    return null;
+  }, [member]);
+
+
+  const loggedInIntroText = useMemo(() => {
+
+    const loggedInMessage = <p>You are logged in as <strong>{signedInEmail}</strong>.</p>;
+
+    {/* active but next payment not scheduled */ }
+    {/* To keep your membership current, schedule a payment for [DATE]. */ }
+    {/* <p>But first, update or confirm important member information.</p> */ }
+
+    if (
+      memberSignUpType !== memberTypes.USER_LAW_NOTES &&
+      signupType !== memberTypes.SIGNUP_ATTORNEY_RENEW &&
+      signupType !== memberTypes.SIGNUP_STUDENT_UPGRADE
+    ) return <>
+      {loggedInMessage}
+      {!isConfirmation && <p><strong>Sign up to get member benefits.</strong></p>}
+    </>;
+
+    if (signupType === memberTypes.SIGNUP_STUDENT_UPGRADE) {
+      return <p>
+        <strong>It looks like you've graduated. Congratulations!<br />
+          <span className="text-danger">You can now join the LGBT Bar Association as an attorney member.</span></strong>
+      </p>;
+    }
+
+    if (signupType === memberTypes.SIGNUP_ATTORNEY_RENEW && member) {
+      return <>
+        {loggedInMessage}
+        <p>{member.fields[dbFields.members.firstName] ? member.fields[dbFields.members.firstName] : 'Hi'}, your membership expired on&nbsp;<strong className="text-danger">{(nextPaymentDate)}</strong>.</p>
+        <p>Renew your membership to keep your account active.</p>
+      </>;
+    }
+  }, [member, isConfirmation]);
 
   const memberInfoStepContent = useMemo(() => {
     return {
@@ -293,26 +411,38 @@ const Signup = ({
         />
       </>,
     }
-  }, [member, memberSignUpType, certifyChoice, duesSummary, loading]); // , hasDiscount
+  }, [member, memberSignUpType, certifyChoice, duesSummary, loading]);
+
+  const studentDoneStepContent = useMemo(() => {
+    return <>
+      <strong>Enjoy your Student Membership!</strong>
+    </>
+  });
 
   const memberPaymentStepContent = useMemo(() => {
     return {
       title: "Member Dues",
-      content: <SignupPaymentForm
-        // salary to get stripe id
-        salary={''}
-        duesSummList={duesSummary}
-        initialValues={{
-          [SIGNUP_FIELDS.subscribe]: true,
-          [SIGNUP_FIELDS.billingname]: `${user.firstname} ${user.lastname}`,
-          [SIGNUP_FIELDS.renewDonation]: true,
-          [SIGNUP_FIELDS.renewChargeOptions]: SIGNUP_FIELDS.renewAutoCharge,
-        }}
-        donation={dues.donation}
-        total={total}
-        user={user}
-        loading={loading}
-      />,
+      content: <>
+        <Row>
+          <Col>Membership for:</Col>
+          <Col><strong>member cerfified</strong></Col>
+        </Row>
+        <SignupPaymentForm
+          // salary to get stripe id
+          salary={''}
+          duesSummList={duesSummary}
+          initialValues={{
+            [SIGNUP_FIELDS.subscribe]: true,
+            [SIGNUP_FIELDS.billingname]: `${user.firstname} ${user.lastname}`,
+            [SIGNUP_FIELDS.renewDonation]: true,
+            [SIGNUP_FIELDS.renewChargeOptions]: SIGNUP_FIELDS.renewAutoCharge,
+          }}
+          donation={dues.donation}
+          total={total}
+          user={user}
+          loading={loading}
+        />
+      </>,
     };
   }, [duesSummary, dues, total, user, loading])
 
@@ -323,96 +453,15 @@ const Signup = ({
     } else if (memberSignUpType === memberTypes.USER_STUDENT) {
       _steps.push({
         title: "Done",
-        constent: <>
-          All done!
-        </>
+        content: studentDoneStepContent,
       });
     }
     return _steps;
   }, [memberSignUpType, memberInfoStepContent, memberPaymentStepContent]);
 
-  // handle change of values on forms
-  const onFormChange = (formName, info) => {
-    // console.log(formName, 'changedFields', info.changedFields);
-    if (info.changedFields.length > 0) {
-      info.changedFields.forEach((field) => {
-        const fieldName = field.name[0];
-        const fieldValue = field.value;
-        if (fieldName === dbFields.members.salary) {
-          updateDues(getMemberFee(memberInfoFormRef.current, hasDiscount));
-        } else if (
-          fieldName === SIGNUP_FIELDS.donation ||
-          fieldName === SIGNUP_FIELDS.customDonation
-        ) {
-          updateDues(setDonation(memberInfoFormRef.current));
-        } else if (fieldName === SIGNUP_FIELDS.lawNotes) {
-          updateDues(getLawNotesAmt(memberInfoFormRef.current));
-        } else if (fieldName === SIGNUP_FIELDS.firstName) {
-          updateDues({ [SIGNUP_FIELDS.firstName]: fieldValue });
-        }
-      });
-    };
-  }
-
-  const onFinishFailed = (values, errorFields, outOfDate) => {
-    console.log('onFinishFailed', values, errorFields, outOfDate);
-  };
-
-  // happens after validation
-  const onFormFinish = async (formName, info) => {
-    // formName: string, info: { values, forms })
-    if (formName === FORMS.createAccount) {
-      // TODO: create user on stripe and contentful
-      setLoading(true);
-      const userData = await createAccount(info.values, (signupType === memberTypes.USER_NON_MEMBER || signupType === memberTypes.USER_LAW_NOTES) ? 'nonMember' : signupType);
-      setUser(userData)
-      setStep(step + 1);
-    }
-    if (formName === FORMS.validate && steps.length === 3) {
-      setLoading(false);
-      setStep(step + 1);
-    }
-    if (formName === FORMS.pay) {
-      setLoading(false);
-      // handled on form
-    }
-    // TODO: add thank you screen
-  };
-
-  const loggedInIntroText = useMemo(() => {
-
-    const loggedInMessage = <p>You are logged in as <strong>{signedInEmail}</strong>.</p>;
-
-    {/* active but next payment not scheduled */ }
-    {/* To keep your membership current, schedule a payment for [DATE]. */ }
-    {/* <p>But first, update or confirm important member information.</p> */ }
-
-    if (
-      memberSignUpType !== memberTypes.USER_LAW_NOTES &&
-      signupType !== memberTypes.SIGNUP_ATTORNEY_RENEW &&
-      signupType !== memberTypes.SIGNUP_STUDENT_UPGRADE
-    ) return <>
-      {loggedInMessage}
-      <p><strong>Sign up to get member benefits.</strong></p>
-    </>;
-
-    if (signupType === memberTypes.SIGNUP_STUDENT_UPGRADE) {
-      return <p>
-        <strong>It looks like you've graduated. Congratulations!<br />
-          <span className="text-danger">You can now join the LGBT Bar Association as an attorney member.</span></strong>
-      </p>;
-    }
-
-    if (signupType === memberTypes.SIGNUP_ATTORNEY_RENEW && member) {
-      return <>
-        {loggedInMessage}
-        <p>{member.fields[dbFields.members.firstName] ? member.fields[dbFields.members.firstName] : 'Hi'}, your membership expired on&nbsp;<strong className="text-danger">{(nextPaymentDate)}</strong>.</p>
-        <p>Renew your membership to keep your account active.</p>
-      </>;
-    }
-  }, [member]);
-
   const signUpContent = useMemo(() => {
+    if (signupType === memberTypes.SIGNUP_ATTORNEY_ACTIVE) return activeAttorneyContent;
+    if (signupType === memberTypes.SIGNUP_STUDENT_ACTIVE) return activeStudentContent;
     return <>
       {/* if payments in the past */}
       <Form.Provider
@@ -442,34 +491,14 @@ const Signup = ({
             <Button type="primary" size="small" ghost onClick={() => setModalType('law-notes-subscribe')}>Subscribe to Law Notes</Button>
           </div>
         </>}
+        {isServerError && <div className="text-danger">There was a server error. Please try again later.</div>}
       </Form.Provider>
     </>
-  }, [member, signedInEmail, signupType, steps]);
+  }, [member, signedInEmail, signupType, steps, step, isConfirmation]);
 
-  const activeAttorneyContent = useMemo(() => {
-    if (memberStatus === memberStatus.USER_ATTORNEY) return null;
-    return <>
-      <p>{member.fields[dbFields.members.firstName] ? member.fields[dbFields.members.firstName] : 'Hi'}, your membership is up-to-date. {nextPaymentDate && <>Your next payment is due on&nbsp;<strong>{nextPaymentDate}</strong>.</>}</p>
-    </>;
-  }, [memberStatus]);
-
-  const activeStudentContent = useMemo(() => {
-    if (member) return <>
-      <p>We hope that you're enjoying your student membership.</p>
-      <p>You will be able to update to an attorney membership when you graduate in <strong>{member.fields[dbFields.members.gradYear]}</strong>.</p>
-    </>;
-    return null;
-  }, [member]);
-
-  const content = () => {
-    let _content = signUpContent;
-    // active accounts
-    if (signupType === memberTypes.SIGNUP_ATTORNEY_ACTIVE) _content = activeAttorneyContent;
-    if (signupType === memberTypes.SIGNUP_STUDENT_ACTIVE) _content = activeStudentContent;
-    return <>
-      {_content}
-    </>
-  };
+  useEffect(() => {
+    console.log('STEP', step)
+  }, [step]);
 
   return <>
     <Container
@@ -480,7 +509,7 @@ const Signup = ({
         style={{ width: '100%' }}
         title={titleBar}
       >
-        {content()}
+        {signUpContent}
       </Card>
     </Container>
   </>;

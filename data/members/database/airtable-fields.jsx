@@ -16,6 +16,7 @@ export const dbFields = {
     practiceAreas: 'practice_areas',
     gradYear: 'grad_year',
     lawSchool: 'law_school',
+    payments: 'payments',
     ageRange: 'age_range',
     race: 'race_ethnicity',
     sexGender: 'sex_gender',

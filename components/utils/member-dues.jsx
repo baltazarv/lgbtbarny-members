@@ -1,5 +1,5 @@
 // TODO: move to /member/utils
-import { SALARIES } from '../../data/members/airtable/value-lists';
+import { PLANS } from '../../data/members/airtable/value-lists';
 import { SIGNUP_FIELDS } from '../../data/members/database/member-form-names';
 // data
 import { dbFields } from '../../data/members/database/airtable-fields';

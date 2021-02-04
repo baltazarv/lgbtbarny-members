@@ -1,8 +1,6 @@
 // TODO: move to /data/members/airtable
 export const FORMS = {
-  certify: 'certify',
-  createAccount: 'create-account',
-  // validate: 'validate',
+  signupMemberInfo: 'signup-member-info',
   payment: 'payment-form', // "payment-form" added as class
   editProfile: 'edit-profile',
   editEmails: 'edit-emails',
