@@ -11,7 +11,7 @@ import { useEffect, useState, useMemo, useReducer, useContext } from 'react';
 import { useRouter } from 'next/router'
 import { Breakpoint } from 'react-socks';
 import { Jumbotron, Container } from 'react-bootstrap';
-import { Layout, Button, Tooltip, Avatar } from 'antd';
+import { Layout, Button, Avatar } from 'antd';
 import auth0 from '../api/utils/auth0';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
@@ -253,7 +253,7 @@ const Members = ({
     if (!isEmpty(data)) {
       let _routes = {};
       for (const objKey in data) {
-        if (objKey !== 'options' && objKey !== 'logout'&& objKey !== 'login') {
+        if (objKey !== 'options' && objKey !== 'logout' && objKey !== 'login') {
           if (data[objKey].route) {
             const route = data[objKey].route;
             _routes[route] = objKey;
@@ -402,11 +402,10 @@ const Members = ({
                 onCollapse={onMenuCollapse}
                 theme="light"
               >
-                <Tooltip title="toggle opening menu">
-                  <div className="avatar-box" onClick={toggleOpenMenuKeys}>
-                    {avatar}
-                  </div>
-                </Tooltip>
+
+                <div className="avatar-box" onClick={toggleOpenMenuKeys}>
+                  {avatar}
+                </div>
                 <MemberMenu
                   data={data}
                   selectedKeys={selectedKey}
@@ -479,7 +478,16 @@ export async function getServerSideProps(context) {
         // console.log('SESSION', session);
 
         // AIRTABLE
-        // TODO: replace firstPage if not getting all records
+        // TODO: replace firstPage if not getting all records (page limited to 100 records)
+
+        /******************
+         * Airtable Notes
+         *******************
+         * * eachPage alt for select().firstPage (100 record limit to page):
+         *   select.eachPage((records, fetchNextPage) => {}, (err) => {})
+         * * Params for select.firstPage(((err, records)) => {})
+         * * Beside `select`, can also use: find(recId, (err, records) => {})
+         */
 
         // get membership plans
         const planRecords = await plansTable.select().firstPage();

@@ -6,7 +6,8 @@ const { Link } = Typography;
 const banners = (type, onLink) => {
   if (type === 'login') return <Banner
     title="Already in the System?"
-    text={<span>If you already have an account with the LGBT Bar Association of NY <Button size="small"ghost style={{ color: '#9e1068', borderColor: '#9e1068' }} onClick={() => onLink('login')}>log in</Button>.<br />All you need to do is to verify your email address.</span>}
+    text={<span>If you are already a member, or if your membership has expired,<br />
+    <Button size="small"ghost style={{ color: '#9e1068', borderColor: '#9e1068' }} onClick={() => onLink('login')}>log in</Button> with the email address you signed up with.</span>}
     colors={{ backgroundColor: '#f9f0ff', color: '#9e1068' }} // magenta
   />;
   if (type === 'graduated') return <Banner

@@ -3,7 +3,7 @@ import { useState, useMemo, useContext, useReducer, useEffect, useRef } from 're
 import { Card, Steps, Form, Divider, Button, Row, Col } from 'antd';
 import { Container } from 'react-bootstrap';
 import MemberInfoForm from './member-info-form';
-import SignupPaymentForm from './signup-payment-form';
+import PaymentForm from './payment-form';
 import DuesSummary from '../salary-donation-dues-fields/dues-summary';
 import '../login-signup.less';
 // utils
@@ -15,23 +15,13 @@ import * as memberTypes from '../../../data/members/values/member-types';
 import { FORMS, SIGNUP_FIELDS } from '../../../data/members/database/member-form-names';
 import { dbFields } from '../../../data/members/database/airtable-fields';
 import { getMemberStatus, getNextPaymentDate, getPaymentPayload } from '../../../data/members/airtable/utils';
-import { getCertifyType, CERTIFY_OPTIONS, PLANS } from '../../../data/members/airtable/value-lists';
+import { getCertifyType, CERTIFY_OPTIONS } from '../../../data/members/airtable/value-lists';
 import { LAW_NOTES_PRICE } from '../../../data/members/values/law-notes-values';
 
 // import DonationFields from './donation-fields';
 // import { getDonationValues } from '../../../data/members/values/donation-values';
 
 const { Step } = Steps;
-
-const signupModalTitles = {
-  [memberTypes.SIGNUP_LOGGED_IN]: 'Membership Sign Up',
-  [memberTypes.SIGNUP_ATTORNEY_ACTIVE]: 'Membership Active',
-  [memberTypes.SIGNUP_ATTORNEY_RENEW]: 'Membership Renewal',
-  [memberTypes.SIGNUP_STUDENT_ACTIVE]: 'Membership Active',
-  [memberTypes.SIGNUP_LAW_NOTES_PENDING]: 'Law Notes Subscription',
-  [memberTypes.SIGNUP_LAW_NOTES_RENEW]: 'Law Notes Subscription',
-  [memberTypes.SIGNUP_LAW_NOTES_ACTIVE]: 'Subscription Active',
-};
 
 const Signup = ({
   setModalType,
@@ -219,34 +209,6 @@ const Signup = ({
   // review - maybe need for prototype users
   const [user, setUser] = useState({});
 
-  const headerIcons = useMemo(() => {
-    // attorney
-    if (memberSignUpType === memberTypes.USER_ATTORNEY ||
-      memberSignUpType === memberTypes.USER_NON_MEMBER) return <div>
-        <TitleIcon name="demographic" ariaLabel="Participate" />&nbsp;&nbsp;<TitleIcon name="bookmark" ariaLabel="LGBT Law Notes" />&nbsp;&nbsp;<TitleIcon name="government" ariaLabel="CLE Center" />&nbsp;&nbsp;<TitleIcon name="star" ariaLabel="Discounts" />
-      </div>;
-
-    // student, no discounts
-    if (memberSignUpType === memberTypes.USER_STUDENT) return <div>
-      <TitleIcon name="demographic" ariaLabel="Participate" />&nbsp;&nbsp;<TitleIcon name="bookmark" ariaLabel="LGBT Law Notes" />&nbsp;&nbsp;<TitleIcon name="government" ariaLabel="CLE Center" />
-    </div>;
-
-    return null;
-  }, [memberSignUpType]);
-
-  const titleBar = useMemo(() => {
-    let title = signupModalTitles[signupType];
-    if (signupType === memberTypes.SIGNUP_LOGGED_IN) {
-      title = signupModalTitles[signupType];
-      if (certifyType === memberTypes.USER_ATTORNEY) title = `Attorney ${title}`;
-      if (certifyType === memberTypes.USER_STUDENT) title = `Law Student ${title}`;
-    }
-    return <>
-      <strong>{title}</strong>
-      {headerIcons}
-    </>
-  }, [signupType, signupModalTitles, certifyType]);
-
   const duesSummary = useMemo(() => {
     return <DuesSummary
       fee={dues.memberFee}
@@ -333,60 +295,97 @@ const Signup = ({
 
   /** content */
 
-  const activeAttorneyContent = useMemo(() => {
-    if (memberStatus === memberStatus.USER_ATTORNEY) return null;
-    return <>
-      <p>{member.fields[dbFields.members.firstName] ? member.fields[dbFields.members.firstName] : 'Hi'}, your membership is up-to-date. {nextPaymentDate && <>Your next payment is due on&nbsp;<strong>{nextPaymentDate}</strong>.</>}</p>
-    </>;
-  }, [memberStatus]);
+  // Not-logged-in content in LoginPwdless component
 
-  const activeStudentContent = useMemo(() => {
-    if (member) return <>
-      <p>We hope that you're enjoying your student membership.</p>
-      <p>You will be able to update to an attorney membership when you graduate in <strong>{member.fields[dbFields.members.gradYear]}</strong>.</p>
-    </>;
+  const headerIcons = useMemo(() => {
+    // attorney
+    if (memberSignUpType === memberTypes.USER_ATTORNEY ||
+      memberSignUpType === memberTypes.USER_NON_MEMBER) return <div>
+        <TitleIcon name="demographic" ariaLabel="Participate" />&nbsp;&nbsp;<TitleIcon name="bookmark" ariaLabel="LGBT Law Notes" />&nbsp;&nbsp;<TitleIcon name="government" ariaLabel="CLE Center" />&nbsp;&nbsp;<TitleIcon name="star" ariaLabel="Discounts" />
+      </div>;
+
+    // student, no discounts
+    if (memberSignUpType === memberTypes.USER_STUDENT) return <div>
+      <TitleIcon name="demographic" ariaLabel="Participate" />&nbsp;&nbsp;<TitleIcon name="bookmark" ariaLabel="LGBT Law Notes" />&nbsp;&nbsp;<TitleIcon name="government" ariaLabel="CLE Center" />
+    </div>;
+
     return null;
-  }, [member]);
+  }, [memberSignUpType]);
 
+  const titleBar = useMemo(() => {
+    let title = 'Become a Member';
+    if (signupType === memberTypes.SIGNUP_LOGGED_IN &&
+      certifyType === memberTypes.USER_STUDENT) title = 'Become a Law Student Member';
+    if (signupType === memberTypes.SIGNUP_STUDENT_ACTIVE ||
+      signupType === memberTypes.SIGNUP_ATTORNEY_ACTIVE) title = 'Membership Active';
+    if (signupType === memberTypes.SIGNUP_STUDENT_UPGRADE) title = 'Become an Attorney Member';
+    if (signupType === memberTypes.SIGNUP_ATTORNEY_RENEW) title = 'Renew your Membership';
+    // console.log(signupType, certifyType, title)
+    return <>
+      <strong>{title}</strong>
+      {headerIcons}
+    </>
+  }, [signupType, certifyType]);
 
-  const loggedInIntroText = useMemo(() => {
-
+  const signupIntroText = useMemo(() => {
     const loggedInMessage = <p>You are logged in as <strong>{signedInEmail}</strong>.</p>;
 
-    {/* active but next payment not scheduled */ }
-    {/* To keep your membership current, schedule a payment for [DATE]. */ }
-    {/* <p>But first, update or confirm important member information.</p> */ }
+    let text = null;
 
-    if (
-      memberSignUpType !== memberTypes.USER_LAW_NOTES &&
-      signupType !== memberTypes.SIGNUP_ATTORNEY_RENEW &&
-      signupType !== memberTypes.SIGNUP_STUDENT_UPGRADE
-    ) return <>
-      {loggedInMessage}
-      {!isConfirmation && <p><strong>Sign up to get member benefits.</strong></p>}
-    </>;
+    if (signupType === memberTypes.SIGNUP_LOGGED_IN) {
 
-    if (signupType === memberTypes.SIGNUP_STUDENT_UPGRADE) {
-      return <p>
-        <strong>It looks like you've graduated. Congratulations!<br />
-          <span className="text-danger">You can now join the LGBT Bar Association as an attorney member.</span></strong>
+      if (!certifyType) text = <p>
+        <strong>Sign up here to get member benefits.</strong>
+      </p>;
+
+      if (certifyType === memberTypes.USER_ATTORNEY) text = <p>
+        <strong>Welcome! First-time members receive 50% off dues.</strong>
+      </p>;
+
+      if (certifyType === memberTypes.USER_STUDENT) text = <p>
+        <strong>Welcome! Law students can join for free.</strong>
+      </p>;
+
+      if (certifyType === memberTypes.USER_NON_MEMBER) text = <p>
+        If you are a legal professional, sign up here to get member benefits.
       </p>;
     }
 
-    if (signupType === memberTypes.SIGNUP_ATTORNEY_RENEW && member) {
-      return <>
-        {loggedInMessage}
-        <p>{member.fields[dbFields.members.firstName] ? member.fields[dbFields.members.firstName] : 'Hi'}, your membership expired on&nbsp;<strong className="text-danger">{(nextPaymentDate)}</strong>.</p>
-        <p>Renew your membership to keep your account active.</p>
-      </>;
-    }
-  }, [member, isConfirmation]);
+    /**
+     * signupType === memberTypes.SIGNUP_STUDENT_ACTIVE
+     * in `activeAttorneyContent`
+     */
+
+    if (signupType === memberTypes.SIGNUP_STUDENT_UPGRADE) text = <p>
+      <strong>First-time members receive 50% off dues.</strong>
+    </p>;
+
+    /**
+     * signupType === memberTypes.SIGNUP_ATTORNEY_ACTIVE
+     * in `activeStudentContent`
+     */
+
+    if (signupType === memberTypes.SIGNUP_ATTORNEY_RENEW && member) text = <p>
+      {member.fields[dbFields.members.firstName] ? member.fields[dbFields.members.firstName] : 'Hi'}, your membership expired on&nbsp;<strong className="text-danger">{(nextPaymentDate)}</strong>.
+    </p>;
+
+    return <>
+      {loggedInMessage}
+      {text}
+    </>
+  }, [member, certifyType, signupType]); // , isConfirmation
 
   const memberInfoStepContent = useMemo(() => {
+
+    let certifyLabel = 'Please complete the information below to join:';
+    if (signupType === memberTypes.SIGNUP_NON_MEMBER && (
+      !certifyType || certifyType === memberTypes.SIGNUP_NON_MEMBER
+    )) certifyLabel = 'Please select your membership type:';
+
     return {
       title: "Member info",
       content: <>
-        <p>Please enter/confirm important member information:</p>
+        <div className="mb-2">{certifyLabel}</div>
         <MemberInfoForm
           formRef={memberInfoFormRef}
           signupType={signupType}
@@ -423,18 +422,27 @@ const Signup = ({
     return {
       title: "Member Dues",
       content: <>
-        <Row>
-          <Col>Membership for:</Col>
-          <Col><strong>member cerfified</strong></Col>
+        <Row className="d-flex justify-content-between mb-3">
+          <Col>Membership as <strong>{certifyChoice && certifyChoice.toLocaleLowerCase()}</strong>.</Col>
+          <Col>
+            <Button
+              size="small"
+              type="primary"
+              ghost
+              onClick={() => setStep(0)}
+            >
+              Edit Info
+            </Button>
+          </Col>
         </Row>
-        <SignupPaymentForm
+        <PaymentForm
           // salary to get stripe id
           salary={''}
           duesSummList={duesSummary}
           initialValues={{
+            [SIGNUP_FIELDS.billingname]: `${member && member.fields[dbFields.members.firstName]} ${member && member.fields[dbFields.members.lastName]}`,
+            // [SIGNUP_FIELDS.renewDonation]: true,
             [SIGNUP_FIELDS.subscribe]: true,
-            [SIGNUP_FIELDS.billingname]: `${user.firstname} ${user.lastname}`,
-            [SIGNUP_FIELDS.renewDonation]: true,
             [SIGNUP_FIELDS.renewChargeOptions]: SIGNUP_FIELDS.renewAutoCharge,
           }}
           donation={dues.donation}
@@ -459,16 +467,37 @@ const Signup = ({
     return _steps;
   }, [memberSignUpType, memberInfoStepContent, memberPaymentStepContent]);
 
+  const activeAttorneyContent = useMemo(() => {
+    if (memberStatus === memberStatus.USER_ATTORNEY) return null;
+    return <>
+      <p>{member.fields[dbFields.members.firstName] ? member.fields[dbFields.members.firstName] : 'Hi'}, your membership is up-to-date.<br />
+      {nextPaymentDate && <>Your next payment is due on&nbsp;<strong>{nextPaymentDate}</strong>.</>}</p>
+    </>;
+  }, [memberStatus]);
+
+  const activeStudentContent = useMemo(() => {
+    if (member) return <>
+      <p>Your membership is up-to-date and will remain active until you graduate in <strong>{member.fields[dbFields.members.gradYear]}</strong>.</p>
+    </>;
+    return null;
+  }, [member]);
+
+  /**
+   * active but next payment not scheduled
+   * * To keep your membership current, schedule a payment for [DATE].
+   * * <p>But first, update or confirm important member information.</p>
+   */
+
   const signUpContent = useMemo(() => {
+    if (signupType === memberTypes.SIGNUP_STUDENT_ACTIVE && !isConfirmation) return activeStudentContent;
     if (signupType === memberTypes.SIGNUP_ATTORNEY_ACTIVE) return activeAttorneyContent;
-    if (signupType === memberTypes.SIGNUP_STUDENT_ACTIVE) return activeStudentContent;
     return <>
       {/* if payments in the past */}
       <Form.Provider
         onFormFinish={onFormFinish}
         onFormChange={onFormChange}
       >
-        {loggedInIntroText}
+        {signupIntroText}
 
         {steps.length > 1 &&
           <div className="mb-4">
@@ -486,7 +515,7 @@ const Signup = ({
 
         {showLawNotesOffer && <>
           <Divider>Law Notes&nbsp;&nbsp;<TitleIcon name="bookmark" ariaLabel="LGBT Law Notes" /></Divider>
-          <p>If you are neither an attorney nor a law student, you can still get access to <strong>Law Notes</strong>, our monthly publication on current LGBTQ&nbsp;legal events and important cases:</p>
+          <p>If you are not a legal professional, you can still sign up for access to our monthly publication, <strong>LGBT Law Notes</strong>:</p>
           <div>
             <Button type="primary" size="small" ghost onClick={() => setModalType('law-notes-subscribe')}>Subscribe to Law Notes</Button>
           </div>

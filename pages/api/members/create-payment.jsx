@@ -31,6 +31,7 @@ export default auth0.requireAuthentication(async (req, res) => {
     res.statusCode = 200;
     res.json(minifiedRecords); // array of one record
   } catch (err) {
+    console.log(err);
     res.statusCode = 500;
     res.json(err);
   }

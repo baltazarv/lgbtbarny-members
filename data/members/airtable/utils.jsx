@@ -144,11 +144,12 @@ export const memberHasDiscount = (userPayments, memberPlans) => {
  */
 export const getPaymentPayload = (userid, salary) => {
   let plan = '';
-  let type = 'Website Payment';
-  let status = 'Paid';
+  let type = 'Free';
+  let status = 'Processed';
   let discount = null;
   let fee = null;
   if (!salary) {
+    // TODO: add plan (maybe status) to PLANS
     plan = PLANS.student.id;
     fee = PLANS.student.fee;
   } else {

@@ -22,8 +22,8 @@ const LoginPwdLess = () => {
       >
         <Row className="mx-5 justify-content-center">
           <Col>
-            <p>Validate ownership of your email address to log in.</p>
-            <div>If you are already a member with us, you will be able to access your account by entering any email address previously used to sign up.</div>
+            <p>Validate your email address to log in.</p>
+            <p>If you are already a member, or if your membership has expired, please enter the email address you signed up with.</p>
             <TitleIcon name="demographic" ariaLabel="Participate" />&nbsp;&nbsp;<TitleIcon name="bookmark" ariaLabel="LGBT Law Notes" />&nbsp;&nbsp;<TitleIcon name="government" ariaLabel="CLE Center" />&nbsp;&nbsp;<TitleIcon name="star" ariaLabel="Discounts" />
           </Col>
         </Row>

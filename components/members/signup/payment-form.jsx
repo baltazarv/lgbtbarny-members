@@ -1,18 +1,16 @@
-/** Signup needs to send:
- *  * donation - state amt to possibly renew
- *  * user - username...
- */
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useContext, useEffect } from 'react';
 import { useStripe, useElements } from '@stripe/react-stripe-js';
 import { Card, Divider, Form, Checkbox, Radio, Button, Row, Col } from 'antd';
 import PaymentFields from '../payment-fields';
-import './signup-payment-form.less';
+import './payment-form.less';
 // utils
 import { getStripePriceId, createStripePaymentMethod } from '../../utils/payments';
 // data
+import { MembersContext } from '../../../contexts/members-context';
 import { FORMS, SIGNUP_FIELDS } from '../../../data/members/database/member-form-names';
+import { dbFields } from '../../../data/members/database/airtable-fields';
 
-const SignupPaymentForm = ({
+const PaymentForm = ({
   // salary needed to get stripe id
   salary,
   duesSummList,
@@ -23,6 +21,7 @@ const SignupPaymentForm = ({
   loading,
 }) => {
   const [form] = Form.useForm();
+  const { member, authUser } = useContext(MembersContext);
   const [subscribe, setSubscribe] = useState(true); // set on form initialValues
 
   const stripe = useStripe();
@@ -46,10 +45,14 @@ const SignupPaymentForm = ({
     }
   }
 
+  const email = useMemo(() => {
+    return authUser.name;
+  }, [authUser]);
+
   const onFinish = async () => {
     const billingDetails = {
-      email: user.email,
-      name: `${user.firstname} ${user.lastname}`,
+      email,
+      name: `${member.fields[dbFields.members.firstName]} ${member.fields[dbFields.members.lastName]}`,
     }
     const methodCreated = await createStripePaymentMethod(stripe, elements, user.stripeCustomerId, stripePriceId, billingDetails);
     if (methodCreated.created) {
@@ -68,7 +71,7 @@ const SignupPaymentForm = ({
     onFinish={onFinish}
   >
 
-    <div className="mt-0 mb-2">Review charges:</div>
+    <div className="mt-0 mb-1">Review charges:</div>
 
     <Row justify="center">
       <Col>
@@ -76,13 +79,11 @@ const SignupPaymentForm = ({
       </Col>
     </Row>
 
-    <Divider className="mt-4 mb-2">Credit Card Payment</Divider>
+    <Divider className="mt-4 mb-2 "><strong>Credit Card Payment</strong></Divider>
 
     <div className="mt-0 mb-2">Charge <strong>${total.toFixed(2)}</strong> to the credit card below.</div>
 
     <Card>
-
-      <div className="mt-0 mb-2"></div>
 
       <PaymentFields
         loading={loading}
@@ -151,4 +152,4 @@ const SignupPaymentForm = ({
   </Form>
 }
 
-export default SignupPaymentForm;
+export default PaymentForm;

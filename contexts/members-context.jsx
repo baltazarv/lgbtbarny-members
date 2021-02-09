@@ -54,7 +54,7 @@ const MembersProvider = ({ children }) => {
     "userid": "recp6M29Wzkshf5sK",
     "plan": "rec0HT7XyXLJQ84r7",
     "type": "Website Payment",
-    "status": "Paid",
+    "status": "Processed",
     "total": 0
    }
    */

@@ -4,7 +4,7 @@ export default async function callback(req, res) {
   try {
     // set any cookies...
     await auth0.handleCallback(req, res, {
-      // redirectTo: "/members/cle-latest"
+      redirectTo: "/"
       // onUserLoaded: async (req, res, session, state) => {
       //   return {
       //     ...session,

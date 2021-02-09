@@ -79,7 +79,7 @@ const CleArchive = ({
           <p>{previewUser === memberTypes.USER_ATTORNEY &&
               <Button type="primary" size="small" onClick={() => onLink('signup')}>Become a member</Button>
             }{previewUser === memberTypes.USER_STUDENT &&
-              <Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_STUDENT)}>Become a law student member</Button>
+              <Button type="primary" size="small" onClick={() => onLink('signup')}>Become a member</Button>
             } to get access to all CLE materials, current materials, as well as the archives.&nbsp;
           {previewUser === memberTypes.USER_ATTORNEY &&
             <span>When you sign up, you will be able to download CLE certificates for courses which you have attended.</span>

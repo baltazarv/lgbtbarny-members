@@ -30,7 +30,7 @@ const PaymentFields = ({
     <Form.Item
       name={SIGNUP_FIELDS.billingname}
       className="mb-2 billing-name-input"
-      // label="Billing Name"
+      label="Billing Name"
       rules={[
         {
           required: true,
@@ -38,6 +38,9 @@ const PaymentFields = ({
           whitespace: true,
         },
       ]}
+      labelCol={{
+        span: 24,
+      }}
     >
       <Input
         prefix={<UserOutlined />}

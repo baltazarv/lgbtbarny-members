@@ -65,14 +65,14 @@ const LoginForm = () => {
 
       <Form.Item
         className="text"
-        wrapperCol= {{
+        wrapperCol={{
           xs: { span: 24 },
           sm: { span: 24 },
         }}
       >
         <Button type="primary" htmlType="submit" className="login-form-button">
           Log In
-        </Button>
+          </Button>
       </Form.Item>
 
     </Form>

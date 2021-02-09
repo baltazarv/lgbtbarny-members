@@ -183,13 +183,13 @@ const MemberGroups = ({
     if (memberType === memberTypes.USER_ANON) return <>
       {previewUser === memberTypes.USER_ATTORNEY &&
         <>
-          <p>Become an <Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_ATTORNEY)}>attorney member</Button>.</p>
+          <p><Button type="primary" size="small" onClick={() => onLink('signup')}>Become a member</Button></p>
           <p>See how you can get involved as a member:</p>
         </>
       }
       {previewUser === memberTypes.USER_STUDENT &&
         <>
-          <p>Become a <Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_STUDENT)}>student member</Button>.</p>
+          <p><Button type="primary" size="small" onClick={() => onLink('signup')}>Become a  member</Button></p>
           <p>See what opportunities will be available to you as a member:</p>
         </>
       }
