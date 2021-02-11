@@ -24,19 +24,19 @@ const PaymentForm = ({
 }) => {
   const [form] = Form.useForm();
   const { member, authUser, memberPlans } = useContext(MembersContext);
-  const [subscribe, setSubscribe] = useState(true); // set on form initialValues
-
+  // charge card vs. email invoice
+  const [subscribe, setSubscribe] = useState(true);
   const stripe = useStripe();
   const elements = useElements();
   const [stripeError, setStripeError] = useState('');
 
   const stripePriceId = useMemo(() => {
     if (member && member.fields[dbFields.members.salary]) {
-      // console.log('salary', member.fields[dbFields.members.salary], 'stripe id', getStripePriceId(member.fields[dbFields.members.salary], memberPlans));
+      console.log('salary', member.fields[dbFields.members.salary], 'stripe id', getStripePriceId(member.fields[dbFields.members.salary], memberPlans));
       return getStripePriceId(member.fields[dbFields.members.salary]);
     }
     return null;
-  }, [member, member]);
+  }, [member]);
 
   const onValuesChange = (changedFields, allFields) => {
     if (changedFields.hasOwnProperty(SIGNUP_FIELDS.subscribe)) setSubscribe(changedFields[SIGNUP_FIELDS.subscribe]);

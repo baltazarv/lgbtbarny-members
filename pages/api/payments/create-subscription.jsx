@@ -3,7 +3,7 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 export default async (req, res) => {
   // Attach the payment method to the customer
-  console.log('/api/stripe-create-subscription', req.body)
+  console.log('/api/payments/create-subscription', req.body)
   try {
     await stripe.paymentMethods.attach(req.body.paymentMethodId, {
       customer: req.body.customerId,

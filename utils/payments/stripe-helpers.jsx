@@ -10,8 +10,8 @@ export function formatAmountForDisplay(
     style: 'currency',
     currency: currency,
     currencyDisplay: 'symbol',
-  })
-  return numberFormat.format(amount)
+  });
+  return numberFormat.format(amount);
 };
 
 export function formatAmountForStripe(
@@ -22,19 +22,19 @@ export function formatAmountForStripe(
     style: 'currency',
     currency: currency,
     currencyDisplay: 'symbol',
-  })
-  const parts = numberFormat.formatToParts(amount)
-  let zeroDecimalCurrency = true
+  });
+  const parts = numberFormat.formatToParts(amount);
+  let zeroDecimalCurrency = true;
   for (let part of parts) {
     if (part.type === 'decimal') {
-      zeroDecimalCurrency = false
+      zeroDecimalCurrency = false;
     }
   }
-  return zeroDecimalCurrency ? amount : Math.round(amount * 100)
+  return zeroDecimalCurrency ? amount : Math.round(amount * 100);
 };
 
 export const createCustomer = (billingEmail) => {
-  return fetch('/api/stripe-create-customer', {
+  return fetch('/api/payments/create-customer', {
     method: 'post',
     headers: {
       'Content-Type': 'application/json'
@@ -60,7 +60,7 @@ export const retryInvoiceWithNewPaymentMethod = ({
   priceId,
 }) => {
   return (
-    fetch('/api/stripe-retry-invoice', {
+    fetch('/api/payments/retry-invoice', {
       method: 'post',
       headers: {
         'Content-type': 'application/json',
@@ -114,7 +114,7 @@ export const retryInvoiceWithNewPaymentMethod = ({
 export const createSubscription = ({ customerId, paymentMethodId, priceId }) => {
   // console.log('[customerId]', customerId, '[paymentMethodId]', paymentMethodId, '[priceId]', priceId);
   return (
-    fetch('/api/stripe-create-subscription', {
+    fetch('/api/payments/create-subscription', {
       method: 'post',
       headers: {
         'Content-type': 'application/json',
@@ -169,7 +169,7 @@ export const createSubscription = ({ customerId, paymentMethodId, priceId }) => 
         displayError(error);
       })
   );
-}
+};
 
 const handleCustomerActionRequired = ({
   subscription,
@@ -222,7 +222,7 @@ const handleCustomerActionRequired = ({
     // No customer action needed
     return { subscription, priceId, paymentMethodId };
   }
-}
+};
 
 function handlePaymentMethodRequired({
   subscription,
@@ -308,4 +308,4 @@ const onSubscriptionSampleDemoComplete = ({
 
 const clearCache = () => {
   localStorage.clear();
-}
+};

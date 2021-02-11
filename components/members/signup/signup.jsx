@@ -7,7 +7,7 @@ import PaymentForm from './payment-form';
 import DuesSummary from '../salary-donation-dues-fields/dues-summary';
 import '../login-signup.less';
 // utils
-import { duesInit, duesReducer, getMemberFees, setDonation } from '../../utils/member-dues';
+import { duesInit, duesReducer, getMemberFees, setDonation } from '../../../utils/payments/member-dues';
 import { TitleIcon } from '../../utils/icons';
 // data
 import { MembersContext } from '../../../contexts/members-context';
@@ -169,7 +169,7 @@ const Signup = ({
       if (signupType === memberTypes.USER_ATTORNEY) {
         updateDues(getLawNotesAmt(memberInfoFormRef.current));
       } else {
-        updateDues({ memberFee: 0, discount: 0 });
+        updateDues({ fee: 0, discount: 0 });
       }
       const salary = memberInfoFormRef.current.getFieldValue(dbFields.members.salary);
       updateDues(getMemberFees({
@@ -194,7 +194,7 @@ const Signup = ({
   };
 
   const total = useMemo(() => {
-    return (dues.memberFee ? dues.memberFee : 0) - (dues.discount ? dues.discount : 0) + (dues.lawNotesAmt ? dues.lawNotesAmt : 0) + (dues.donation ? dues.donation : 0);
+    return (dues.fee ? dues.fee : 0) - (dues.discount ? dues.discount : 0) + (dues.lawNotesAmt ? dues.lawNotesAmt : 0) + (dues.donation ? dues.donation : 0);
   }, [dues]);
 
   // when user is not eligible
@@ -220,7 +220,7 @@ const Signup = ({
 
   const duesSummary = useMemo(() => {
     return <DuesSummary
-      fee={dues.memberFee}
+      fee={dues.fee}
       discount={dues.discount}
       lawNotesAmt={dues.lawNotesAmt}
       donation={dues.donation}

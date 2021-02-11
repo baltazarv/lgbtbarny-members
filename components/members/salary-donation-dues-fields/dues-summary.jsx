@@ -15,10 +15,12 @@ const DuesSummary = ({
   formItemLayout = {},
 }) => {
 
-  const duesList = useMemo(() => {
+  const duesSummary = useMemo(() => {
     let _duesList = null;
     let duesListData = [];
     let total = fee + lawNotesAmt + donation;
+
+    // console.log('duesSummary fee', fee, 'discount', discount, 'total', total);
 
     // annual membership + discount
 
@@ -30,21 +32,21 @@ const DuesSummary = ({
       if (fee) {
         feeText = `$${fee.toFixed(2)}`;
       }
-      duesListData.push(`Annual Membership Fee ... ${feeText}`);
+      duesListData.push(<>Annual membership fee:&nbsp;&nbsp;&nbsp;{feeText}</>);
 
       if (fee && showDiscount) {
-        duesListData.push(`First-time Member Discount ... -$${discount.toFixed(2)}`);
+        duesListData.push(<>First-time member discount:&nbsp;&nbsp;-${discount.toFixed(2)}</>);
       }
     }
 
     // + law notes subscription // LN subscriber always has
     if (lawNotesAmt) {
-      duesListData.push(`Law Notes Subscription ... $${lawNotesAmt.toFixed(2)}`);
+      duesListData.push(<>Law Notes Subscription:&nbsp;&nbsp;&nbsp;${lawNotesAmt.toFixed(2)}</>);
     }
 
     // + donation
     if (showDonation) {
-      duesListData.push(`Donation ... +$${donation.toFixed(2)}`);
+      duesListData.push(<>Donation:&nbsp;&nbsp;+${donation.toFixed(2)}</>);
     }
 
     if (
@@ -56,7 +58,7 @@ const DuesSummary = ({
           <List
             size="small"
             className="calcList"
-            footer={<div>Total ... ${total.toFixed(2)}</div>}
+            footer={<div>Total:&nbsp;&nbsp;&nbsp;${total.toFixed(2)}</div>}
             bordered
             dataSource={duesListData}
             renderItem={item => <List.Item className="calcItem">{item}</List.Item>}
@@ -69,7 +71,7 @@ const DuesSummary = ({
   }, [fee, discount, donation, lawNotesAmt, showSalary, showTotal]);
 
   return <>
-    {duesList}
+    {duesSummary}
   </>;
 };
 

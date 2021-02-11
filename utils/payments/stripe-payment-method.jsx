@@ -1,5 +1,5 @@
 import { CardElement } from '@stripe/react-stripe-js';
-import { retryInvoiceWithNewPaymentMethod } from '../utils/stripe-helpers';
+import { retryInvoiceWithNewPaymentMethod } from './stripe-helpers';
 
 // is this necessary. if so, move to .env?
 export const STRIPE_MEMBERSHIP_ID = 'prod_HP8GWNCnMR7Qoy';
