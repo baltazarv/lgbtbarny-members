@@ -1,12 +1,8 @@
-import { STRIPE_MEMBERSHIP_ID, PLANS } from '../../data/members/airtable/value-lists';
 import { CardElement } from '@stripe/react-stripe-js';
 import { retryInvoiceWithNewPaymentMethod } from '../utils/stripe-helpers';
 
-export const getStripePriceId = (salary) => {
-  let id = '';
-  if(PLANS[salary]) id = PLANS[salary].stripePriceId;
-  return id;
-};
+// is this necessary. if so, move to .env?
+export const STRIPE_MEMBERSHIP_ID = 'prod_HP8GWNCnMR7Qoy';
 
 export const createStripePaymentMethod = async (stripe, elements, customerId, priceId, billingDetails) => {
   if (!stripe || !elements) {

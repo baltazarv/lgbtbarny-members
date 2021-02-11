@@ -9,7 +9,7 @@ import auth0 from '../utils/auth0';
  *
  * date will be today's date
  *  */
-export default auth0.requireAuthentication(async (req, res) => {
+export default auth0.requireAuthentication(async function createPayment(req, res) {
   const { userid, plan, type, status, discount, total } = req.body;
   // const type = 'Online Transaction';
   // const status = 'Completed';

@@ -1,10 +1,10 @@
-import { useMemo, useState, useContext, useEffect } from 'react';
+import { useMemo, useState, useContext } from 'react';
 import { useStripe, useElements } from '@stripe/react-stripe-js';
-import { Card, Divider, Form, Checkbox, Radio, Button, Row, Col } from 'antd';
+import { Card, Divider, Form, Radio, Button, Row, Col } from 'antd';
 import PaymentFields from '../payment-fields';
 import './payment-form.less';
 // utils
-import { getStripePriceId, createStripePaymentMethod } from '../../utils/payments';
+import { getStripePriceId } from '../../../data/members/airtable/utils';
 // data
 import { MembersContext } from '../../../contexts/members-context';
 import { FORMS, SIGNUP_FIELDS } from '../../../data/members/database/member-form-names';
@@ -12,16 +12,18 @@ import { dbFields } from '../../../data/members/database/airtable-fields';
 
 const PaymentForm = ({
   // salary needed to get stripe id
-  salary,
   duesSummList,
   initialValues,
-  donation,
+  loading,
+
+  // TODO: remove
+  salary,
+  // donation,
   total,
   user,
-  loading,
 }) => {
   const [form] = Form.useForm();
-  const { member, authUser } = useContext(MembersContext);
+  const { member, authUser, memberPlans } = useContext(MembersContext);
   const [subscribe, setSubscribe] = useState(true); // set on form initialValues
 
   const stripe = useStripe();
@@ -29,8 +31,12 @@ const PaymentForm = ({
   const [stripeError, setStripeError] = useState('');
 
   const stripePriceId = useMemo(() => {
-    return getStripePriceId(salary);
-  }, [salary]);
+    if (member && member.fields[dbFields.members.salary]) {
+      // console.log('salary', member.fields[dbFields.members.salary], 'stripe id', getStripePriceId(member.fields[dbFields.members.salary], memberPlans));
+      return getStripePriceId(member.fields[dbFields.members.salary]);
+    }
+    return null;
+  }, [member, member]);
 
   const onValuesChange = (changedFields, allFields) => {
     if (changedFields.hasOwnProperty(SIGNUP_FIELDS.subscribe)) setSubscribe(changedFields[SIGNUP_FIELDS.subscribe]);
@@ -98,24 +104,21 @@ const PaymentForm = ({
         <div className="mb-0 mx-2 text-left">
           When your membership comes up for renewal next&nbsp;year*:
 
-          {donation !== 0 && donation &&
+          {/* {donation !== 0 && donation &&
             <Form.Item
               name={SIGNUP_FIELDS.renewDonation}
               className="mt-1 mb-0"
               valuePropName="checked"
-              // wrapperCol={{ xs: { span: 24 }, sm: { span: 18, offset: 3 } }}
             >
-              <Checkbox
-                // defaultChecked={false} // set on form initialValues
-              >
+              <Checkbox>
                 <span>Make the same donation of <strong>${donation}</strong>.</span>
               </Checkbox>
             </Form.Item>
-          }
+          } */}
         </div>
 
         <Form.Item
-            name={SIGNUP_FIELDS.renewChargeOptions}
+          name={SIGNUP_FIELDS.renewChargeOptions}
         >
           <Radio.Group
             className="mt-2"

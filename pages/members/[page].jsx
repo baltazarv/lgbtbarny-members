@@ -27,10 +27,13 @@ import './members.less';
 // data
 import { getMemberType, getMemberStatus } from '../../data/members/airtable/utils';
 import { getDashboard, getMemberPageParentKey } from '../../data/members/dashboard/member-dashboards';
+import { dbFields } from '../../data/members/database/airtable-fields';
 import * as memberTypes from '../../data/members/values/member-types';
 import sampleMembers from '../../data/members/sample/members-sample';
 import { membersTable, emailsTable, paymentsTable, plansTable, minifyRecords } from '../api/utils/Airtable';
 import { MembersContext } from '../../contexts/members-context';
+// payments
+import { stripe } from '../api/utils/stripe';
 // utils
 import { isEmpty } from 'lodash/lang';
 
@@ -66,6 +69,17 @@ const Members = ({
   // TODO: remove setSignupType from all children
   const [signupType, setSignupType] = useState('');
 
+  useEffect(() => {
+    // Using an IIFE
+    (async function fetchUser() {
+      const res = await fetch('/api/auth/me');
+      if (res.ok) {
+        const session = await res.json();
+        // setSession(session);
+        console.log('SESSION on front-end', session);
+      }
+    })();
+  }, []);
 
   const memberType = useMemo(() => {
     return getMemberType({ member, userPayments, memberPlans });
@@ -459,10 +473,8 @@ const Members = ({
 export default Members;
 
 export async function getServerSideProps(context) {
-  const emailField = 'emails';
-
   const session = await auth0.getSession(context.req);
-  console.log('SESSION', session);
+  console.log('SESSION in back-end', session);
   let email = '',
     loggedInUser = null,
     loggedInMember = null,
@@ -495,9 +507,27 @@ export async function getServerSideProps(context) {
 
         // get members table data
         const memberRecords = await membersTable.select({
-          filterByFormula: `SEARCH("${email}", ARRAYJOIN(${emailField}))`,
+          filterByFormula: `SEARCH("${email}", ARRAYJOIN(${dbFields.members.emails}))`,
         }).firstPage();
         loggedInMember = minifyRecords(memberRecords)[0];
+
+        // if no stripe id, create stripe customer, & populate field
+        if (!loggedInMember.fields[dbFields.members.stripeId]) {
+          try {
+            const stripeCustomer = await stripe.customers.create({ email });
+            console.log('stripeCustomer', stripeCustomer);
+            const fieldsToUpdate = { [dbFields.members.stripeId]: stripeCustomer.id };
+            const updatedRecords = await membersTable.update([ {
+              id: loggedInMember.id,
+              fields: fieldsToUpdate,
+            } ]);
+            loggedInMember = minifyRecords(updatedRecords)[0];
+            ;
+            console.log('loggedInMember', loggedInMember);
+          } catch (err) {
+            console.log(err);
+          }
+        }
 
         // find & mark logged-in email as verified
         let emailRecords = [];

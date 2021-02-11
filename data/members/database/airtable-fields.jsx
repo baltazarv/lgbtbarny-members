@@ -1,6 +1,7 @@
 export const dbFields = {
   members: {
     emails: 'emails',
+    stripeId: 'stripe_id',
 
     // // calculating on this app instead
     // type: '_payment_last_type',
@@ -77,6 +78,10 @@ export const dbFields = {
   },
   plans: {
     type: 'type',
-    termYears: 'term_years'
+    status: 'status',
+    fee: 'fee',
+    salary: 'salary',
+    termYears: 'term_years',
+    stripeId: 'stripe_id',
   }
 };

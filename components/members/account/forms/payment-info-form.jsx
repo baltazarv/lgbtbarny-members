@@ -7,10 +7,13 @@ import BillingHistory from '../modals/billing-list';
 import CardInfoForm from '../modals/card-info-form';
 import CancelPayment from '../modals/cancel-payment';
 // data
-import { dbFields } from '../../../../data/members/database/airtable-fields';
 import { MembersContext } from '../../../../contexts/members-context';
-import { getFee } from '../../../../data/members/airtable/value-lists';
-import { getMemberStatus, getLastPayment, getNextPaymentDate } from '../../../../data/members/airtable/utils';
+import {
+  getMemberStatus,
+  getLastPayment,
+  getNextPaymentDate,
+  getMemberPlanFee,
+} from '../../../../data/members/airtable/utils';
 import paymentSample from '../../../../data/members/sample/payments-sample';
 
 const { Link } = Typography;
@@ -57,19 +60,26 @@ const PaymentInfoForm = ({
     return null;
   }, [userPayments, memberPlans]);
 
+  const fee = useMemo(() => {
+    if (member && memberPlans) {
+      return getMemberPlanFee(member, memberPlans);
+    }
+    return null;
+  }, [member, memberPlans]);
+
   return <>
     {/* annual fee */}
-    <Row justify="space-between">
+    {fee && <Row justify="space-between">
       <Col>
         <div>
           <label>
             <Tooltip title="Membership dues are based on the amount of member salaries">
               <span className="tooltip-underline">{accountIsActive ? 'Current annual' : 'Annual'} fee:</span>
             </Tooltip>
-          </label> ${getFee(member.fields[dbFields.members.salary])} per year
+          </label> ${fee} per year
         </div>
       </Col>
-    </Row>
+    </Row>}
 
     {/* last payment + history */}
     <Row justify="space-between mt-2">

@@ -4,18 +4,22 @@ import { Form, Row, Col, Select } from 'antd';
 // data
 import { MembersContext } from '../../../contexts/members-context';
 import { dbFields } from '../../../data/members/database/airtable-fields';
-import { salaryOptions } from '../../../data/members/airtable/value-lists';
-import * as memberTypes from '../../../data/members/values/member-types';
+import { getSalaryOptions } from '../../../data/members/airtable/utils';
 
 const SalaryField = ({
   hasDiscount=false,
 }) => {
-  const { userPayments, memberPlans } = useContext(MembersContext);
+  const { memberPlans } = useContext(MembersContext);
   const [loading, setLoading] = useState(false);
 
   const onFieldChange = (field, value) => {
     // console.log('onFieldChange field', field, 'val', value);
   };
+
+  const salaryOptions = useMemo(() => {
+    if (memberPlans) return getSalaryOptions(memberPlans);
+    return null;
+  }, [memberPlans]);
 
   const salaryField = useMemo(() => {
     let salary = null;
@@ -39,7 +43,7 @@ const SalaryField = ({
             onChange={onFieldChange}
             // onChange={(val) => onChange(dbFields.members.salary, val)}
           >
-            {salaryOptions()}
+            {salaryOptions}
           </Select>
         </Form.Item>
 

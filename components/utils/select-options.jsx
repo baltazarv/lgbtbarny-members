@@ -4,6 +4,7 @@ import { Select } from 'antd';
 const { Option } = Select;
 
 export const selectOptionsFromArray = (array) => {
+  console.log('selectOptionsFromArray', array);
   let options = array.map(val => <Option
     key={val}
     value={val}

@@ -7,14 +7,19 @@ import PaymentForm from './payment-form';
 import DuesSummary from '../salary-donation-dues-fields/dues-summary';
 import '../login-signup.less';
 // utils
-import { duesInit, duesReducer, getMemberFee, setDonation } from '../../utils/member-dues';
+import { duesInit, duesReducer, getMemberFees, setDonation } from '../../utils/member-dues';
 import { TitleIcon } from '../../utils/icons';
 // data
 import { MembersContext } from '../../../contexts/members-context';
 import * as memberTypes from '../../../data/members/values/member-types';
 import { FORMS, SIGNUP_FIELDS } from '../../../data/members/database/member-form-names';
 import { dbFields } from '../../../data/members/database/airtable-fields';
-import { getMemberStatus, getNextPaymentDate, getPaymentPayload } from '../../../data/members/airtable/utils';
+import {
+  getMemberStatus,
+  getNextPaymentDate,
+  getPaymentPayload,
+  getPlanFee,
+} from '../../../data/members/airtable/utils';
 import { getCertifyType, CERTIFY_OPTIONS } from '../../../data/members/airtable/value-lists';
 import { LAW_NOTES_PRICE } from '../../../data/members/values/law-notes-values';
 
@@ -159,18 +164,22 @@ const Signup = ({
 
   // update attorney or law notes subscriber dues
   useEffect(() => {
-    if (memberInfoFormRef.current) {
+    if (memberInfoFormRef.current && memberPlans) {
       // if certify as attorney
       if (signupType === memberTypes.USER_ATTORNEY) {
         updateDues(getLawNotesAmt(memberInfoFormRef.current));
       } else {
         updateDues({ memberFee: 0, discount: 0 });
       }
-      updateDues(getMemberFee(memberInfoFormRef.current, hasDiscount));
+      const salary = memberInfoFormRef.current.getFieldValue(dbFields.members.salary);
+      updateDues(getMemberFees({
+        fee: getPlanFee(salary, memberPlans),
+        hasDiscount,
+      }));
       updateDues(setDonation(memberInfoFormRef.current));
       updateDues(getLawNotesAmt());
     }
-  }, [signupType, memberInfoFormRef.current]);
+  }, [signupType, memberInfoFormRef.current], memberPlans);
 
   // if not member offer law notes
   const getLawNotesAmt = (form) => {
@@ -228,12 +237,16 @@ const Signup = ({
   // handle change of values on forms
   const onFormChange = (formName, info) => {
     // console.log(formName, 'changedFields', info.changedFields);
-    if (info.changedFields.length > 0) {
+    if (info.changedFields.length > 0 && memberPlans) {
       info.changedFields.forEach((field) => {
         const fieldName = field.name[0];
         const fieldValue = field.value;
         if (fieldName === dbFields.members.salary) {
-          updateDues(getMemberFee(memberInfoFormRef.current, hasDiscount));
+          const salary = memberInfoFormRef.current.getFieldValue(dbFields.members.salary);
+          updateDues(getMemberFees({
+            fee: getPlanFee(salary, memberPlans),
+            hasDiscount,
+          }));
         } else if (
           fieldName === SIGNUP_FIELDS.donation ||
           fieldName === SIGNUP_FIELDS.customDonation
@@ -262,7 +275,7 @@ const Signup = ({
         const _member = { id: member.id, fields };
         const updatedMember = await updateMember(_member); // >> setMember(updatedMember)
         if (memberSignUpType === memberTypes.USER_STUDENT) {
-          const _payment = getPaymentPayload(member.id);
+          const _payment = getPaymentPayload(member.id, 0, memberPlans);
           const payment = await addPayment(_payment);
           if (payment.error) {
             console.log(payment);
@@ -445,7 +458,7 @@ const Signup = ({
             [SIGNUP_FIELDS.subscribe]: true,
             [SIGNUP_FIELDS.renewChargeOptions]: SIGNUP_FIELDS.renewAutoCharge,
           }}
-          donation={dues.donation}
+          // donation={dues.donation}
           total={total}
           user={user}
           loading={loading}
@@ -524,10 +537,6 @@ const Signup = ({
       </Form.Provider>
     </>
   }, [member, signedInEmail, signupType, steps, step, isConfirmation]);
-
-  useEffect(() => {
-    console.log('STEP', step)
-  }, [step]);
 
   return <>
     <Container

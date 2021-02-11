@@ -5,11 +5,14 @@ import { UserOutlined } from '@ant-design/icons';
 import { MembersContext } from '../../../../contexts/members-context';
 import { dbFields } from '../../../../data/members/database/airtable-fields';
 import * as memberTypes from '../../../../data/members/values/member-types';
-import { practiceSettingOptions, salaryOptions, getFee, certifyOptions, getCertifyType } from '../../../../data/members/airtable/value-lists';
+import {
+  getSalaryOptions,
+  getMemberPlanFee,
+} from '../../../../data/members/airtable/utils';
+import { practiceSettingOptions, certifyOptions, getCertifyType } from '../../../../data/members/airtable/value-lists';
 // styles
 import '../account.less';
 
-const { Option } = Select;
 const { Text } = Typography;
 
 const MemberInfoFields = ({
@@ -19,7 +22,7 @@ const MemberInfoFields = ({
   loading,
   editing,
 }) => {
-  const { member } = useContext(MembersContext);
+  const { member, memberPlans } = useContext(MembersContext);
   // change of certify status
   const [isAttorney, setIsAttorney] = useState(false);
   const [isStudent, setIsStudent] = useState(false);
@@ -109,6 +112,18 @@ const MemberInfoFields = ({
    * ATTORNEY CONTENT
    */
 
+  const salaryOptions = useMemo(() => {
+    if (memberPlans) return getSalaryOptions(memberPlans);
+    return null;
+  }, [memberPlans]);
+
+  const fee = useMemo(() => {
+    if (member && memberPlans) {
+      return getMemberPlanFee(member, memberPlans);
+    }
+    return null;
+  }, [member, memberPlans]);
+
   const attorneyContent = useMemo(() => {
     let content = null;
     // payment type or user certified is attorney
@@ -136,10 +151,10 @@ const MemberInfoFields = ({
               placeholder="Choose salary to calculate fee..."
               disabled={loading}
             >
-              {salaryOptions()}
+              {salaryOptions}
             </Select>
             :
-            <>{member.fields[dbFields.members.salary]} <Text code><span className="text-nowrap">${getFee(member.fields[dbFields.members.salary])} members fee</span></Text></>
+            <>{member && member.fields[dbFields.members.salary]} {fee && <Text code><span className="text-nowrap">${fee} members fee</span></Text>}</>
           }
         </Form.Item>
 

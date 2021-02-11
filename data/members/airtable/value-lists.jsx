@@ -1,4 +1,3 @@
-import moment from 'moment';
 import { Select } from 'antd';
 // data
 import { dbFields } from '../database/airtable-fields';
@@ -6,17 +5,6 @@ import { dbFields } from '../database/airtable-fields';
 import { selectOptionsFromArray, selectOptionsFromObject } from '../../../components/utils/select-options';
 
 const { Option } = Select;
-
-/**
- * STRIPE VALUES >> move to own file
- */
-
-export const getStripePlan = (salaryKey) => {
-  return 'xxx';
-};
-
-export const STRIPE_MEMBERSHIP_ID = 'prod_HP8GWNCnMR7Qoy';
-
 
 export const CERTIFY_OPTIONS = {
   bar: { label: 'A member of the bar in good standing', type: 'attorney' },
@@ -54,27 +42,11 @@ export const getCertifyType = (label, list) => {
   return '';
 };
 
-export const PLANS = {
-  upTo30K: { label: 'Income Up to $30,000', fee: 40, stripePriceId: 'price_1GqJzwBBKyYy0mbAvT6qs7mY' },
-  upTo50K: { label: 'Income Up to $50,000', fee: 55, stripePriceId: 'price_1GqJzwBBKyYy0mbAUlL1DuWm' },
-  upTo75K: { label: 'Income Up to $75,000', fee: 80, stripePriceId: 'price_1GqJzwBBKyYy0mbAhROb7ah3' },
-  upTo100K: { label: 'Income Up to $100,000', fee: 120, stripePriceId: 'price_1GqJzwBBKyYy0mbAwR6uJDrV' },
-  upTo150K: { label: 'Income Up to $150,000', fee: 150, stripePriceId: 'price_1GqJzwBBKyYy0mbAjq7sICqI' },
-  over100K: { label: 'Income Over $150,000', fee: 175, stripePriceId: 'price_1GqJzxBBKyYy0mbAq3nGVGIi' },
-  student: { label: 'Law Student', fee: 0, id: 'rec0HT7XyXLJQ84r7' },
-};
+export const PAYMENT_TYPE_STRIPE = 'Stripe';
 
-export const salaryOptions = () => {
-  return selectOptionsFromObject(PLANS);
-};
+export const PAYMENT_TYPE_FREE = 'Free';
 
-export const getFee = (label) => {
-  for (const key in PLANS) {
-    if (PLANS[key].label === label) return PLANS[key].fee;
-  }
-  console.log('Warning: Salary value not found!');
-  return 0;
-};
+export const PAYMENT_STATUS_PROCESSED = 'Processed';
 
 export const practiceSettingOptions = () => {
   return selectOptionsFromArray(dbFields.members.valueLists.practiceSettings);
