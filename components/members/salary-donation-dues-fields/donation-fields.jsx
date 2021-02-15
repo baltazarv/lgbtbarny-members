@@ -1,9 +1,13 @@
 /** Not currently used b/c donations no longer added to member dues */
 import { useState, useMemo } from 'react';
 import { Form, Input, InputNumber, Select, Radio } from 'antd';
-// data
-import { SIGNUP_FIELDS } from '../../../data/members/database/member-form-names';
-import { getDonationValues } from '../../../data/members/values/donation-values';
+
+const SIGNUP_FIELDS = {
+  donation: 'donation',
+  customDonation: 'customdonation',
+  donationrecurrence: 'donation-recurrence',
+  donationonce: 'donation-once',
+};
 
 const { Option } = Select;
 
@@ -21,16 +25,16 @@ const DonationFields = ({
   const handleDonationChange = (value) => {
     if (typeof value === 'string' && value.toLowerCase().includes('custom')) {
       setCustomSelected(true);
-      onChange(SIGNUP_FIELDS.donation, customDonation);
+      // onChange(SIGNUP_FIELDS.donation, customDonation);
     } else {
       setCustomSelected(false);
-      onChange(SIGNUP_FIELDS.donation, value);
+      // onChange(SIGNUP_FIELDS.donation, value);
     }
   };
 
   const handleCustomDonationChange = (value) => {
     setCustomDonation(value);
-    onChange(SIGNUP_FIELDS.donation, value);
+    // onChange(SIGNUP_FIELDS.donation, value);
   };
 
   // build options for donation select component
@@ -62,7 +66,7 @@ const DonationFields = ({
         <Input.Group compact>
           <Form.Item
             className="text-center"
-            name={SIGNUP_FIELDS.donation}
+            // name={SIGNUP_FIELDS.donation}
             noStyle
           >
             <Select
@@ -76,7 +80,7 @@ const DonationFields = ({
             </Select>
           </Form.Item>
           <Form.Item
-            name={SIGNUP_FIELDS.customDonation}
+            // name={SIGNUP_FIELDS.customDonation}
             noStyle
           >
             <InputNumber
@@ -112,7 +116,7 @@ const DonationFields = ({
       </Form.Item>
     }
     <Form.Item
-      name={SIGNUP_FIELDS.donationrecurrence}
+      // name={SIGNUP_FIELDS.donationrecurrence}
       style={{ textAlign: 'left' }}
       wrapperCol={{
         xs: { offset: 24 },
@@ -121,8 +125,8 @@ const DonationFields = ({
     >
       <Radio.Group>
         {/* defaultValue in Form initialValues */}
-        <Radio value={SIGNUP_FIELDS.donationrecurs}>Recurring donation</Radio>
-        <Radio value={SIGNUP_FIELDS.donationonce}>One-time donation</Radio>
+        {/* <Radio value={SIGNUP_FIELDS.donationrecurs}>Recurring donation</Radio> */}
+        {/* <Radio value={SIGNUP_FIELDS.donationonce}>One-time donation</Radio> */}
       </Radio.Group>
     </Form.Item>
   </>;

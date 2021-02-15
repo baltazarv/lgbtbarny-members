@@ -1,4 +1,5 @@
-// TODO: move to /data/members/airtable
+import { SIGNUP_FIELDS } from '../payments/payment-fields';
+
 export const FORMS = {
   signupMemberInfo: 'signup-member-info',
   payment: 'payment-form', // "payment-form" added as class
@@ -10,23 +11,6 @@ export const FORMS = {
   editEmailPrefs: 'edit-email-prefs',
 };
 
-// TODO: move to airtable-fields file
-export const SIGNUP_FIELDS = {
-  // create account
-  firstName: 'firstname',
-  // certify: 'certify',
-  // salary: 'salary',
-  lawNotes: 'law-notes',
-  donation: 'donation',
-  customDonation: 'customdonation',
-  donationrecurrence: 'donation-recurrence',
-  donationrecurs: 'donation-recurs',
-  donationonce: 'donation-once',
-
-  billingname: 'billingfullname',
-  subscribe: 'subscribe',
-  renewDonation: 'renewdonation',
-  renewChargeOptions: 'renewchargeoptions',
-  renewAutoCharge: 'renewAutoCharge',
-  renewEmailInvoice: 'renewEmailInvoice',
+export {
+  SIGNUP_FIELDS,
 };

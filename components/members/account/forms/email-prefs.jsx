@@ -35,7 +35,7 @@ const EmailPrefs = ({
     if (userEmails && userEmails.length > 0) {
       let newsletterEmail = userEmails[0].fields[dbFields.emails.email];
       userEmails.forEach(email => {
-        if (email.fields[dbFields.emails.newsletter]) newsletterEmail = email.fields[dbFields.emails.email];
+        if (email.fields[dbFields.emails.primary]) newsletterEmail = email.fields[dbFields.emails.email];
       });
       return newsletterEmail;
     }

@@ -69,7 +69,7 @@ export const dbFields = {
   emails: {
     email: 'email',
     verified: 'verified',
-    newsletter: 'newsletter',
+    primary: 'primary',
   },
   payments: {
     date: 'date',

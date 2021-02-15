@@ -7,12 +7,13 @@ import PaymentForm from './payment-form';
 import DuesSummary from '../salary-donation-dues-fields/dues-summary';
 import '../login-signup.less';
 // utils
-import { duesInit, duesReducer, getMemberFees, setDonation } from '../../../utils/payments/member-dues';
+import { duesInit, duesReducer, getMemberFees } from '../../../utils/payments/member-dues'; // , setDonation
 import { TitleIcon } from '../../utils/icons';
 // data
 import { MembersContext } from '../../../contexts/members-context';
 import * as memberTypes from '../../../data/members/values/member-types';
-import { FORMS, SIGNUP_FIELDS } from '../../../data/members/database/member-form-names';
+import { FORMS } from '../../../data/members/database/member-form-names';
+import { SIGNUP_FIELDS } from '../../../data/members/payments/payment-fields';
 import { dbFields } from '../../../data/members/database/airtable-fields';
 import {
   getMemberStatus,
@@ -176,7 +177,7 @@ const Signup = ({
         fee: getPlanFee(salary, memberPlans),
         hasDiscount,
       }));
-      updateDues(setDonation(memberInfoFormRef.current));
+      // updateDues(setDonation(memberInfoFormRef.current));
       updateDues(getLawNotesAmt());
     }
   }, [signupType, memberInfoFormRef.current], memberPlans);
@@ -247,15 +248,15 @@ const Signup = ({
             fee: getPlanFee(salary, memberPlans),
             hasDiscount,
           }));
-        } else if (
-          fieldName === SIGNUP_FIELDS.donation ||
-          fieldName === SIGNUP_FIELDS.customDonation
-        ) {
-          updateDues(setDonation(memberInfoFormRef.current));
-        } else if (fieldName === SIGNUP_FIELDS.lawNotes) {
+        }
+        // else if (
+        //   fieldName === SIGNUP_FIELDS.donation ||
+        //   fieldName === SIGNUP_FIELDS.customDonation
+        // ) {
+        //   updateDues(setDonation(memberInfoFormRef.current));
+        // }
+        else if (fieldName === SIGNUP_FIELDS.lawNotes) {
           updateDues(getLawNotesAmt(memberInfoFormRef.current));
-        } else if (fieldName === SIGNUP_FIELDS.firstName) {
-          updateDues({ [SIGNUP_FIELDS.firstName]: fieldValue });
         }
       });
     };
@@ -449,19 +450,17 @@ const Signup = ({
           </Col>
         </Row>
         <PaymentForm
-          // salary to get stripe id
-          salary={''}
           duesSummList={duesSummary}
           initialValues={{
             [SIGNUP_FIELDS.billingname]: `${member && member.fields[dbFields.members.firstName]} ${member && member.fields[dbFields.members.lastName]}`,
             // [SIGNUP_FIELDS.renewDonation]: true,
-            [SIGNUP_FIELDS.subscribe]: true,
-            [SIGNUP_FIELDS.renewChargeOptions]: SIGNUP_FIELDS.renewAutoCharge,
+            [SIGNUP_FIELDS.collectionMethod]: SIGNUP_FIELDS.chargeAutomatically,
           }}
-          // donation={dues.donation}
-          total={total}
-          user={user}
+          total={total} // display in message
+          hasDiscount={hasDiscount} // appy as subscription coupon
           loading={loading}
+          setLoading={setLoading}
+        // user={user}
         />
       </>,
     };
@@ -484,7 +483,7 @@ const Signup = ({
     if (memberStatus === memberStatus.USER_ATTORNEY) return null;
     return <>
       <p>{member.fields[dbFields.members.firstName] ? member.fields[dbFields.members.firstName] : 'Hi'}, your membership is up-to-date.<br />
-      {nextPaymentDate && <>Your next payment is due on&nbsp;<strong>{nextPaymentDate}</strong>.</>}</p>
+        {nextPaymentDate && <>Your next payment is due on&nbsp;<strong>{nextPaymentDate}</strong>.</>}</p>
     </>;
   }, [memberStatus]);
 
