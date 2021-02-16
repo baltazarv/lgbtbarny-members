@@ -47,33 +47,49 @@ const getNextPaymentDate = ({
  * if no salary, assume a student plan
  * @param {String} userid
  * @param {Number} salary
+ * @param {Object} memberPlans - from MemberContext
  */
-const getPaymentPayload = (userid, salary, memberPlans) => {
+const getPaymentPayload = ({
+  userid,
+  salary,
+  memberPlans,
+  invoice,
+  hasDiscount,
+}) => {
   if (userid, salary, memberPlans) {
-    let plan = '';
+    let planid = null;
     let type = '';
     let status = PAYMENT_STATUS_PROCESSED;
-    let discount = null;
-    let total = null;
+    let total = 0;
+    let discount = 0;
     if (!salary) {
       type = PAYMENT_TYPE_FREE;
       total = 0;
       const currentPlans = getCurrentPlans(memberPlans, 'student');
-      if (currentPlans && currentPlans.length === 1) plan = currentPlans[0].id;
+      if (currentPlans && currentPlans.length === 1) planid = currentPlans[0].id;
     } else {
       type = PAYMENT_TYPE_STRIPE;
-      // plan
-      // discount
+      let attorneyPlans = getCurrentPlans(memberPlans, 'attorney');
+      let plan = (attorneyPlans && attorneyPlans.length > 1) ? attorneyPlans.find((plan) => plan.fields[dbFields.members.salary] === salary) : null;
+      if (plan) {
+        planid = plan.id;
+        if (hasDiscount) {
+          total = plan.fields[dbFields.plans.fee] / 2;
+          discount = total / 2;
+        } else {
+          total = plan.fields[dbFields.plans.fee];
+        }
+      }
     }
     let payload = {
       userid,
-      plan,
+      planid,
       type,
       status,
       discount,
       total,
+      invoice: invoice || null,
     };
-    if (salary) payload.discount = discount;
     return payload;
   }
   return new Error('Error: payment not created. `userid`, `salary`, or `memberPlans` missing.');

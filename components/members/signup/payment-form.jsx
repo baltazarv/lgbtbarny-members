@@ -6,11 +6,11 @@
  */
 import { useMemo, useState, useContext, useEffect } from 'react';
 import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
-import { Card, Divider, Form, Row, Col, Skeleton } from 'antd';
+import { Card, Divider, Form, Row, Col } from 'antd';
 import PaymentFields from '../payment-fields';
 import './payment-form.less';
 // utils
-import { getStripePriceId } from '../../../data/members/airtable/utils';
+import { getPaymentPayload, getStripePriceId } from '../../../data/members/airtable/utils';
 // data
 import { MembersContext } from '../../../contexts/members-context';
 import { FORMS, SIGNUP_FIELDS } from '../../../data/members/database/member-form-names';
@@ -24,9 +24,10 @@ const PaymentForm = ({
   hasDiscount,
   loading,
   setLoading,
+  setPaymentSuccessful, // show confirmation vs. form
 }) => {
   const [form] = Form.useForm();
-  const { member, userEmails, authUser, memberPlans } = useContext(MembersContext);
+  const { member, userEmails, authUser, memberPlans, addPayment } = useContext(MembersContext);
   const stripe = useStripe();
   const elements = useElements();
   // charge card vs. email invoice
@@ -85,10 +86,28 @@ const PaymentForm = ({
     return primary;
   }, [userEmails]);
 
-  const onSuccess = () => {
-    // TODO: add subscription ID to member
-    // TODO: create payment >> add stripe payment intent
-    setStripeError("Success! Save payment, show confirmation & provision!");
+  const onSuccess = async () => {
+    // create payment >> add invoice id to payment
+    // console.log('onSuccess SUBSCRIPTION', subscription)
+    const stripeInvoiceId = subscription.latest_invoice.id;
+    const payload = (getPaymentPayload({
+      userid: member.id,
+      salary: member.fields[dbFields.members.salary],
+      memberPlans,
+      invoice: stripeInvoiceId,
+      hasDiscount,
+    }));
+
+    // TODO: use webhook to check that payment was created from subscription?
+    const payment = await addPayment(payload);
+    if (payment.error) {
+      console.log(payment);
+    }
+
+    _setStripeError("Success! Save payment, show confirmation & provision!");
+    setLoading(false);
+    setPaymentSuccessful(true);
+
     // return <Redirect to={{pathname: '/account'}} />
   };
 
@@ -193,7 +212,7 @@ const PaymentForm = ({
     *
     */
     console.log('SUBSCRIPTION', subscription);
-    setStripeError(`Subscription created with ${subscription.status}.`);
+    setStripeError(`Subscription created with ${subscription.status} status.`);
     setSubscription(subscription);
 
     /** Should also receive an `invoice.paid` event. Can disregard this event for initial payment, but monitor it for subsequent payments. The `invoice.paid` event type corresponds to the `payment_intent.status` of succeeded, so payment is complete, and the subscription status is active.
@@ -207,7 +226,6 @@ const PaymentForm = ({
 
     switch (subscription.status) {
       case 'active':
-        setLoading(false);
         onSuccess();
         break;
 
@@ -232,8 +250,8 @@ const PaymentForm = ({
         if (error) {
           setStripeError(error.message);
         } else {
-          onSuccess();
           setSubscription(subscription);
+          onSuccess();
         }
         break;
 

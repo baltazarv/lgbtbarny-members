@@ -41,7 +41,7 @@ export default async (req, res) => {
     default_payment_method: paymentMethodId,
     customer: customerId,
     items: [{ price: priceId }],
-    // expand: ['latest_invoice.payment_intent'],
+    expand: ['latest_invoice.payment_intent'],
     coupon,
   });
 

@@ -40,6 +40,7 @@ const Signup = ({
   // show confirmation text
   const [isConfirmation, setIsConfirmation] = useState(false);
   const [isServerError, setIsServerError] = useState(false);
+  const [paymentSuccessful, setPaymentSuccessful] = useState(false);
   // review
   const [stepsStatus, setStepsStatus] = useState('process'); // wait process finish error
   const [loading, setLoading] = useState(false);
@@ -276,8 +277,12 @@ const Signup = ({
         const _member = { id: member.id, fields };
         const updatedMember = await updateMember(_member); // >> setMember(updatedMember)
         if (memberSignUpType === memberTypes.USER_STUDENT) {
-          const _payment = getPaymentPayload(member.id, 0, memberPlans);
-          const payment = await addPayment(_payment);
+          const paymentPayload = getPaymentPayload({
+            userid: member.id,
+            salary: 0, // student plan
+            memberPlans,
+          });
+          const payment = await addPayment(paymentPayload);
           if (payment.error) {
             console.log(payment);
             setIsServerError(true);
@@ -436,32 +441,43 @@ const Signup = ({
     return {
       title: "Member Dues",
       content: <>
-        <Row className="d-flex justify-content-between mb-3">
-          <Col>Membership as <strong>{certifyChoice && certifyChoice.toLocaleLowerCase()}</strong>.</Col>
-          <Col>
-            <Button
-              size="small"
-              type="primary"
-              ghost
-              onClick={() => setStep(0)}
-            >
-              Edit Info
+        {paymentSuccessful ?
+          <>
+            <div>Enjoy your yearly membership!</div>
+          </>
+          :
+          <>
+            <Row className="d-flex justify-content-between mb-3">
+              <Col>Membership as <strong>{certifyChoice && certifyChoice.toLocaleLowerCase()}</strong>.</Col>
+              <Col>
+                <Button
+                  size="small"
+                  type="primary"
+                  ghost
+                  onClick={() => setStep(0)}
+                >
+                  Edit Info
             </Button>
-          </Col>
-        </Row>
-        <PaymentForm
-          duesSummList={duesSummary}
-          initialValues={{
-            [SIGNUP_FIELDS.billingname]: `${member && member.fields[dbFields.members.firstName]} ${member && member.fields[dbFields.members.lastName]}`,
-            // [SIGNUP_FIELDS.renewDonation]: true,
-            [SIGNUP_FIELDS.collectionMethod]: SIGNUP_FIELDS.chargeAutomatically,
-          }}
-          total={total} // display in message
-          hasDiscount={hasDiscount} // appy as subscription coupon
-          loading={loading}
-          setLoading={setLoading}
-        // user={user}
-        />
+              </Col>
+            </Row>
+            <PaymentForm
+              duesSummList={duesSummary}
+              initialValues={{
+                [SIGNUP_FIELDS.billingname]: `${member && member.fields[dbFields.members.firstName]} ${member && member.fields[dbFields.members.lastName]}`,
+                // [SIGNUP_FIELDS.renewDonation]: true,
+                [SIGNUP_FIELDS.collectionMethod]: SIGNUP_FIELDS.chargeAutomatically,
+              }}
+              total={total} // display in message
+              hasDiscount={hasDiscount} // appy as subscription coupon
+              loading={loading}
+              setLoading={setLoading}
+              paymentSuccessful={paymentSuccessful}
+              setPaymentSuccessful={setPaymentSuccessful}
+            // user={user}
+            />
+          </>
+        }
+
       </>,
     };
   }, [duesSummary, dues, total, user, loading])

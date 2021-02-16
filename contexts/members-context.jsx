@@ -70,6 +70,7 @@ const MembersProvider = ({ children }) => {
       return payments;
     } catch (error) {
       console.log(error);
+      return error;
     }
   }
 

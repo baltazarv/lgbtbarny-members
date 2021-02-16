@@ -201,7 +201,7 @@ const EmailsForm = ({
       size="small"
       className="mb-2"
       title={() => <>
-        <p className="mb-0"><strong>Verified</strong> email addresses are those which you have used to log into your account. Any email addresses can be used.</p>
+        <p className="mb-0"><strong>Verified</strong> email addresses are those which you have used to log into your account. Any email address can be used to log in.</p>
         <p className="mb-0">The <strong>primary</strong> email address is the one that receives emails from the LGBT Bar of NY. Only verified addresses qualify.</p>
       </>}
     />

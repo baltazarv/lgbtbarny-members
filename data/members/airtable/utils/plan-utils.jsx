@@ -63,8 +63,8 @@ const getSalaryOptions = (memberPlans) => {
 
 /**
  * Take a member's salary and get fee from plans
- * @param {Object} member - airtable member object for logged-in user
- * @param {*} memberPlans
+ * @param {String} salary - airtable member object for logged-in user
+ * @param {Object} memberPlans - from memberContext
  */
 const getPlanFee = (salary, memberPlans) => {
   if (salary && memberPlans) {
@@ -79,7 +79,7 @@ const getPlanFee = (salary, memberPlans) => {
 };
 
 /**
- * Take a member's salary and get fee from plans
+ * Take the member object, get salary and get fee from plans
  * @param {Object} member - airtable member object for logged-in user
  * @param {Array} memberPlans
  */

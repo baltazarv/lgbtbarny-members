@@ -33,9 +33,9 @@ export const getMemberFees = ({
   }
 };
 
-export const setDonation = (form) => {
-  const donation = form.getFieldValue(SIGNUP_FIELDS.donation);
-  const customDonation = form.getFieldValue(SIGNUP_FIELDS.customDonation);
-  const donationValue = typeof donation === 'string' && donation.toLowerCase().includes('custom') ? customDonation : donation;
-  return { donation: donationValue };
-};
+// export const setDonation = (form) => {
+//   const donation = form.getFieldValue(SIGNUP_FIELDS.donation);
+//   const customDonation = form.getFieldValue(SIGNUP_FIELDS.customDonation);
+//   const donationValue = typeof donation === 'string' && donation.toLowerCase().includes('custom') ? customDonation : donation;
+//   return { donation: donationValue };
+// };
