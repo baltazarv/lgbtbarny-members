@@ -1,7 +1,7 @@
 import { useState, useMemo, useContext } from 'react';
 import { Card, Typography, Switch, Row, Col, Button } from 'antd';
 // data
-import { dbFields } from '../../../../data/members/database/airtable-fields';
+import { dbFields } from '../../../../data/members/airtable/airtable-fields';
 import { getAccountIsActive } from '../../../../data/members/airtable/utils';
 import { MembersContext } from '../../../../contexts/members-context';
 import * as memberTypes from '../../../../data/members/values/member-types';

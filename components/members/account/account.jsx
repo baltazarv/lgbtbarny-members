@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect } from 'react';
+import { useState, useContext, useMemo, useEffect } from 'react';
 import { Form, Tooltip } from 'antd';
 import SvgIcon from '../../utils/svg-icon';
 import moment from 'moment';
@@ -13,11 +13,14 @@ import PaymentInfoForm from './forms/payment-info-form';
 import EmailPrefs from './forms/email-prefs';
 // styles
 import './account.less';
+// utils
+import { getStripePriceId } from '../../../utils/airtable';
+import { getActiveSubscription } from '../../../utils/payments/stripe-utils';
 // data
-import { dbFields } from '../../../data/members/database/airtable-fields';
+import { dbFields } from '../../../data/members/airtable/airtable-fields';
 import { MembersContext } from '../../../contexts/members-context';
 import * as memberTypes from '../../../data/members/values/member-types';
-import { FORMS } from '../../../data/members/database/member-form-names';
+import { FORMS } from '../../../data/members/member-form-names';
 
 const MenuIcon = ({
   name,
@@ -38,8 +41,18 @@ const Account = ({
   onLink, // become member from email prefs, upgrade for graduated students
 }) => {
 
-  const { member, updateMember } = useContext(MembersContext);
+  const {
+    member,
+    updateMember,
+    memberPlans,
+    subscriptions,
+    updateSubscription,
+  } = useContext(MembersContext);
   const [loading, setLoading] = useState(false);
+
+  const activeSubscription = useMemo(() => {
+    return getActiveSubscription(subscriptions);
+  }, [subscriptions]);
 
   const onFormChange = (formName, info) => {
     // console.log('onFormChange formName', formName, 'changedFields', info.changedFields);
@@ -59,6 +72,17 @@ const Account = ({
     const _member = { id: member.id, fields };
     if (!member.sample) {
       const updatedMember = await updateMember(_member); // >> setMember(updatedMember)
+
+      // if salary change, update stripe subscription price
+      if (info.values[dbFields.members.salary]) {
+        if (info.values[dbFields.members.salary] !== member.fields[dbFields.members.salary]) {
+          const priceId = getStripePriceId(info.values[dbFields.members.salary], memberPlans);
+          const subscription = await updateSubscription({
+            subcriptionId: activeSubscription.id,
+            priceId,
+          }); //-> saveSubscription
+        }
+      }
     }
   }
 

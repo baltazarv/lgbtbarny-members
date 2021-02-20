@@ -1,5 +1,5 @@
 import { createContext, useState } from 'react';
-import { dbFields } from '../data/members/database/airtable-fields';
+import { dbFields } from '../data/members/airtable/airtable-fields';
 
 const MembersContext = createContext();
 
@@ -9,17 +9,20 @@ const MembersProvider = ({ children }) => {
   const [userEmails, setUserEmails] = useState(null);
   const [userPayments, setUserPayments] = useState(null);
   const [memberPlans, setMemberPlans] = useState(null);
+  // payments
+  const [subscriptions, setSubscriptions] = useState(null);
 
   /**
-   *  * Update member info before signup
-   *    - components/members/signup/signup
-   */
+   * Airtable member functions
+   *  */
+
+  // Update member info before signup - components/members/signup/signup
   const updateMember = async (userToUpdate) => {
     try {
       const res = await fetch('/api/members/update-member', {
         method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userToUpdate),
-        headers: { 'Content-Type': 'application/json' }
       });
       const updatedUser = await res.json();
       setMember(updatedUser);
@@ -70,7 +73,7 @@ const MembersProvider = ({ children }) => {
       return payments;
     } catch (error) {
       console.log(error);
-      return error;
+      // return error;
     }
   }
 
@@ -140,21 +143,114 @@ const MembersProvider = ({ children }) => {
     }
   };
 
+  /**
+   * Stripe payment functions
+   * @param {*} payload:
+   * * customerId,
+   * * paymentMethodId,
+   * * priceId,
+   * * collectionMethod,
+   * * coupon,
+   */
+  const createSubscription = async (payload) => {
+    let { error, subscription } = await fetch('/api/payments/create-subscription', {
+      // let { error, subscription } = await fetch('/api/payments/create-subscription', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }).then(r => r.json());
+
+    if (error) return { error };
+    return { subscription };
+  };
+
+  /**
+   * After user authorizes card, need to retrieve subscription with new status.
+   * Using method 'POST' even tho **getting** data b/c sending payload
+   * @param {*} id - subscription id
+   */
+  const getSubscription = async (id) => {
+    try {
+      const { error, subscription } = await fetch('/api/payments/get-subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      }).then(r => r.json());
+      if (error) return { error };
+      return { subscription };
+    } catch(error) {
+      console.log(error);
+      return { error }
+    }
+  }
+
+  /**
+   * Update for (1) collection method or (2) price
+   * @param {Object} fieldsToUpdate
+   */
+  const updateSubscription = async (fieldsToUpdate) => {
+    try {
+      // get
+      const { error, subscription } = await fetch('/api/payments/update-subscription', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(fieldsToUpdate),
+      }).then(r => r.json());
+      if (error) return { error };
+      saveSubscription(subscription);
+      return { subscription };
+    } catch (error) {
+      console.log(error);
+      return { error }
+    }
+  };
+
+  /**
+   * save subscription to local var
+   * @param {object} subscription - stripe subscription object
+   */
+  const saveSubscription = (subscription) => {
+    if (subscriptions && subscriptions.length && subscriptions.length > 0) {
+      let subs = [];
+      // in case subscription has already been added
+      const isRepeat = [...subscriptions].some((sub) => sub.id === subscription.id);
+      if (isRepeat) {
+        subs = [...subscriptions].map((sub) => {
+          if (sub.id === subscription.id) return subscription;
+          return sub;
+        });
+      } else {
+        subs = [...subscriptions];
+        subs.push(subscription);
+      }
+      setSubscriptions(subs);
+    } else {
+      setSubscriptions([subscription]);
+    }
+  };
+
   return (<MembersContext.Provider value={{
-    // table values for logged-in user
+    // Auth0
     authUser, setAuthUser,
+
+    // Airtable members
     member, setMember,
     userEmails, setUserEmails,
     userPayments, setUserPayments,
     memberPlans, setMemberPlans,
-
-    // functions used
     updateMember,
     addEmail,
     addPayment,
     // functions not used
     refreshMember,
     addMember,
+
+    // Stripe payments
+    subscriptions, setSubscriptions,
+    createSubscription,
+    getSubscription,
+    updateSubscription,
+    saveSubscription,
   }}>{children}</MembersContext.Provider>);
 };
 

@@ -1,6 +1,6 @@
 import { Select } from 'antd';
 // data
-import { dbFields } from '../database/airtable-fields';
+import { dbFields } from './airtable-fields';
 // utils
 import { selectOptionsFromArray, selectOptionsFromObject } from '../../../components/utils/select-options';
 

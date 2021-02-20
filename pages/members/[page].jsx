@@ -7,7 +7,7 @@
  *
  * When user not logged in, previewType values toggle between different member experiences.
  */
-import { useEffect, useState, useMemo, useReducer, useContext } from 'react';
+import { useEffect, useState, useMemo, useContext } from 'react';
 import { useRouter } from 'next/router'
 import { Breakpoint } from 'react-socks';
 import { Jumbotron, Container } from 'react-bootstrap';
@@ -27,10 +27,11 @@ import './members.less';
 // data
 import { getMemberType, getMemberStatus } from '../../data/members/airtable/utils';
 import { getDashboard, getMemberPageParentKey } from '../../data/members/dashboard/member-dashboards';
-import { dbFields } from '../../data/members/database/airtable-fields';
+import { dbFields } from '../../data/members/airtable/airtable-fields';
 import * as memberTypes from '../../data/members/values/member-types';
 import sampleMembers from '../../data/members/sample/members-sample';
 import { membersTable, emailsTable, paymentsTable, plansTable, minifyRecords } from '../api/utils/Airtable';
+// contexts
 import { MembersContext } from '../../contexts/members-context';
 // payments
 import { stripe } from '../api/utils/stripe';
@@ -51,9 +52,25 @@ const Members = ({
   loggedInMemberEmails,
   loggedInUserPayments,
   plans,
+  userSubscriptions,
 }) => {
   const router = useRouter();
-  const { member, setMember, authUser, setAuthUser, setUserEmails, userPayments, setUserPayments, memberPlans, setMemberPlans } = useContext(MembersContext);
+
+  // If the page is not yet generated, this will be displayed
+  // initially until getStaticProps() finishes running
+  if (router.isFallback) {
+    return <div>Loading...</div>
+  }
+
+  // contexts
+  // const { subscriptions, setSubscriptions } = useContext(PaymentsContext);
+  const {
+    // members
+    member, setMember, authUser, setAuthUser, setUserEmails, userPayments, setUserPayments, memberPlans, setMemberPlans,
+    // payments
+    subscriptions, setSubscriptions,
+  } = useContext(MembersContext);
+
   // when anon user, select tab to view preview content
   const [previewUser, setPreviewUser] = useState(memberTypes.USER_ATTORNEY);
   // when modalType is 'signup' signupType is a loginUser type
@@ -147,6 +164,16 @@ const Members = ({
   useEffect(() => {
     setMemberPlans(plans);
   }, [plans]);
+
+  useEffect(() => {
+    if (userSubscriptions && userSubscriptions.length && userSubscriptions.length > 0) {
+      setSubscriptions(userSubscriptions);
+    }
+  }, [userSubscriptions]);
+
+  // useEffect(() => {
+  //   console.log('useEffect subscriptions', subscriptions)
+  // }, [subscriptions]);
 
   /** When query string changes
    *  * Open signup & subscribe motals.
@@ -472,19 +499,31 @@ const Members = ({
 
 export default Members;
 
+/**
+ * TODO: try loading data client-side instead
+ * https://nextjs.org/docs/basic-features/data-fetching#fetching-data-on-the-client-side
+ * "This approach works well for user dashboard pages"
+ */
 export async function getServerSideProps(context) {
+  // req not available with getStaticProps
   const session = await auth0.getSession(context.req);
-  console.log('SESSION in back-end', session);
+  console.log('BACKEND session:', session, '; params:', context.params, '; query:', context.query);
+
   let email = '',
     loggedInUser = null,
     loggedInMember = null,
     loggedInMemberEmails = null,
     loggedInUserPayments = null,
-    plans = null;
+    plans = null,
+    // stripe vars
+    userSubscriptions = null;
+
   if (session) {
     try {
       email = session.user.name;
       loggedInUser = session.user;
+
+      // TODO: maybe move following requests to client-side
       if (email) {// already checking for session!
         // AUTH0 user
         // console.log('SESSION', session);
@@ -512,15 +551,16 @@ export async function getServerSideProps(context) {
         loggedInMember = minifyRecords(memberRecords)[0];
 
         // if no stripe id, create stripe customer, & populate field
+        // TODO: if id does not exist on stripe replace on airtable
         if (!loggedInMember.fields[dbFields.members.stripeId]) {
           try {
             const stripeCustomer = await stripe.customers.create({ email });
             console.log('stripeCustomer', stripeCustomer);
             const fieldsToUpdate = { [dbFields.members.stripeId]: stripeCustomer.id };
-            const updatedRecords = await membersTable.update([ {
+            const updatedRecords = await membersTable.update([{
               id: loggedInMember.id,
               fields: fieldsToUpdate,
-            } ]);
+            }]);
             loggedInMember = minifyRecords(updatedRecords)[0];
             ;
             console.log('loggedInMember', loggedInMember);
@@ -567,16 +607,33 @@ export async function getServerSideProps(context) {
         }
 
         // console.log('loggedInMember', loggedInMember);
+
+        // Get stripe info
+        const stripeId = loggedInMember.fields[dbFields.members.stripeId];
+        if (stripeId) {
+          try {
+            const subscriptions = await stripe.subscriptions.list({ customer: stripeId });
+            userSubscriptions = subscriptions.data;
+          } catch (err) {
+            console.log(err);
+          }
+        }
       }
     } catch (error) {
       console.log(error);
       return {
         props: {
-          error,
+          // error,
         }
       }
     }
   }
+  /**
+   * return:
+   * * props: {}
+   * * notFound: boolean => 404 page
+   * * redirect: { destination: string, permanent: boolean }
+   */
   return {
     props: {
       loggedInUser,
@@ -584,6 +641,30 @@ export async function getServerSideProps(context) {
       loggedInMemberEmails,
       loggedInUserPayments,
       plans,
+      userSubscriptions,
     }
   }
 };
+
+/**
+ * paths: object
+ ***************
+ * * If the page name is pages/posts/[postId]/[commentId], then params should contain postId and commentId.
+ * * If the page name uses catch-all routes, for example pages/[...slug], then params should contain slug which is an array. For example, if this array is ['foo', 'bar'], then Next.js will statically generate the page at /foo/bar.
+ * * If the page uses an optional catch-all route, supply null, [], undefined or false to render the root-most route. For example, if you supply slug: false for pages/[[...slug]], Next.js will statically generate the page /.
+ *
+ * fallback: boolean
+ *******************
+ * * If fallback is false, then any paths not returned by getStaticPaths will result in a 404 page.
+ */
+// export async function getStaticPaths() { // {params}
+//   return {
+//     // can pass params from params built in getStaticProps
+//     paths: [
+//       { params: { page: 'home' } },
+//       { params: { page: 'participate' } },
+//       { params: { page: 'law-notes-archive' } },
+//     ],
+//     fallback: true, // false
+//   };
+// }

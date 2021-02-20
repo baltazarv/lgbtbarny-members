@@ -1,4 +1,12 @@
-// Users will only see this if they are logged in
+/**
+ * Form.Provider with forms:
+ * * MemberInfoForm
+ * * PaymentForm
+ *
+ * Submitting `onFormChange`.
+ *
+ * Users will only see this if they are logged in.
+ */
 import { useState, useMemo, useContext, useReducer, useEffect, useRef } from 'react';
 import { Card, Steps, Form, Divider, Button, Row, Col } from 'antd';
 import { Container } from 'react-bootstrap';
@@ -12,15 +20,17 @@ import { TitleIcon } from '../../utils/icons';
 // data
 import { MembersContext } from '../../../contexts/members-context';
 import * as memberTypes from '../../../data/members/values/member-types';
-import { FORMS } from '../../../data/members/database/member-form-names';
+import { FORMS } from '../../../data/members/member-form-names';
 import { SIGNUP_FIELDS } from '../../../data/members/payments/payment-fields';
-import { dbFields } from '../../../data/members/database/airtable-fields';
+import { dbFields } from '../../../data/members/airtable/airtable-fields';
 import {
   getMemberStatus,
   getNextPaymentDate,
-  getPaymentPayload,
-  getPlanFee,
 } from '../../../data/members/airtable/utils';
+import {
+  getPlanFee,
+  getPaymentPayload,
+} from '../../../utils/members/airtable/members-db';
 import { getCertifyType, CERTIFY_OPTIONS } from '../../../data/members/airtable/value-lists';
 import { LAW_NOTES_PRICE } from '../../../data/members/values/law-notes-values';
 
@@ -460,6 +470,7 @@ const Signup = ({
             </Button>
               </Col>
             </Row>
+            {/* TODO: remove when payment submitted b/c `Warning: Can't perform a React state update on an unmounted component. This is a no-op, but it indicates a memory leak in your application. To fix, cancel all subscriptions and asynchronous tasks in a useEffect cleanup function.` */}
             <PaymentForm
               duesSummList={duesSummary}
               initialValues={{

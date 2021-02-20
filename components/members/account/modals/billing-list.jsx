@@ -3,7 +3,7 @@ import moment from 'moment';
 // import { isEmpty } from 'lodash';
 import PdfTable from '../../../pdf-table';
 // data
-import { dbFields } from '../../../../data/members/database/airtable-fields';
+import { dbFields } from '../../../../data/members/airtable/airtable-fields';
 import { MembersContext } from '../../../../contexts/members-context';
 // prototype sample
 import paymentsSampleData from '../../../../data/members/sample/payments-sample';

@@ -3,7 +3,7 @@ import { Row, Col, Form, Input, Avatar, Typography, Button } from 'antd';
 // import UploadPhoto from '../../../../utils/upload-photo';
 import { UserOutlined } from '@ant-design/icons';
 // data
-import { dbFields } from '../../../../data/members/database/airtable-fields';
+import { dbFields } from '../../../../data/members/airtable/airtable-fields';
 import { MembersContext } from '../../../../contexts/members-context';
 import * as memberTypes from '../../../../data/members/values/member-types';
 import { getMemberStatus, getNextPaymentDate } from '../../../../data/members/airtable/utils';

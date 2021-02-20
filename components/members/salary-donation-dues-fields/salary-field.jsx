@@ -3,8 +3,8 @@ import { Form, Row, Col, Select } from 'antd';
 
 // data
 import { MembersContext } from '../../../contexts/members-context';
-import { dbFields } from '../../../data/members/database/airtable-fields';
-import { getSalaryOptions } from '../../../data/members/airtable/utils';
+import { dbFields } from '../../../data/members/airtable/airtable-fields';
+import { getSalaryOptions } from '../../../utils/members/airtable/airtable-select-options';
 
 const SalaryField = ({
   hasDiscount=false,

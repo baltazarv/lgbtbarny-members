@@ -1,31 +1,26 @@
 /**
- * Functions that rely on airtable data.
- * Import utils that process data from specific tables.
- * Define generic airtable utils.
+ * MOVE TO /utils/airtable
  * */
 import { Select } from 'antd';
 
 import {
   getLastPlan,
-  getSalaryOptions,
-  getPlanFee,
   getMemberPlanFee,
   getStripePriceId,
   getCurrentPlans,
-} from './plan-utils';
+} from '../../../../utils/members/airtable/members-db/plans-table-utils';
 
 import {
   getLastPayment,
   getNextPaymentDate,
-  getPaymentPayload,
   // getPaymentIsDiscounted,
-} from './payment-utils';
+} from '../../../../utils/members/airtable/members-db/payments-table-utils';
 
 import {
   getMemberType,
   getMemberStatus,
   getAccountIsActive,
-} from './member-utils';
+} from '../../../../utils/members/airtable/members-db/members-table-utils';
 
 const { Option } = Select;
 
@@ -52,8 +47,6 @@ export {
 
   // plans
   getLastPlan,
-  getSalaryOptions,
-  getPlanFee,
   getMemberPlanFee,
   getStripePriceId,
   getCurrentPlans,
@@ -66,6 +59,5 @@ export {
   // payments
   getLastPayment,
   getNextPaymentDate,
-  getPaymentPayload,
   // getPaymentIsDiscounted,
 };

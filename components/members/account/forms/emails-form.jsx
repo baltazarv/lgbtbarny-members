@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useContext } from 'react';
 import { Table, Form, Checkbox, Input, Row, Col, Tag, Tooltip, Typography, Button, Popconfirm } from 'antd';
 // data
 import { MembersContext } from '../../../../contexts/members-context';
-import { dbFields } from '../../../../data/members/database/airtable-fields';
+import { dbFields } from '../../../../data/members/airtable/airtable-fields';
 
 const { Text, Link } = Typography;
 const { Search } = Input;

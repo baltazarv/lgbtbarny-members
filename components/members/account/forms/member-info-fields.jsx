@@ -1,15 +1,29 @@
+/**
+ * Form.Provider in Accounts, submitted onFormFinish()
+ * Form in AccountsForm
+ */
+/**
+ * TODO: refactor to pull non-editing text outside of Form.Item b/c get error:
+ *          Warning: [antd: Form.Item] `name` is only used for validate React element. If you are using Form.Item as layout display, please remove `name` instead.
+ *  */
 import { useState, useEffect, useMemo, useContext } from 'react';
 import { Form, Input, Select, Button, Row, Col, Tooltip, DatePicker, Divider, Typography } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 // data
 import { MembersContext } from '../../../../contexts/members-context';
-import { dbFields } from '../../../../data/members/database/airtable-fields';
+import { dbFields } from '../../../../data/members/airtable/airtable-fields';
 import * as memberTypes from '../../../../data/members/values/member-types';
+import { practiceSettingOptions, certifyOptions, getCertifyType } from '../../../../data/members/airtable/value-lists';
+// utils
 import {
-  getSalaryOptions,
   getMemberPlanFee,
 } from '../../../../data/members/airtable/utils';
-import { practiceSettingOptions, certifyOptions, getCertifyType } from '../../../../data/members/airtable/value-lists';
+import {
+  getPlanFee,
+} from '../../../../utils/members/airtable/members-db';
+import {
+  getSalaryOptions,
+} from '../../../../utils/members/airtable/airtable-select-options';
 // styles
 import '../account.less';
 
@@ -22,7 +36,8 @@ const MemberInfoFields = ({
   loading,
   editing,
 }) => {
-  const { member, memberPlans } = useContext(MembersContext);
+  const { member, memberPlans, userPayments } = useContext(MembersContext);
+  const [updateFee, setUpdateFee] = useState(null);
   // change of certify status
   const [isAttorney, setIsAttorney] = useState(false);
   const [isStudent, setIsStudent] = useState(false);
@@ -112,6 +127,14 @@ const MemberInfoFields = ({
    * ATTORNEY CONTENT
    */
 
+  const onSalaryChange = (value) => {
+    if (value !== member.fields[dbFields.members.salary]) {
+      setUpdateFee(`${getPlanFee(value, memberPlans)}`);
+    } else {
+      setUpdateFee(null);
+    }
+  };
+
   const salaryOptions = useMemo(() => {
     if (memberPlans) return getSalaryOptions(memberPlans);
     return null;
@@ -150,6 +173,7 @@ const MemberInfoFields = ({
             <Select
               placeholder="Choose salary to calculate fee..."
               disabled={loading}
+              onChange={onSalaryChange}
             >
               {salaryOptions}
             </Select>
@@ -157,6 +181,11 @@ const MemberInfoFields = ({
             <>{member && member.fields[dbFields.members.salary]} {fee && <Text code><span className="text-nowrap">${fee} members fee</span></Text>}</>
           }
         </Form.Item>
+
+        {/* TODO: only show when there is an active subscription */}
+        {updateFee &&
+          <div className="text-danger">Membership fees are based on members' salaries. Your next membership fee will change to <strong>${updateFee}</strong> per year.</div>
+        }
 
         {/* employer */}
         <Divider>Employment</Divider>
@@ -227,7 +256,7 @@ const MemberInfoFields = ({
       </>;
     }
     return content;
-  }, [isAttorney, member.fields, editing]);
+  }, [isAttorney, member.fields, editing, updateFee]);
 
   /**
    * STUDENT CONTENT

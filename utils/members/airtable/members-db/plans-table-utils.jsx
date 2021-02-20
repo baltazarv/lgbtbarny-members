@@ -5,8 +5,8 @@
 import {
   getLastPayment,
   getOptions,
-} from '../utils';
-import { dbFields } from '../../database/airtable-fields';
+} from '../../../../data/members/airtable/utils';
+import { dbFields } from '../../../../data/members/airtable/airtable-fields';
 
 // Find user's last payment and match on plans table
 // * use to get member type: getLastPlan.fields.type
@@ -46,7 +46,7 @@ const getCurrentPlans = (memberPlans, typeFilter) => {
 };
 
 const getSalaries = (memberPlans) => {
-  return [...memberPlans].reduce((acc, cur) => {
+  let plans = [...memberPlans].reduce((acc, cur) => {
     if (cur.fields[dbFields.plans.type] === 'attorney' &&
       cur.fields[dbFields.plans.status] === 'active' &&
       cur.fields[dbFields.plans.fee] !== 0
@@ -55,10 +55,12 @@ const getSalaries = (memberPlans) => {
     }
     return acc;
   }, []);
-};
-
-const getSalaryOptions = (memberPlans) => {
-  return getOptions(getSalaries(memberPlans), dbFields.plans.salary);
+  plans.sort((a, b) => {
+    const aFee = a.fields[dbFields.plans.fee];
+    const bFee = b.fields[dbFields.plans.fee];
+    return aFee - bFee;
+  });
+  return plans;
 };
 
 /**
@@ -106,7 +108,7 @@ const getStripePriceId = (salary, memberPlans) => {
 export {
   getLastPlan,
   getCurrentPlans,
-  getSalaryOptions,
+  getSalaries,
   getPlanFee,
   getMemberPlanFee,
   getStripePriceId,

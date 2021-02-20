@@ -1,4 +1,4 @@
-import { SIGNUP_FIELDS } from '../payments/payment-fields';
+import { SIGNUP_FIELDS } from './payments/payment-fields';
 
 export const FORMS = {
   signupMemberInfo: 'signup-member-info',

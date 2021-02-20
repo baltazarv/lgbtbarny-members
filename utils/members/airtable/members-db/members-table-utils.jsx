@@ -1,10 +1,11 @@
+/** functions that take airtable MemberContext objects */
 import moment from 'moment';
 import {
   getLastPlan,
   getLastPayment,
-} from '.';
-import * as memberTypes from '../../values/member-types';
-import { dbFields } from '../../database/airtable-fields';
+} from '../../../../data/members/airtable/utils';
+import * as memberTypes from '../../../../data/members/values/member-types';
+import { dbFields } from '../../../../data/members/airtable/airtable-fields';
 
 /**
  *

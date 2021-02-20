@@ -10,7 +10,7 @@ import { discounts } from './discounts-content';
 import { login, logout, MenuIcon } from './utils';
 import SvgIcon from '../../../components/utils/svg-icon';
 // data
-import { dbFields } from '../database/airtable-fields';
+import { dbFields } from '../airtable/airtable-fields';
 import * as memberTypes from '../values/member-types';
 import { getMemberPageParentKey, getMembersPageItem } from './utils';
 

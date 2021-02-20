@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { Form, Input, Select } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 // data
-import { dbFields } from '../../../data/members/database/airtable-fields';
+import { dbFields } from '../../../data/members/airtable/airtable-fields';
 import { gradYearOptions } from '../../../data/members/airtable/value-lists';
 import * as memberTypes from '../../../data/members/values/member-types';
 

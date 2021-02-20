@@ -5,7 +5,7 @@ import './member-groups.less';
 // data
 import { MembersContext } from '../../../contexts/members-context';
 import * as memberTypes from '../../../data/members/values/member-types';
-import { dbFields } from '../../../data/members/database/airtable-fields';
+import { dbFields } from '../../../data/members/airtable/airtable-fields';
 import { ATTORNEY_GROUPS, STUDENT_GROUPS } from '../../../data/members/sample/member-groups';
 import { groupCategories } from '../../../data/members/sample/member-groups';
 
@@ -165,7 +165,7 @@ const MemberGroups = ({
 
     if (memberType === memberTypes.USER_NON_MEMBER) {
       return <>
-        <div>See how you can get involved as a <Button type="primary" size="small" onClick={() => onLink('signup')}>member</Button>:</div>
+        <div>See how you can <Button type="primary" size="small" onClick={() => onLink('signup')}>get involved as a member</Button></div>
         <Radio.Group
           // defaultValue={memberTypes.USER_ATTORNEY}
           value={memberTypeView}

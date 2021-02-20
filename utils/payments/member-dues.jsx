@@ -1,5 +1,5 @@
 // TODO: move to /member/utils
-import { SIGNUP_FIELDS } from '../../data/members/database/member-form-names';
+import { SIGNUP_FIELDS } from '../../data/members/member-form-names';
 
 export const duesInit = {
   memberFee: 0,

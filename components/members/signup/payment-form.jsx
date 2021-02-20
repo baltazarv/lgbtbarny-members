@@ -4,18 +4,20 @@
  *  * invoice.id      -> payments table
  *  * latest subscription.id -> members table?
  */
-import { useMemo, useState, useContext, useEffect } from 'react';
+import { useMemo, useState, useContext } from 'react';
 import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
 import { Card, Divider, Form, Row, Col } from 'antd';
 import PaymentFields from '../payment-fields';
 import './payment-form.less';
 // utils
-import { getPaymentPayload, getStripePriceId } from '../../../data/members/airtable/utils';
-// data
+import { getStripePriceId } from '../../../data/members/airtable/utils';
+import { getPaymentPayload } from '../../../utils/members/airtable/members-db';
+// contexts
 import { MembersContext } from '../../../contexts/members-context';
-import { FORMS, SIGNUP_FIELDS } from '../../../data/members/database/member-form-names';
-import { dbFields } from '../../../data/members/database/airtable-fields';
-import { FIRST_TIME_COUPON } from '../../../data/members/payments/stripe-values';
+// data
+import { FORMS, SIGNUP_FIELDS } from '../../../data/members/member-form-names';
+import { dbFields } from '../../../data/members/airtable/airtable-fields';
+import { FIRST_TIME_COUPON } from '../../../data/members/payments/stripe/stripe-values';
 
 const PaymentForm = ({
   duesSummList,
@@ -27,13 +29,29 @@ const PaymentForm = ({
   setPaymentSuccessful, // show confirmation vs. form
 }) => {
   const [form] = Form.useForm();
-  const { member, userEmails, authUser, memberPlans, addPayment } = useContext(MembersContext);
-  const stripe = useStripe();
+
+  // context
+  const {
+    member,
+    userEmails,
+    authUser,
+    memberPlans,
+
+    // free student plan
+    addPayment,
+
+    // attorney stripe plan
+    createSubscription,
+    updateSubscription,
+    saveSubscription,
+    getSubscription
+  } = useContext(MembersContext);
+
+  const stripe = useStripe(); // stripe-js
   const elements = useElements();
   // charge card vs. email invoice
   const [collectionMethod, setCollectionMethod] = useState(initialValues[SIGNUP_FIELDS.collectionMethod]);
   const [stripeError, _setStripeError] = useState('');
-  const [subscription, setSubscription] = useState();
 
   // show form when stripe elements available
   if (!stripe || !elements) {
@@ -64,7 +82,8 @@ const PaymentForm = ({
     return null;
   }, [hasDiscount]);
 
-  // helper for displaying status messages.
+  // helper for displaying error messages.
+  // TODO: create a stripe success message
   const setStripeError = (error) => {
     _setStripeError(`${stripeError}\n\n${error}`);
   }
@@ -86,9 +105,11 @@ const PaymentForm = ({
     return primary;
   }, [userEmails]);
 
-  const onSuccess = async () => {
-    // create payment >> add invoice id to payment
-    // console.log('onSuccess SUBSCRIPTION', subscription)
+  // create payment >> add invoice id to payment
+  const onSuccess = async (subscription) => {
+    setPaymentSuccessful(true); // hide form
+    saveSubscription(subscription);
+
     const stripeInvoiceId = subscription.latest_invoice.id;
     const payload = (getPaymentPayload({
       userid: member.id,
@@ -104,9 +125,7 @@ const PaymentForm = ({
       console.log(payment);
     }
 
-    _setStripeError("Success! Save payment, show confirmation & provision!");
     setLoading(false);
-    setPaymentSuccessful(true);
 
     // return <Redirect to={{pathname: '/account'}} />
   };
@@ -132,7 +151,7 @@ const PaymentForm = ({
         email: primaryEmail,
         name: `${member.fields[dbFields.members.firstName]} ${member.fields[dbFields.members.lastName]}`,
       },
-    });
+    }); //-> returns result.error or result.paymentMethod
 
     if (error) {
       // show error and collect new card details.
@@ -140,80 +159,19 @@ const PaymentForm = ({
       return;
     }
 
-    _setStripeError(`Payment method created ${paymentMethod.id}`);
+    _setStripeError(`Payment method successfully created!`);
 
     // Create the subscription.
-    let { subError, subscription } = await fetch('/api/payments/create-subscription', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        customerId,
-        paymentMethodId: paymentMethod.id,
-        priceId,
-        collectionMethod,
-        coupon,
-      }),
-    }).then(r => r.json());
+    let createSubResult = await createSubscription({
+      customerId,
+      paymentMethodId: paymentMethod.id,
+      priceId,
+      collectionMethod,
+      coupon,
+    });
 
-    /**
-     * Possible errors:
-     *   .type: `StripeInvalidRequestError`
-     *   .rawType: `invalid_request_error`
-     *   .statusCode: 400
-     */
-    if (subError) {
-      // show error and collect new card details.
-      setLoading(false);
-      setStripeError(subError.message);
-      return;
-    }
-
-    /**
-     * Successful subscription object returned:
-    * |_ latest_invoice <expanded>
-    *    |_ amount_paid { Number }: <1/2 price> v. <full price>
-    *    |_ collection_method { String }: "charge_automatically" or "send_invoice"
-    *    |_ discounts { Array }: [...] <first-time> vs. null
-    *    |_ paid { String(Boolean) }: "true"
-    *    |_ payment_intent
-    *       |_ amount { Number }: <1/2 amount if discount> v. <full amount>
-    *       |_ status { String }: "requires_payment_method", "requires_confirmation",
-    *                             "requires_action", "processing", "requires_capture",
-    *                             "canceled", "succeeded"
-    *                             https://stripe.com/docs/payments/intents
-    *    |_ status { String }: "draft", "open", "paid", "uncollectible", or "void"
-    *                             https://stripe.com/docs/billing/invoices/overview
-    *    |_ total { Number }: (1/2 amount if dscount) v.
-    * |_ plan
-    *    |_ amount { Number }: <full amount with no discount>
-    * |_ status { String }: "active", "incomplete"
-    * |_ trial_end { Date }
-    *
-    * ======================
-    *
-    * Payment Settings:
-    * * subscription.latest_invoice.collection_method
-    * * subscription.latest_invoice.discounts
-    * * subscription.trial_end
-    *
-    * Amounts:
-    * * subscription.plan.amount
-    * * subscription.latest_invoice.payment_intent.amount
-    * * subscription.latest_invoice.total
-    * * subscription.latest_invoice.amount_paid
-    *
-    * Status:
-    * * subscription.status
-    * * subscription.latest_invoice.status - verifies initial payment status
-    * * subscription.latest_invoice.paid
-    * * subscription.latest_invoice.payment_intent.status
-    *
-    */
-    console.log('SUBSCRIPTION', subscription);
-    setStripeError(`Subscription created with ${subscription.status} status.`);
-    setSubscription(subscription);
+    const subError = createSubResult.error;
+    let { subscription } = createSubResult; // may be updated later
 
     /** Should also receive an `invoice.paid` event. Can disregard this event for initial payment, but monitor it for subsequent payments. The `invoice.paid` event type corresponds to the `payment_intent.status` of succeeded, so payment is complete, and the subscription status is active.
     */
@@ -224,42 +182,82 @@ const PaymentForm = ({
     This is also good practice because during the lifecycle of the subscription, you need to keep provisioning in sync with subscription status. Otherwise, customers might be able to access service even if their payments fail.
     */
 
+    /** subscription `incomplete` means further actions required by customer
+     *
+     * For trials, requires a call to `stripe.confirmCardSetup` and passing the subscription'spending_setup_intent's client_secret:
+        const {error, setupIntent} = await stripe.confirmCardSetup(
+          subscription.pending_setup_intent.client_secret
+        )
+     * https://stripe.com/docs/billing/subscriptions/trials
+     *
+     * For upfront payment (not trial) the payment is confirmed by passing the client_secret of the subscription's latest_invoice's payment_intent:
+    **/
+
+    if (subError) {
+      // show error and collect new card details.
+      setLoading(false);
+      setStripeError(subError.message);
+      return;
+    }
+
+    // See /data/payments/stripe/stripe-fields.jsx for Stripe schema
+    setStripeError(`Subscription created with ${subscription.status} status.`);
+
+    /** Take care of incomplete card payments */
+
     switch (subscription.status) {
       case 'active':
-        onSuccess();
         break;
 
       case 'incomplete':
         setStripeError("Please confirm the payment.");
-        /** subscription `incomplete` means further actions required by customer
-         *
-         * For trials, requires a call to `stripe.confirmCardSetup` and passing the subscription'spending_setup_intent's client_secret:
-            const {error, setupIntent} = await stripe.confirmCardSetup(
-              subscription.pending_setup_intent.client_secret
-            )
-         * https://stripe.com/docs/billing/subscriptions/trials
-         *
-         * For upfront payment (not trial) the payment is confirmed by passing the client_secret of the subscription's latest_invoice's payment_intent:
-        **/
+
+        // front-end stripe library
         const { error } = await stripe.confirmCardPayment(
           subscription.latest_invoice.payment_intent.client_secret,
         )
+        // TODO: ensure that success or error messages are clearly read out after method completes
 
-        setLoading(false);
+        // update subscription object to save to context
 
         if (error) {
           setStripeError(error.message);
-        } else {
-          setSubscription(subscription);
-          onSuccess();
+          setLoading(false);
+          return;
+          // TODO: add new payment method to invoice of last incomplete subscription, instead of creating new subscription
         }
+        const getSubResp = await getSubscription(subscription.id);
+        if (getSubResp.error) {
+          setStripeError(getSubResp.error);
+          return;
+        }
+        subscription = getSubResp.subscription;
         break;
 
-
       default:
-        setLoading(false);
         setStripeError(`Unknown Subscription status: ${subscription.status}`);
+        return;
     }
+
+    /** Update subscription
+     * if user chooses `send invoice` the next time
+     */
+
+    if (collectionMethod === SIGNUP_FIELDS.sendInvoice) {
+      const updatedSubResult = await updateSubscription({
+        subcriptionId: subscription.id,
+        collectionMethod,
+      }); //-> saveSubscription
+      if (updatedSubResult.error) {
+        console.log(updatedSubResult.error.message);
+        // setStripeError(`Collection method was not updated.`);
+        return;
+      }
+      subscription = updatedSubResult.subscription;
+    }
+
+    onSuccess(subscription);
+    setLoading(false);
   };
 
   // if (subscription && subscription.status === 'active') {

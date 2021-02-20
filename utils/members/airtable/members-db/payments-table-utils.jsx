@@ -3,11 +3,11 @@ import {
   PAYMENT_TYPE_STRIPE,
   PAYMENT_TYPE_FREE,
   PAYMENT_STATUS_PROCESSED,
-} from '../value-lists';
+} from '../../../../data/members/airtable/value-lists';
 import {
   getCurrentPlans,
-} from '../utils';
-import { dbFields } from '../../database/airtable-fields';
+} from '../../../../data/members/airtable/utils';
+import { dbFields } from '../../../../data/members/airtable/airtable-fields';
 
 // given userPayments object, returns the last payment record
 const getLastPayment = (userPayments) => {
@@ -74,8 +74,7 @@ const getPaymentPayload = ({
       if (plan) {
         planid = plan.id;
         if (hasDiscount) {
-          total = plan.fields[dbFields.plans.fee] / 2;
-          discount = total / 2;
+          total = discount = plan.fields[dbFields.plans.fee] / 2;
         } else {
           total = plan.fields[dbFields.plans.fee];
         }

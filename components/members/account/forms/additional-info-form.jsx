@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 import { Form, Input, Select } from 'antd';
 // data
-import { dbFields } from '../../../../data/members/database/airtable-fields';
+import { dbFields } from '../../../../data/members/airtable/airtable-fields';
 import { MembersContext } from '../../../../contexts/members-context';
 import { ageOptions, sexGenderOptions } from '../../../../data/members/airtable/value-lists';
 

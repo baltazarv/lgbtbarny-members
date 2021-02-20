@@ -4,8 +4,8 @@ import MemberFields from './member-fields';
 import SalaryField from '../salary-donation-dues-fields/salary-field';
 // data
 import { MembersContext } from '../../../contexts/members-context';
-import { FORMS } from '../../../data/members/database/member-form-names';
-import { dbFields } from '../../../data/members/database/airtable-fields';
+import { FORMS } from '../../../data/members/member-form-names';
+import { dbFields } from '../../../data/members/airtable/airtable-fields';
 import * as memberTypes from '../../../data/members/values/member-types';
 // import users from '../../../data/members/sample/members-sample';
 import { certifyOptions, certifyOptionsNoStudent } from '../../../data/members/airtable/value-lists';
