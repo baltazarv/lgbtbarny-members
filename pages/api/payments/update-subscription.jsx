@@ -1,6 +1,6 @@
 import { stripe } from '../utils/stripe';
-import { STRIPE_FIELDS } from '../../../data/members/payments/stripe/stripe-fields';
-import { DAYS_UNTIL_DUE } from '../../../data/members/payments/stripe/stripe-values';
+import { STRIPE_FIELDS } from '../../../data/payments/stripe/stripe-fields';
+import { DAYS_UNTIL_DUE } from '../../../data/payments/stripe/stripe-values';
 
 export default async (req, res) => {
   const {

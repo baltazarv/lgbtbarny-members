@@ -1,0 +1,88 @@
+@import '../../../../assets/global-styles.less';
+
+@btn-blue: #bae7ff;
+
+.member-groups {
+
+  .ant-select-multiple .ant-select-selection-item {
+    background-color: @btn-blue;
+    font-weight: bold;
+  }
+
+  .group-cards {
+
+    .ant-card {
+      border-radius: 8px;
+    }
+
+    .ant-card-meta-title {
+      font-size: 14px;
+    }
+
+    .ant-card-meta-detail > div:not(:last-child) {
+      margin-bottom: 0;
+    }
+
+    .group-card-content {
+      padding-top: 0.7em;
+    }
+
+    .cover {
+      height: 100px;
+      width: 100%;
+      border-top-right-radius: 8px;
+      border-top-left-radius: 8px;
+    }
+  }
+
+} // @END .member-groups
+
+.group-modal {
+
+  .ant-card {
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+  }
+
+  .cover {
+    height: 150px;
+    border-top-right-radius: 8px;
+    border-top-left-radius: 8px;
+  }
+
+  .title {
+    font-weight: bold;
+    font-size: 1.3em;
+    margin-bottom: 0.8em;
+  }
+
+  p:not(:last-child) {
+    line-height: 0.7;
+  }
+
+  p:last-child {
+    margin-bottom: 0;
+  }
+
+  .ant-modal-title {
+    font-weight: bold;
+  }
+
+  .ant-card-actions {
+    padding: 0 0.6em;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+  }
+
+  .ant-card-actions > li:not(:last-child) {
+    padding-right: 0.4em;
+  }
+
+  .ant-card-actions > li:not(:first-child) {
+    padding-left: 0.4em;
+  }
+
+  .ant-card-actions > li > span a:not(.ant-btn) {
+    color: @link-blue;
+  }
+} // @END .group-modal

@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/router'
 import { Skeleton } from 'antd';
 import { Container } from 'react-bootstrap';
-import MainLayout from '../components/main-layout';
+import MainLayout from '../components/layout/main-layout';
 
 const Home = () => {
   const router = useRouter();

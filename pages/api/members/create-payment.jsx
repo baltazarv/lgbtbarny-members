@@ -1,10 +1,6 @@
 import { paymentsTable, minifyRecords } from '../utils/Airtable';
 import auth0 from '../utils/auth0';
-
-const SIGNUP_FIELDS = {
-  discount: 'discount',
-  invoiceId: '_stripe_invoice_id',
-}
+import { dbFields } from '../../../data/members/airtable/airtable-fields';
 
 /**
  * body.userid {String}
@@ -25,8 +21,8 @@ export default auth0.requireAuthentication(async function createPayment(req, res
       total,
       date: new Date().toISOString(), // ISO 8601 formatted date,
     };
-    if (invoice) fields[SIGNUP_FIELDS.invoiceId] = invoice;
-    if (discount) fields[SIGNUP_FIELDS.discount] = discount;
+    if (invoice) fields[dbFields.payments.invoiceId] = invoice;
+    if (discount) fields[dbFields.payments.discount] = discount;
 
     const createdRecords = await paymentsTable.create([
       { fields }

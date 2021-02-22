@@ -16,19 +16,20 @@ import auth0 from '../api/utils/auth0';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 // custom components
-import MainLayout from '../../components/main-layout';
-import MemberMenu from '../../components/members/member-menu';
-import MemberAccordion from '../../components/members/member-accordion';
-import MemberContent from '../../components/members/member-content';
-import MemberModal from '../../components/members/member-modal';
-import SvgIcon from '../../components/utils/svg-icon';
+import MainLayout from '../../components/layout/main-layout';
+import MemberMenu from '../../components/members/layout/member-menu';
+import MemberAccordion from '../../components/members/layout/member-accordion';
+import MemberContent from '../../components/members/layout/member-content';
+import MemberModal from '../../components/members/elements/member-modal';
+import SvgIcon from '../../components/elements/svg-icon';
 // import NewsNotification from '../../components/utils/open-notification';
 import './members.less';
 // data
-import { getMemberType, getMemberStatus } from '../../data/members/airtable/utils';
-import { getDashboard, getMemberPageParentKey } from '../../data/members/dashboard/member-dashboards';
+import { getMemberType, getMemberStatus } from '../../utils/members/airtable/members-db';
+import { getDashboard } from '../../data/members/member-content/dashboards';
+import { getMemberPageParentKey } from '../../utils/members/dashboard-utils';
 import { dbFields } from '../../data/members/airtable/airtable-fields';
-import * as memberTypes from '../../data/members/values/member-types';
+import * as memberTypes from '../../data/members/member-types';
 import sampleMembers from '../../data/members/sample/members-sample';
 import { membersTable, emailsTable, paymentsTable, plansTable, minifyRecords } from '../api/utils/Airtable';
 // contexts

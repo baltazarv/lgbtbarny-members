@@ -3,8 +3,8 @@ import moment from 'moment';
 import {
   getLastPlan,
   getLastPayment,
-} from '../../../../data/members/airtable/utils';
-import * as memberTypes from '../../../../data/members/values/member-types';
+} from '../../../../utils/members/airtable/members-db';
+import * as memberTypes from '../../../../data/members/member-types';
 import { dbFields } from '../../../../data/members/airtable/airtable-fields';
 
 /**

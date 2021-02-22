@@ -3,10 +3,10 @@ import {
   PAYMENT_TYPE_STRIPE,
   PAYMENT_TYPE_FREE,
   PAYMENT_STATUS_PROCESSED,
-} from '../../../../data/members/airtable/value-lists';
+} from '../../../../data/members/airtable/airtable-values';
 import {
   getCurrentPlans,
-} from '../../../../data/members/airtable/utils';
+} from './plans-table-utils';
 import { dbFields } from '../../../../data/members/airtable/airtable-fields';
 
 // given userPayments object, returns the last payment record

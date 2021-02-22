@@ -74,7 +74,9 @@ export const dbFields = {
   payments: {
     date: 'date',
     plans: 'plans',
+    discount: 'discount',
     total: 'total',
+    invoiceId: '_stripe_invoice_id',
   },
   plans: {
     type: 'type',

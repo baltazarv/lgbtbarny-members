@@ -1,0 +1,228 @@
+@import '../../assets/global-styles.less';
+
+@header-blue-bg: #30B9F9;
+@special-btn-bg: #b2e6fc;
+
+// to fit comfortable on a Galazy S II and S5 (360px), but not on an iPhone 5/SE (320px) - no problem with later iPhones
+@width-smaller-header: ~"(max-width: 476px)";
+
+// size where the buttons start bumping into the logo & the menu items get smaller
+@width-hide-special-btns: ~"(max-width: 359px)";
+
+.main-header {
+  background-color: @header-blue-bg;
+
+  &.navbar-dark {
+
+    .logo-img {
+      height: 86px;
+      width: auto;
+
+      @media @width-smaller-header {
+        height: 70px;
+      }
+    }
+
+    // position-absolute items
+    .special-btns a {
+      font-weight: 900;
+      width: 175px;
+      height: 40px;
+      position: absolute;
+      top: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0px 1px 4px 0px rgba(0,0,0,0.6);
+      color: @purple-bg;
+
+      &.legalhelpinfo {
+        background-color: white;
+        right: 175px;
+
+        @media @width-smaller-header {
+          right: 126px;
+        }
+      }
+
+      &.donate {
+        background-color: @purple-bg;
+        color: white;
+        right: 0;
+      }
+
+      // smaller button size for smartphones
+      @media @width-smaller-header {
+        width: 126px;
+        font-size: 13px;
+      }
+
+      @media @width-hide-special-btns {
+        display: none;
+      }
+
+      // when buttons hit the logo show items inside collapse
+      &.legalhelpinfo, &.donate {
+        &:hover {
+          background-color: @special-btn-bg;
+          color: white;
+          opacity: 1;
+        }
+      }
+
+    } // @END .special-btns a
+
+    .navbar-toggler {
+      border: 0;
+
+      &:focus {
+        outline-color: white;
+        outline-width: 3px;
+      }
+
+      @media @width-hide-special-btns {
+        align-self: flex-start!important; // flex-end!important;
+      }
+    }
+
+    .navbar-nav {
+      align-items: center;
+
+      @media @sm-up {
+        align-items: inherit;
+      }
+
+      .nav-item {
+        width: 100%;
+        text-align: center;
+
+        &.show {
+          padding-bottom: 1.6em;
+
+          @media @md-up {
+            padding-bottom: 0;
+          }
+        }
+
+        &:not(:last-child) {
+          border-bottom: 1px solid lighten(@header-blue-bg, 20%);
+
+          @media @md-up {
+            border-bottom: none;
+          }
+        }
+
+        &.active {
+          .nav-link {
+            color: white;
+          }
+        }
+
+        .nav-link {
+          font-size: 1.2em;
+          padding: 0.55rem 0.9rem; // 0.25rem 1.5rem
+          color: fadeout(white, 35%);
+          border-radius: .25rem;
+
+          &:hover {
+            background: 0;
+            color: #fff;
+          }
+
+          @media @md-up {
+            font-size: 0.8em;
+            padding: 0.25rem 0.9rem; // 0.25rem 1.5rem
+          }
+        }
+
+        // &.active {
+        //   .nav-link {
+        //     background-color: darken(@header-blue-bg, 6%); // 10% max
+        //     border-radius: .25rem;
+        //   }
+        // }
+      } // @END .nav-item
+
+      .dropdown-menu {
+        font-size: 1.2em;
+        background-color: @header-blue-bg;
+        padding: 0; // .5rem 0;
+        border: 0; // 1px solid rgba(0,0,0,.15)
+        border-radius: 0; // .25rem
+        text-align: center;
+        margin-top: 0;
+
+        @media @md-up {
+          font-size: 0.8em;
+          background-color: fade(@purple-bg, 93%);
+          text-align: left;
+          margin-top: 2px;
+        }
+
+
+
+        .dropdown-item {
+          color: fadeout(white, 35%);
+
+          &:hover {
+            color: white;
+          }
+
+          &.active {
+            color: white;
+            background-color: darken(@header-blue-bg, 3%);
+
+            @media @md-up {
+              background-color: darken(@purple-bg, 3%);
+            }
+          }
+        }
+      }
+
+      .nav-link, .dropdown-item {
+        font-weight: 600;
+
+        @media @md-up {
+          padding: 0.25rem 0.9rem; // 0.25rem 1.5rem
+        }
+
+        &:hover {
+          background: 0;
+        }
+
+        &.legalhelpinfo, &.donate {
+          display: none;
+
+          // when buttons hit the logo show items inside collapse
+          @media @width-hide-special-btns {
+            display: block;
+            width: 184px;
+            text-align: center;
+            // mobile doesn't have hover
+            // &:hover {
+            //   opacity: 1;
+            //   color: white;
+            //   background-color: @special-btn-bg;
+            // }
+          }
+        }
+
+        &.legalhelpinfo {
+          color: @purple-bg;
+          background-color: white;
+        }
+
+        &.donate {
+          color: white;
+          background-color: @purple-bg;
+        }
+
+      } // @END .nav-link, .dropdown-item
+
+    } // @END .navbar-nav
+
+    .navbar-toggler-icon {
+      background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='white' stroke-width='4' stroke-linecap='round' stroke-miterlimit='10' d='M4 8h24M4 16h24M4 24h24'/%3E%3C/svg%3E");
+    }
+  } // @END &.navbar-dark
+} // @END .main-header

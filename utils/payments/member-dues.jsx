@@ -1,5 +1,5 @@
 // TODO: move to /member/utils
-import { SIGNUP_FIELDS } from '../../data/members/member-form-names';
+import { PAYMENT_FIELDS } from '../../data/payments/payment-fields';
 
 export const duesInit = {
   memberFee: 0,
@@ -34,8 +34,8 @@ export const getMemberFees = ({
 };
 
 // export const setDonation = (form) => {
-//   const donation = form.getFieldValue(SIGNUP_FIELDS.donation);
-//   const customDonation = form.getFieldValue(SIGNUP_FIELDS.customDonation);
+//   const donation = form.getFieldValue(PAYMENT_FIELDS.donation);
+//   const customDonation = form.getFieldValue(PAYMENT_FIELDS.customDonation);
 //   const donationValue = typeof donation === 'string' && donation.toLowerCase().includes('custom') ? customDonation : donation;
 //   return { donation: donationValue };
 // };

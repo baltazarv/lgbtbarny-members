@@ -4,8 +4,7 @@
  */
 import {
   getLastPayment,
-  getOptions,
-} from '../../../../data/members/airtable/utils';
+} from './payments-table-utils';
 import { dbFields } from '../../../../data/members/airtable/airtable-fields';
 
 // Find user's last payment and match on plans table

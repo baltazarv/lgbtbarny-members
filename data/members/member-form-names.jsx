@@ -1,16 +1,13 @@
-import { SIGNUP_FIELDS } from './payments/payment-fields';
-
-export const FORMS = {
-  signupMemberInfo: 'signup-member-info',
-  payment: 'payment-form', // "payment-form" added as class
+export const ACCOUNT_FORMS = {
   editProfile: 'edit-profile',
   editEmails: 'edit-emails',
   editMemberInfo: 'edit-member-info',
   editAdditionalInfo: 'edit-additional-info',
   editPayment: 'edit-membership',
-  editEmailPrefs: 'edit-email-prefs',
+  // editEmailPrefs: 'edit-email-prefs',
 };
 
-export {
-  SIGNUP_FIELDS,
+export const SIGNUP_FORMS = {
+  signupMemberInfo: 'signup-member-info',
+  payment: 'payment-form',
 };
