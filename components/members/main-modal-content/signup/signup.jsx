@@ -477,7 +477,7 @@ const Signup = ({
               initialValues={{
                 [PAYMENT_FIELDS.billingname]: `${member && member.fields[dbFields.members.firstName]} ${member && member.fields[dbFields.members.lastName]}`,
                 // [PAYMENT_FIELDS.renewDonation]: true,
-                [STRIPE_FIELDS.invoice.collectionMethod]: STRIPE_FIELDS.invoice.collectionMethodValues.chargeAutomatically,
+                [STRIPE_FIELDS.subscription.collectionMethod]: STRIPE_FIELDS.subscription.collectionMethodValues.chargeAutomatically,
               }}
               total={total} // display in message
               hasDiscount={hasDiscount} // appy as subscription coupon

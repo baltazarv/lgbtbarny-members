@@ -1,8 +1,9 @@
 /**
  * Successful subscription object returned:
+* |_ cancel_at_period_end { Boolean }
+* |_ collection_method { String }: "charge_automatically" or "send_invoice"
 * |_ latest_invoice <expanded>
 *    |_ amount_paid { Number }: <1/2 price> v. <full price>
-*    |_ collection_method { String }: "charge_automatically" or "send_invoice"
 *    |_ discounts { Array }: [...] <first-time> vs. null
 *    |_ paid { String(Boolean) }: "true"
 *    |_ payment_intent
@@ -24,6 +25,7 @@
 * Payment Settings:
 * * subscription.latest_invoice.collection_method
 * * subscription.latest_invoice.discounts
+* * subscription.cancel_at_period_end
 * * subscription.trial_end
 *
 * Amounts:
@@ -40,11 +42,12 @@
 *
 */
 export const STRIPE_FIELDS = {
-  invoice: {
+  subscription: {
+    cancelAtPeriodEnd: 'cancel_at_period_end',
     collectionMethod: 'collection_method',
     collectionMethodValues: {
       chargeAutomatically: 'charge_automatically',
       sendInvoice: 'send_invoice',
-    }
+    },
   }
 };

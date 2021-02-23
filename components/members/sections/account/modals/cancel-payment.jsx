@@ -1,10 +1,14 @@
+// rename file to cancel-membership.jsx
+import { Button } from 'antd';
 import { useMemo, useContext } from 'react';
 import moment from 'moment';
 // data
 import { MembersContext } from '../../../../../contexts/members-context';
 import { getLastPayment } from '../../../../../utils/members/airtable/members-db';
 
-const CancelMembership = () => {
+const CancelMembership = ({
+  openCollectionMethodModal,
+}) => {
   const { userPayments } = useContext(MembersContext);
 
   const lastPayment = useMemo(() => {
@@ -12,8 +16,8 @@ const CancelMembership = () => {
   }, [userPayments]);
 
   return <>
-    <p>If you cancel your payment, membership dues will not be automatically withdrawn, potentially comprimising your active membership.</p>
-    {lastPayment.fields && <p>To continue your membership without interruptions, do not cancel your next payment or renew automatic payment withdrawals again before your membership expires on <span className="text-danger">{moment(lastPayment.fields.date).format('MMMM Do, YYYY')}</span>.</p>}
+    {lastPayment.fields && <p>Cancel your membership when it expires on <strong>{moment(lastPayment.fields.date).format('MMMM Do, YYYY')}</strong>.</p>}
+    <div>If, instead, you do not want your card to be charged automatically, get an invoice sent to you. Change your card's <Button type="primary" ghost size="small" onClick={openCollectionMethodModal}>collection method</Button></div>
   </>;
 };
 

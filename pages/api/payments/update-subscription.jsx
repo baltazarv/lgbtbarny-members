@@ -7,6 +7,7 @@ export default async (req, res) => {
     subcriptionId,
     priceId, // plan update
     collectionMethod, // collection method update
+    cancelAtPeriodEnd,
   } = req.body;
 
   let subscription = null;
@@ -26,7 +27,7 @@ export default async (req, res) => {
     updateFields = Object.assign(updateFields, {
       collection_method: collectionMethod,
     })
-    if (collectionMethod === STRIPE_FIELDS.invoice.collectionMethodValues.sendInvoice) updateFields.days_until_due = DAYS_UNTIL_DUE;
+    if (collectionMethod === STRIPE_FIELDS.subscription.collectionMethodValues.sendInvoice) updateFields.days_until_due = DAYS_UNTIL_DUE;
   }
 
   // if updating plan (price)
@@ -38,6 +39,11 @@ export default async (req, res) => {
         price: priceId,
       }]
     })
+  }
+
+  // if updating cancel-at-period-end - keeps the same price plan
+  if (cancelAtPeriodEnd || cancelAtPeriodEnd === false) {
+    updateFields = Object.assign(updateFields, { cancel_at_period_end: cancelAtPeriodEnd });
   }
 
   try {

@@ -2,6 +2,8 @@ import { useEffect } from 'react';
 import { CardElement } from '@stripe/react-stripe-js';
 import { Form, Input, Radio, Button, Card } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
+// data
+import { PAYMENT_FIELDS, STRIPE_FIELDS } from '../../data/payments/payment-fields';
 
 const CARD_ELEMENT_OPTIONS = {
   style: {
@@ -60,13 +62,13 @@ const PaymentFields = ({
           </div>
 
       <Form.Item
-        name={STRIPE_FIELDS.invoice.collectionMethod}
+        name={STRIPE_FIELDS.subscription.collectionMethod}
       >
         <Radio.Group
           className="mt-2"
         >
-          <Radio value={STRIPE_FIELDS.invoice.collectionMethodValues.chargeAutomatically}>Charge my credit card.</Radio>
-          <Radio value={STRIPE_FIELDS.invoice.collectionMethodValues.sendInvoice}>Email me an invoice.</Radio>
+          <Radio value={STRIPE_FIELDS.subscription.collectionMethodValues.chargeAutomatically}>Charge my credit card.</Radio>
+          <Radio value={STRIPE_FIELDS.subscription.collectionMethodValues.sendInvoice}>Email me an invoice.</Radio>
         </Radio.Group>
       </Form.Item>
 
