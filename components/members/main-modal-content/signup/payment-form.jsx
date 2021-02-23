@@ -51,7 +51,7 @@ const PaymentForm = ({
   const stripe = useStripe(); // stripe-js
   const elements = useElements();
   // charge card vs. email invoice
-  const [collectionMethod, setCollectionMethod] = useState(initialValues[STRIPE_FIELDS.collectionMethod]);
+  const [collectionMethod, setCollectionMethod] = useState(initialValues[STRIPE_FIELDS.invoice.collectionMethod]);
   const [stripeError, _setStripeError] = useState('');
 
   // show form when stripe elements available
@@ -90,7 +90,7 @@ const PaymentForm = ({
   }
   const onValuesChange = (changedFields, allFields) => {
     // console.log('onValuesChange', changedFields, 'allFields', allFields);
-    if (changedFields.hasOwnProperty(STRIPE_FIELDS.collectionMethod)) setCollectionMethod(changedFields[STRIPE_FIELDS.collectionMethod]);
+    if (changedFields.hasOwnProperty(STRIPE_FIELDS.invoice.collectionMethod)) setCollectionMethod(changedFields[STRIPE_FIELDS.invoice.collectionMethod]);
   };
 
   const loggedInEmail = useMemo(() => {
@@ -244,7 +244,7 @@ const PaymentForm = ({
      * if user chooses `send invoice` the next time
      */
 
-    if (collectionMethod === STRIPE_FIELDS.collectionMethodValues.sendInvoice) {
+    if (collectionMethod === STRIPE_FIELDS.invoice.collectionMethodValues.sendInvoice) {
       const updatedSubResult = await updateSubscription({
         subcriptionId: subscription.id,
         collectionMethod,

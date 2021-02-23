@@ -13,17 +13,10 @@ import { UserOutlined } from '@ant-design/icons';
 import { MembersContext } from '../../../../../contexts/members-context';
 import { dbFields } from '../../../../../data/members/airtable/airtable-fields';
 import * as memberTypes from '../../../../../data/members/member-types';
-import { practiceSettingOptions, certifyOptions, getCertifyType } from '../../../../../data/members/airtable/airtable-values';
+import { practiceSettingOptions, certifyOptions, certifyOptionsNoStudent, getCertifyType } from '../../../../../data/members/airtable/airtable-values';
 // utils
-import {
-  getMemberPlanFee,
-} from '../../../../../utils/members/airtable/members-db';
-import {
-  getPlanFee,
-} from '../../../../../utils/members/airtable/members-db';
-import {
-  getSalaryOptions,
-} from '../../../../../utils/members/airtable/airtable-select-options';
+import { getMemberPlanFee, getPlanFee, getMemberStatus } from '../../../../../utils/members/airtable/members-db';
+import { getSalaryOptions } from '../../../../../utils/members/airtable/airtable-select-options';
 // styles
 import '../account.less';
 
@@ -45,6 +38,24 @@ const MemberInfoFields = ({
   const [studentHasGraduated, setStudentHasGraduated] = useState(false);
 
   /**
+   * Results:
+   * * `pending`
+   * * `attorney` (active)
+   * * `student` (active)
+   * * `expired (attorney)`
+   * * `graduated (student)`
+   */
+  const memberStatus = useMemo(() => {
+    const status = getMemberStatus({
+      userPayments,
+      memberPlans,
+      member, // for student grad year
+    });
+    console.log('memberStatus', status)
+    return status;
+  }, [userPayments, memberPlans, member]);
+
+  /**
    * CERTIFY STATUS - ALL MEMBERS
    */
 
@@ -62,7 +73,7 @@ const MemberInfoFields = ({
 
   useEffect(() => {
     setCertifyStatus(member.fields[dbFields.members.certify]);
-  }, [member.fields[dbFields.members.certify], editing]);
+  }, [member.fields[dbFields.members.certify]]);
 
   const onMemberTypeSelect = (value) => {
     setCertifyStatus(value);
@@ -126,7 +137,10 @@ const MemberInfoFields = ({
             disabled={loading}
             onChange={onMemberTypeSelect}
           >
-            {certifyOptions()}
+            {(isAttorney || memberStatus === 'graduated') ?
+              certifyOptionsNoStudent() :
+              certifyOptions()
+            }
           </Select>
           :
           <>{member.fields && member.fields[dbFields.members.certify]}</>

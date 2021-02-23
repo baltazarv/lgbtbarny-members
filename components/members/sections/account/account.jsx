@@ -14,11 +14,11 @@ import EmailPrefs from './forms/email-prefs';
 // styles
 import './account.less';
 // utils
-import { getStripePriceId } from '../../../../utils/members/airtable/members-db';
+import { getStripePriceId, getMemberStatus } from '../../../../utils/members/airtable/members-db';
 import { getActiveSubscription } from '../../../../utils/payments/stripe-utils';
 // data
-import { dbFields } from '../../../../data/members/airtable/airtable-fields';
 import { MembersContext } from '../../../../contexts/members-context';
+import { dbFields } from '../../../../data/members/airtable/airtable-fields';
 import * as memberTypes from '../../../../data/members/member-types';
 import { ACCOUNT_FORMS } from '../../../../data/members/member-form-names';
 
@@ -45,6 +45,7 @@ const Account = ({
     member,
     updateMember,
     memberPlans,
+    userPayments,
     subscriptions,
     updateSubscription,
   } = useContext(MembersContext);
@@ -53,6 +54,23 @@ const Account = ({
   const activeSubscription = useMemo(() => {
     return getActiveSubscription(subscriptions);
   }, [subscriptions]);
+
+  /**
+   * Results:
+   * * `pending`
+   * * `attorney` (active)
+   * * `student` (active)
+   * * `expired (attorney)`
+   * * `graduated (student)`
+   */
+  const memberStatus = useMemo(() => {
+    const status = getMemberStatus({
+      userPayments,
+      memberPlans,
+      member, // for student grad year
+    });
+    return status;
+  }, [userPayments, memberPlans, member]);
 
   const onFormChange = (formName, info) => {
     // console.log('onFormChange formName', formName, 'changedFields', info.changedFields);
@@ -122,7 +140,7 @@ const Account = ({
             name={ACCOUNT_FORMS.editMemberInfo}
             title={memberType === memberTypes.USER_NON_MEMBER ? 'Membership qualification' : 'Member info'}
             initialValues={{
-              [dbFields.members.certify]: member && member.fields[dbFields.members.certify],
+              [dbFields.members.certify]: memberStatus === 'graduated' || !member ? '' : member.fields[dbFields.members.certify],
               [dbFields.members.salary]: member && member.fields[dbFields.members.salary],
               [dbFields.members.employer]: member && member.fields[dbFields.members.employer],
               [dbFields.members.practiceSetting]: member && member.fields[dbFields.members.practiceSetting],

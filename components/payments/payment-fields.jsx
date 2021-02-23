@@ -60,13 +60,13 @@ const PaymentFields = ({
           </div>
 
       <Form.Item
-        name={STRIPE_FIELDS.collectionMethod}
+        name={STRIPE_FIELDS.invoice.collectionMethod}
       >
         <Radio.Group
           className="mt-2"
         >
-          <Radio value={STRIPE_FIELDS.collectionMethodValues.chargeAutomatically}>Charge my credit card.</Radio>
-          <Radio value={STRIPE_FIELDS.collectionMethodValues.sendInvoice}>Email me an invoice.</Radio>
+          <Radio value={STRIPE_FIELDS.invoice.collectionMethodValues.chargeAutomatically}>Charge my credit card.</Radio>
+          <Radio value={STRIPE_FIELDS.invoice.collectionMethodValues.sendInvoice}>Email me an invoice.</Radio>
         </Radio.Group>
       </Form.Item>
 
