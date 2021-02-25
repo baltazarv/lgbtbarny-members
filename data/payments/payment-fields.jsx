@@ -1,3 +1,4 @@
+// TODO: rename 'payment-field-names'
 import { STRIPE_FIELDS } from './stripe/stripe-fields';
 
 const PAYMENT_FIELDS = {

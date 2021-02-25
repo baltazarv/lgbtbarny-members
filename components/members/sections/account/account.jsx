@@ -5,11 +5,12 @@ import moment from 'moment';
 // main component
 import AccountsForm from './forms/accounts-form';
 // render functions in AccountsForm
+// TODO: rename './forms/' to './sections'; move './modals' to './sections/modals/'?
 import ProfileForm from './forms/profile-form';
 import EmailsForm from './forms/emails-form';
 import MemberInfoFields from './forms/member-info-fields';
 import AdditionalInfoForm from './forms/additional-info-form';
-import PaymentInfoForm from './forms/payment-info-form';
+import PaymentInfo from './forms/payment-info';
 import EmailPrefs from './forms/email-prefs';
 // styles
 import './account.less';
@@ -21,6 +22,7 @@ import { MembersContext } from '../../../../contexts/members-context';
 import { dbFields } from '../../../../data/members/airtable/airtable-fields';
 import * as memberTypes from '../../../../data/members/member-types';
 import { ACCOUNT_FORMS } from '../../../../data/members/member-form-names';
+import { PAYMENT_FIELDS } from '../../../../data/payments/payment-fields';
 
 const MenuIcon = ({
   name,
@@ -81,6 +83,9 @@ const Account = ({
     // console.log('onFormFinish formName', formName, 'info.values', info.values, 'info.forms', info.forms);
     let fields = Object.assign({}, info.values);
 
+    // do not process billingname, done on UpdateCardForm okButton -> onFinish()
+    if (formName === ACCOUNT_FORMS.updateCard) return;
+
     // convert `grad_year` from moment object to number
     const gradYearField = dbFields.members.gradYear;
     if (info.values[gradYearField]) {
@@ -140,7 +145,7 @@ const Account = ({
             name={ACCOUNT_FORMS.editMemberInfo}
             title={memberType === memberTypes.USER_NON_MEMBER ? 'Membership qualification' : 'Member info'}
             initialValues={{
-              [dbFields.members.certify]: memberStatus === 'graduated' || !member ? '' : member.fields[dbFields.members.certify],
+              [dbFields.members.certify]: memberStatus === 'graduated' || !member ? '' : member?.fields[dbFields.members.certify],
               [dbFields.members.salary]: member && member.fields[dbFields.members.salary],
               [dbFields.members.employer]: member && member.fields[dbFields.members.employer],
               [dbFields.members.practiceSetting]: member && member.fields[dbFields.members.practiceSetting],
@@ -179,7 +184,8 @@ const Account = ({
             title="Payment information"
             editable={false}
             loading={loading}
-            render={(args) => <PaymentInfoForm {...args} />}
+            setLoading={setLoading}
+            render={(args) => <PaymentInfo {...args} />}
           />
         </div>
       }

@@ -130,9 +130,9 @@ const EmailPrefs = ({
           size="small"
         />&nbsp;&nbsp;<strong>Transactional notifications</strong>, including the following, will always be sent:
         <ul>
-          <li>Magic link emails to log into dashboard.</li>
-          <li>Transaction &amp; payment emails (donations, membership, paid events)</li>
-          <li>Event registration confirmations</li>
+          <li>Emails to log in.</li>
+          <li>Transaction &amp; payment emails</li>
+          {/* <li>Event registration confirmations</li> */}
         </ul>
       </div>
 

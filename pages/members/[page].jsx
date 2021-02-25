@@ -1,7 +1,11 @@
 /**
  * Props:
  * * authUser.name = logged in email.
- * * members has logged-in user.
+ * *
+ *  Storing the Stripe object IDs in Airtable:
+ *  * customer.id     -> members table
+ *  * price.id        -> plans table
+ *  * invoice.id      -> payments table
  *
  * Prototypes can be seen with query strings:`?type=attorney`, `?type=student` and `?type=non-member`.
  *
@@ -15,6 +19,7 @@ import { Layout, Button, Avatar } from 'antd';
 import auth0 from '../api/utils/auth0';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
+import { isEmpty } from 'lodash/lang';
 // custom components
 import MainLayout from '../../components/layout/main-layout';
 import MemberMenu from '../../components/members/layout/member-menu';
@@ -34,10 +39,8 @@ import sampleMembers from '../../data/members/sample/members-sample';
 import { membersTable, emailsTable, paymentsTable, plansTable, minifyRecords } from '../api/utils/Airtable';
 // contexts
 import { MembersContext } from '../../contexts/members-context';
-// payments
-import { stripe } from '../api/utils/stripe';
-// utils
-import { isEmpty } from 'lodash/lang';
+// payment utils
+import { stripe, getActiveSubscription, getPaymentMethodObject } from '../api/utils/stripe';
 
 const { Sider } = Layout;
 
@@ -54,6 +57,7 @@ const Members = ({
   loggedInUserPayments,
   plans,
   userSubscriptions,
+  userDefaultCard,
 }) => {
   const router = useRouter();
 
@@ -69,7 +73,7 @@ const Members = ({
     // members
     member, setMember, authUser, setAuthUser, setUserEmails, userPayments, setUserPayments, memberPlans, setMemberPlans,
     // payments
-    subscriptions, setSubscriptions,
+    setSubscriptions, setDefaultCard
   } = useContext(MembersContext);
 
   // when anon user, select tab to view preview content
@@ -172,9 +176,9 @@ const Members = ({
     }
   }, [userSubscriptions]);
 
-  // useEffect(() => {
-  //   console.log('useEffect subscriptions', subscriptions)
-  // }, [subscriptions]);
+  useEffect(() => {
+    setDefaultCard(userDefaultCard);
+  }, [userDefaultCard]);
 
   /** When query string changes
    *  * Open signup & subscribe motals.
@@ -517,7 +521,8 @@ export async function getServerSideProps(context) {
     loggedInUserPayments = null,
     plans = null,
     // stripe vars
-    userSubscriptions = null;
+    userSubscriptions = null,
+    userDefaultCard = null;
 
   if (session) {
     try {
@@ -570,6 +575,7 @@ export async function getServerSideProps(context) {
           }
         }
 
+
         // find & mark logged-in email as verified
         let emailRecords = [];
         emailRecords = await emailsTable.select({
@@ -615,6 +621,17 @@ export async function getServerSideProps(context) {
           try {
             const subscriptions = await stripe.subscriptions.list({ customer: stripeId });
             userSubscriptions = subscriptions.data;
+            // get info about active subscription's default payment method, eg, last4
+            const activeSubscription = getActiveSubscription(userSubscriptions);
+            if (activeSubscription && activeSubscription.default_payment_method) {
+              const paymentMethod = await stripe.paymentMethods.retrieve(activeSubscription.default_payment_method);
+              const defaultCard = getPaymentMethodObject(paymentMethod, {
+                type: 'subscription',
+                id: activeSubscription.id,
+                field: 'default_payment_method',
+              });
+              userDefaultCard = defaultCard;
+            }
           } catch (err) {
             console.log(err);
           }
@@ -643,6 +660,7 @@ export async function getServerSideProps(context) {
       loggedInUserPayments,
       plans,
       userSubscriptions,
+      userDefaultCard,
     }
   }
 };

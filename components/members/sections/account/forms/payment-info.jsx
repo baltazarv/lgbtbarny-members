@@ -1,10 +1,27 @@
 // TODO: remove this component from Accounts page for free membership plans, eg, Volunteer
+/**
+ * Contents:
+ * * Current annual fee
+ * * Last payment
+ * * Collection method
+ * * Card to charge
+ * * 1-yr membership
+ *
+ * Modals:
+ * * [Payment history] (BillingHistory)
+ * * [Change method] (CollectionMethodForm)
+ *           Modal.onOk => updateCollectMethod
+ * * [Change card] (UpdateCardForm)
+ * * [Cancel membership] (CancelPayment)
+ *           Modal.onOk => toggleCancelMembership
+ */
 import { useState, useContext, useMemo } from 'react';
-import { Row, Col, Typography, Modal, Button, Tooltip } from 'antd';
+import { Row, Col, Typography, Modal, Button, Tooltip, Form } from 'antd';
 import moment from 'moment';
 // modals
 import BillingHistory from '../modals/billing-list';
-import CardInfoForm from '../modals/card-info-form';
+import CollectionMethodForm from '../modals/collection-method-form';
+import UpdateCardForm from '../modals/update-card-form';
 import CancelPayment from '../modals/cancel-payment';
 // data
 import { MembersContext } from '../../../../../contexts/members-context';
@@ -21,11 +38,15 @@ import { getActiveSubscription } from '../../../../../utils/payments/stripe-util
 
 const { Link } = Typography;
 
-const PaymentInfoForm = ({
+const PaymentInfo = ({
   loading,
+  setLoading,
   editing,
 }) => {
-  const { member, userPayments, memberPlans, updateSubscription, subscriptions } = useContext(MembersContext);
+  const { member, userPayments, memberPlans, updateSubscription, subscriptions, defaultCard } = useContext(MembersContext);
+  // forms
+  const [collectMethodForm] = Form.useForm();
+
   // modals
   const [billingModalVisible, setBillingModalVisible] = useState(false);
   const [cardModalVisible, setCardModalVisible] = useState(false);
@@ -54,15 +75,7 @@ const PaymentInfoForm = ({
     return getMemberStatus(userPayments, memberPlans, member);
   }, [userPayments, memberPlans, member]);
 
-  // no due date for plans with no term limits, eg, Volunteer
-  const nextPaymentDate = useMemo(() => {
-    if (userPayments) return getNextPaymentDate({
-      userPayments,
-      memberPlans,
-      format: 'MMMM Do, YYYY',
-    });
-    return null;
-  }, [userPayments, memberPlans]);
+  /** current annual fee */
 
   const fee = useMemo(() => {
     if (member && memberPlans) {
@@ -75,26 +88,77 @@ const PaymentInfoForm = ({
     return getActiveSubscription(subscriptions);
   }, [subscriptions]);
 
+  /** collection method */
+
+  const collectionMethod = useMemo(() => {
+    if (activeSubscription?.collection_method) {
+      return activeSubscription[STRIPE_FIELDS.subscription.collectionMethod];
+    }
+    return null;
+  }, [activeSubscription]);
+
+  const updateCollectMethod = async (values) => {
+    // console.log('updateCollectMethod', values);
+    setLoading(true);
+    const updatedSubResult = await updateSubscription({
+      subcriptionId: activeSubscription.id,
+      collectionMethod: values[STRIPE_FIELDS.subscription.collectionMethod],
+    });
+    if (updatedSubResult.error) {
+      console.log(updatedSubResult.error.message);
+      return;
+    }
+    setLoading(false);
+    setCollectMethodModalVisible(false);
+  };
+
+  const openCollectionMethodModal = () => {
+    setCollectMethodModalVisible(true);
+    setCancelModalVisible(false);
+  };
+
+  /** credit card */
+
+  const cardLast4 = useMemo(() => {
+    if (defaultCard?.last4) {
+      return defaultCard.last4;
+    }
+    return null;
+  }, [defaultCard]);
+
+  const onCardFormCancel = () => {
+    setCardModalVisible(false);
+  }
+
+  /** 1-year membership / cancel subscription */
+
+  // no due date for plans with no term limits, eg, Volunteer
+  const nextPaymentDate = useMemo(() => {
+    if (userPayments) return getNextPaymentDate({
+      userPayments,
+      memberPlans,
+      format: 'MMMM Do, YYYY',
+    });
+    return null;
+  }, [userPayments, memberPlans]);
+
   const subscriptionCancelled = useMemo(() => {
     if (activeSubscription && activeSubscription[STRIPE_FIELDS.subscription.cancelAtPeriodEnd] === true) return true;
     return false;
   }, [activeSubscription]);
 
   const toggleCancelMembership = async (shouldCancel) => {
+    setLoading(true)
     const updatedSubResult = await updateSubscription({
       subcriptionId: activeSubscription.id,
       cancelAtPeriodEnd: shouldCancel,
     });
     if (updatedSubResult.error) {
       console.log(updatedSubResult.error.message);
+      setLoading(false);
       return;
     }
-    // console.log('toggleCancelMembership', updatedSubResult.subscription);
-    setCancelModalVisible(false);
-  };
-
-  const openCollectionMethodModal = () => {
-    setCollectMethodModalVisible(true);
+    setLoading(false);
     setCancelModalVisible(false);
   };
 
@@ -111,13 +175,19 @@ const PaymentInfoForm = ({
         </div>
       </Col>
     </Row>}
+
     {/* if membership cancelled */}
     {subscriptionCancelled && lastPayment && lastPayment.fields && <>
       <div className="mb-1">
         <span className="text-danger">Your membership will cancel when it ends on <strong>{moment(lastPayment.fields.date).format('MMMM Do, YYYY')}</strong>.</span>
       </div>
       <div className="mb-2">
-        <Button type="primary" size="small" onClick={() => toggleCancelMembership(false)}>Keep Membership Active</Button>
+        <Button
+          type="primary"
+          size="small"
+          onClick={() => toggleCancelMembership(false)}
+          loading={loading}
+        >Keep Membership Active</Button>
       </div>
     </>}
 
@@ -127,20 +197,39 @@ const PaymentInfoForm = ({
       <Col><Link onClick={() => setBillingModalVisible(true)}>Payment history</Link></Col>
     </Row>
 
-    {/* credit card */}
-    {!subscriptionCancelled && <div className="mt-2">
+    {/* collection method */}
+    {!subscriptionCancelled && collectionMethod && <div className="mt-2">
       <Row justify="space-between">
         <Col>
-          <label>Card to charge:</label> •••• •••• •••• 4242
-          </Col>
+          <label>Collection method:</label> {collectionMethod.replace('_', ' ')}
+        </Col>
         <Col>
           <Button
             type="primary"
-            ghost={accountIsActive ? true : false}
+            ghost={true}
+            size="small"
+            onClick={() => setCollectMethodModalVisible(true)}
+          >
+            Change method
+          </Button>
+        </Col>
+      </Row>
+    </div>}
+
+    {/* credit card */}
+    {!subscriptionCancelled && cardLast4 && collectionMethod === STRIPE_FIELDS.subscription.collectionMethodValues.chargeAutomatically && <div className="mt-2">
+      <Row justify="space-between">
+        <Col>
+          <label>Card to charge:</label> •••• •••• •••• {cardLast4}
+        </Col>
+        <Col>
+          <Button
+            type="primary"
+            ghost={true}
             size="small"
             onClick={() => setCardModalVisible(true)}
           >
-            {accountIsActive ? 'Update card' : 'Schedule payment'}
+            Change card
           </Button>
         </Col>
       </Row>
@@ -169,7 +258,7 @@ const PaymentInfoForm = ({
     <Modal
       title="Billing History"
       visible={billingModalVisible}
-      onCancel={() => setBillingModalVisible(false)}
+      onDone={() => setBillingModalVisible(false)}
       footer={[
         <Button
           key="custom-ok"
@@ -186,25 +275,39 @@ const PaymentInfoForm = ({
     </Modal>
 
     <Modal
-      title={accountIsActive ? 'Update Credit Card Info' : 'Schedule Membership Payment'}
-      visible={cardModalVisible}
-      okText={accountIsActive ? 'Update Card Info' : 'Schedule Payment'}
-      onOk={() => setCardModalVisible(false)}
-      onCancel={() => setCardModalVisible(false)}
-    >
-      <CardInfoForm />
-    </Modal>
-
-    <Modal
       title="Update Collection Method"
       visible={collectMethodModalVisible}
       okText="Update Collection Method"
-      onOk={() => console.log('Update Collection Method')}
-      // okButtonProps={{ danger: true }}
+      onOk={() => {
+        collectMethodForm.validateFields()
+          .then((values) => updateCollectMethod(values))
+          .catch((error) => console.error('Validation failed:', error));
+      }}
       cancelText="Cancel"
+      cancelButtonProps={{ loading }}
+      okButtonProps={{ loading }}
       onCancel={() => setCollectMethodModalVisible(false)}
     >
-      <p>Update Collection Method</p>
+      <CollectionMethodForm
+        loading={loading}
+        form={collectMethodForm}
+      />
+    </Modal>
+
+    {/* Modal content with buttons within component. */}
+    <Modal
+      title="Change Credit Card"
+      // title={accountIsActive ? 'Update Credit Card' : 'Schedule Membership Payment'}
+      visible={cardModalVisible}
+      // modal with buttons in body
+      bodyStyle={{ padding: 0 }}
+      footer={null}
+    >
+      <UpdateCardForm
+        loading={loading}
+        setLoading={setLoading}
+        onDone={onCardFormCancel}
+      />
     </Modal>
 
     <Modal
@@ -212,8 +315,9 @@ const PaymentInfoForm = ({
       visible={cancelModalVisible}
       okText="Cancel Membership"
       onOk={() => toggleCancelMembership(true)}
-      okButtonProps={{ danger: true }}
+      okButtonProps={{ danger: true, loading, }}
       cancelText="Keep Membership"
+      cancelButtonProps={{ loading }}
       onCancel={() => setCancelModalVisible(false)}
     >
       <CancelPayment
@@ -223,4 +327,4 @@ const PaymentInfoForm = ({
   </>;
 };
 
-export default PaymentInfoForm;
+export default PaymentInfo;

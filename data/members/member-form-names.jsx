@@ -5,6 +5,10 @@ export const ACCOUNT_FORMS = {
   editAdditionalInfo: 'edit-additional-info',
   editPayment: 'edit-membership',
   // editEmailPrefs: 'edit-email-prefs',
+
+  // modals
+  updateCollectMethod: 'update-collection-method',
+  updateCard: 'update-card',
 };
 
 export const SIGNUP_FORMS = {

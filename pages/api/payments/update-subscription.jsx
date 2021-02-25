@@ -7,6 +7,7 @@ export default async (req, res) => {
     subcriptionId,
     priceId, // plan update
     collectionMethod, // collection method update
+    defaultPaymentMethod, // change credit card
     cancelAtPeriodEnd,
   } = req.body;
 
@@ -19,7 +20,7 @@ export default async (req, res) => {
 
   let updateFields = {
     proration_behavior: 'none',
-    expand: ['latest_invoice.payment_intent'],
+    // expand: ['latest_invoice.payment_intent', 'default_payment_method'],
   };
 
   // if updating collection method
@@ -41,7 +42,13 @@ export default async (req, res) => {
     })
   }
 
-  // if updating cancel-at-period-end - keeps the same price plan
+  // change credit card to charge
+  if (defaultPaymentMethod) {
+    updateFields.default_payment_method = defaultPaymentMethod;
+  }
+
+  // instead of cancelling subscription right away, cancel at end of plan
+  // keeps the same price plan if user decides to keep membership going
   if (cancelAtPeriodEnd || cancelAtPeriodEnd === false) {
     updateFields = Object.assign(updateFields, { cancel_at_period_end: cancelAtPeriodEnd });
   }
@@ -54,7 +61,7 @@ export default async (req, res) => {
 
     If payment_behavior is error_if_incomplete and a charge is required for the update and it fails, this call throws an error, and the subscription update does not go into effect */
 
-    res.send({ subscription: updatedSubscription });
+    res.status('200').send({ subscription: updatedSubscription });
   } catch (error) {
     return res.status('400').send({ error: { message: error.message } });
   }

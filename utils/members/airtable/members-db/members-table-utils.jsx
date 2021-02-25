@@ -63,7 +63,7 @@ const getMemberStatus = ({
       // if student, 'student' or 'graduated'
       else if (lastPlanType === memberTypes.USER_STUDENT) {
         // TODO: review if there should be a limit on years after last student "payment", maybe 4 or 5 years after, in spite of what user writes for their grad year
-        if (member.fields[dbFields.members.gradYear] < new Date().getFullYear()) return 'graduated';
+        if (member?.fields[dbFields.members.gradYear] < new Date().getFullYear()) return 'graduated';
         return memberTypes.USER_STUDENT;
       }
     }

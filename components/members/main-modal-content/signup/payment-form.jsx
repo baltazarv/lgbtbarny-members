@@ -1,17 +1,16 @@
-/** Store the following in Airtable:
- *  * customer.id     -> members table
- *  * price.id        -> plans table
- *  * invoice.id      -> payments table
- *  * latest subscription.id -> members table?
+/**
+ * When form submitted, onFinish() -> onSuccess()
  */
 import { useMemo, useState, useContext } from 'react';
 import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
-import { Card, Divider, Form, Row, Col } from 'antd';
-import PaymentFields from '../../../payments/payment-fields';
+import { Card, Divider, Form, Row, Col, Button } from 'antd';
+import CardFields from '../../../payments/card-fields';
+import CollectMethodRadios from '../../../payments/collect-method-radios';
 import './payment-form.less';
 // utils
 import { getStripePriceId } from '../../../../utils/members/airtable/members-db';
 import { getPaymentPayload } from '../../../../utils/members/airtable/members-db';
+import { getPaymentMethodObject } from '../../../../utils/payments/stripe-utils';
 // contexts
 import { MembersContext } from '../../../../contexts/members-context';
 // data
@@ -45,7 +44,10 @@ const PaymentForm = ({
     createSubscription,
     updateSubscription,
     saveSubscription,
-    getSubscription
+    getSubscription,
+
+    // save payment method info
+    setDefaultCard,
   } = useContext(MembersContext);
 
   const stripe = useStripe(); // stripe-js
@@ -53,6 +55,7 @@ const PaymentForm = ({
   // charge card vs. email invoice
   const [collectionMethod, setCollectionMethod] = useState(initialValues[STRIPE_FIELDS.subscription.collectionMethod]);
   const [stripeError, _setStripeError] = useState('');
+  const [stripeSuccess, _setStripeSuccess] = useState('');
 
   // show form when stripe elements available
   if (!stripe || !elements) {
@@ -84,10 +87,17 @@ const PaymentForm = ({
   }, [hasDiscount]);
 
   // helper for displaying error messages.
-  // TODO: create a stripe success message
   const setStripeError = (error) => {
-    _setStripeError(`${stripeError}\n\n${error}`);
+    _setStripeSuccess('');
+    _setStripeError(error);
+    // _setStripeError(`${stripeError}\n\n${error}`);
   }
+
+  const setStripeSuccess = (msg) => {
+    _setStripeError('');
+    _setStripeSuccess(msg);
+  }
+
   const onValuesChange = (changedFields, allFields) => {
     // console.log('onValuesChange', changedFields, 'allFields', allFields);
     if (changedFields.hasOwnProperty(STRIPE_FIELDS.subscription.collectionMethod)) setCollectionMethod(changedFields[STRIPE_FIELDS.subscription.collectionMethod]);
@@ -111,7 +121,9 @@ const PaymentForm = ({
     setPaymentSuccessful(true); // hide form
     saveSubscription(subscription);
 
-    const stripeInvoiceId = subscription.latest_invoice.id;
+    // when expand subscription get latest_invoice object, including latest_invoice.id
+    // otherwise, latest_invoice is id
+    const stripeInvoiceId = subscription.latest_invoice.id || subscription.latest_invoice;
     const payload = (getPaymentPayload({
       userid: member.id,
       salary: member.fields[dbFields.members.salary],
@@ -145,6 +157,7 @@ const PaymentForm = ({
     // Reference to mounted CardElement. Only ever one instance.
     const cardElement = elements.getElement(CardElement);
 
+    cardElement.update({ disabled: true });
     let { error, paymentMethod } = await stripe.createPaymentMethod({
       type: 'card',
       card: cardElement,
@@ -156,11 +169,11 @@ const PaymentForm = ({
 
     if (error) {
       // show error and collect new card details.
-      _setStripeError(error.message);
+      setStripeError(error.message);
       return;
     }
 
-    _setStripeError(`Payment method successfully created!`);
+    setStripeSuccess(`Payment method successfully created!`);
 
     // Create the subscription.
     let createSubResult = await createSubscription({
@@ -197,12 +210,13 @@ const PaymentForm = ({
     if (subError) {
       // show error and collect new card details.
       setLoading(false);
+      cardElement.update({ disabled: false });
       setStripeError(subError.message);
       return;
     }
 
     // See /data/payments/stripe/stripe-fields.jsx for Stripe schema
-    setStripeError(`Subscription created with ${subscription.status} status.`);
+    setStripeSuccess(`Subscription created with ${subscription.status} status.`);
 
     /** Take care of incomplete card payments */
 
@@ -224,6 +238,7 @@ const PaymentForm = ({
         if (error) {
           setStripeError(error.message);
           setLoading(false);
+          cardElement.update({ disabled: false });
           return;
           // TODO: add new payment method to invoice of last incomplete subscription, instead of creating new subscription
         }
@@ -233,6 +248,7 @@ const PaymentForm = ({
           return;
         }
         subscription = getSubResp.subscription;
+        console.log('subscription with extended default_payment_method?', subscription)
         break;
 
       default:
@@ -257,13 +273,17 @@ const PaymentForm = ({
       subscription = updatedSubResult.subscription;
     }
 
+    const pmObject = getPaymentMethodObject(paymentMethod, {
+      type: 'subscription',
+      id: subscription.id,
+      field: 'default_payment_method',
+    });
+    setDefaultCard(pmObject);
     onSuccess(subscription);
     setLoading(false);
+    cardElement.update({ disabled: false });
+    cardElement.clear();
   };
-
-  // if (subscription && subscription.status === 'active') {
-  //   // onSuccess();
-  // }
 
   return <>
     <Form className={"payment-form"}
@@ -288,15 +308,52 @@ const PaymentForm = ({
 
       <Card>
 
-        <PaymentFields
+        {/* card fields */}
+        <CardFields
           loading={loading}
         />
 
+        {/* collection method radio buttons */}
+        <div className="mt-4">
+          <div className="mb-2">
+            When your membership comes up for renewal next&nbsp;year:
+          </div>
+          <CollectMethodRadios
+            loading={loading}
+          />
+        </div>
+
+        <div className="mt-2 mb-0 mx-2 text-left" style={{ fontSize: '0.9em', lineHeight: 1.5 }}>
+          You may update these settings or cancel your membership at any time from <em>My Account &gt; Payment information</em>.
+        </div>
+
         {stripeError && <>
-          {/* <div className="ant-form-item-explain card-element-error">{stripeError}</div> */}
-          <div className="text-danger">{stripeError}</div>
+          <div className="text-danger mt-3">{stripeError}</div>
         </>
         }
+
+        {stripeSuccess && <>
+          <div className="text-success mt-3">{stripeSuccess}</div>
+        </>
+        }
+
+        {/* submit button */}
+        <Form.Item
+          className="mt-3"
+          wrapperCol={{
+            xs: { span: 24, offset: 0 },
+            sm: { span: 18, offset: 3 },
+          }}
+        >
+          <Button
+            style={{ width: '100%' }}
+            type="primary"
+            htmlType="submit"
+            loading={loading}
+          >
+            Pay Member Dues
+          </Button>
+        </Form.Item>
 
         {primaryEmail &&
           <div className="text-left mt-3" style={{ fontSize: '0.9em', lineHeight: 1.5 }}>You will get an email confirmation to <strong>{primaryEmail}</strong>. Change your primary email address in <em>My Account &gt; Email addresses</em>.</div>

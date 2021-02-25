@@ -20,6 +20,8 @@ const AccountsForm = ({
   editable=true,
   memberType,
   onLink,
+  loading,
+  setLoading,
   render,
 }) => {
   const [form] = Form.useForm();
@@ -110,6 +112,8 @@ const AccountsForm = ({
           onLink,
           editing,
           setEditing,
+          loading,
+          setLoading,
         })}
       </Form>
     </Card>

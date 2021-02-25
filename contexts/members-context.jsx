@@ -11,6 +11,7 @@ const MembersProvider = ({ children }) => {
   const [memberPlans, setMemberPlans] = useState(null);
   // payments
   const [subscriptions, setSubscriptions] = useState(null);
+  const [defaultCard, setDefaultCard] = useState(null);
 
   /**
    * Airtable member functions
@@ -229,6 +230,23 @@ const MembersProvider = ({ children }) => {
     }
   };
 
+  const updateCustomer = async (fieldsToUpdate) => {
+    try {
+      const { error, customer } = await fetch('/api/payments/update-customer', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(fieldsToUpdate),
+      }).then(r => r.json());
+      if (error) return { error };
+      // customer isn't being saved to context
+      return { customer };
+    } catch (error) {
+      console.log(error);
+      return { error }
+    }
+  };
+
+
   return (<MembersContext.Provider value={{
     // Auth0
     authUser, setAuthUser,
@@ -251,6 +269,12 @@ const MembersProvider = ({ children }) => {
     getSubscription,
     updateSubscription,
     saveSubscription,
+
+    // Stripe customers
+    updateCustomer,
+
+    // Stripe payment methods
+    defaultCard, setDefaultCard,
   }}>{children}</MembersContext.Provider>);
 };
 

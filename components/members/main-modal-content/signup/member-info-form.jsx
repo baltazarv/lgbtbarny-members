@@ -1,3 +1,6 @@
+/**
+ * Form processed by Signup component's Form.Provider onFormFinish
+ */
 import { useEffect, useMemo, useContext } from 'react';
 import { Form, Button, Row, Col, Select } from 'antd';
 import MemberFields from './member-fields';
@@ -72,7 +75,7 @@ const MemberInfoForm = ({
       memberType={memberSignUpType}
       loading={loading}
     />;
-  }, [memberSignUpType, certifyChoice]);
+  }, [memberSignUpType, certifyChoice, loading]);
 
   return <>
     <Form
@@ -117,6 +120,7 @@ const MemberInfoForm = ({
       {memberSignUpType === memberTypes.USER_ATTORNEY && !hideFormElements &&
         <SalaryField
           hasDiscount={hasDiscount}
+          loading={loading}
         />
       }
 
@@ -139,7 +143,7 @@ const MemberInfoForm = ({
             style={{ width: '100%' }}
             type="primary"
             htmlType="submit"
-            disabled={loading}
+            loading={loading}
           >
             {memberSignUpType === memberTypes.USER_STUDENT ? 'Create Membership' : 'Submit Info'}
         </Button>

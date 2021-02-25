@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Form, Input, Select } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 // data
@@ -70,7 +70,7 @@ const MemberFields = ({
         </Form.Item>
       }
     </>;
-  }, [memberType]);
+  }, [memberType, loading]);
 
   const studentFields = useMemo(() => {
     let fields = null;

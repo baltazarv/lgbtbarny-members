@@ -312,15 +312,10 @@ const Signup = ({
         console.log(error);
         setLoading(false);
       }
-      // setUser(userData)
     }
     if (formName === SIGNUP_FORMS.payment) {
-      // setLoading(true);
-      // setLoading(false);
-      // TODO: create user on stripe and contentful
-      // handled on form
+      // payment processing from PaymentForm onFinish() > onSuccess()
     }
-    // TODO: add thank you screen
   };
 
   /** content */

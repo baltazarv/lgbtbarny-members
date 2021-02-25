@@ -51,7 +51,6 @@ const MemberInfoFields = ({
       memberPlans,
       member, // for student grad year
     });
-    console.log('memberStatus', status)
     return status;
   }, [userPayments, memberPlans, member]);
 

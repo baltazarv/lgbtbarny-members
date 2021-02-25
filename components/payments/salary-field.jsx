@@ -8,9 +8,9 @@ import { getSalaryOptions } from '../../utils/members/airtable/airtable-select-o
 
 const SalaryField = ({
   hasDiscount=false,
+  loading
 }) => {
   const { memberPlans } = useContext(MembersContext);
-  const [loading, setLoading] = useState(false);
 
   const onFieldChange = (field, value) => {
     // console.log('onFieldChange field', field, 'val', value);
@@ -61,7 +61,7 @@ const SalaryField = ({
       </>;
     }
     return salary;
-  }, [salaryOptions]);
+  }, [salaryOptions, loading]);
 
   return <>
     {salaryField}
