@@ -38,8 +38,9 @@ export default async (req, res) => {
       default_payment_method: paymentMethodId,
       customer: customerId,
       items: [{ price: priceId }],
-    // latest_invoice.payment_intent needed to confirm card payment when subscription incomplete
-    expand: ['latest_invoice.payment_intent'],
+      // latest_invoice.payment_intent needed to confirm card payment when subscription incomplete
+      // also need `latest_invoice.hosted_invoice_url` and `latest_invoice.invoice_pdf`
+      expand: ['latest_invoice.payment_intent'],
       coupon,
     }); //-> Returns the newly created Subscription object, if the call succeeded. If the attempted charge fails, the subscription is created in an incomplete status.
 

@@ -121,15 +121,18 @@ const PaymentForm = ({
     setPaymentSuccessful(true); // hide form
     saveSubscription(subscription);
 
-    // when expand subscription get latest_invoice object, including latest_invoice.id
-    // otherwise, latest_invoice is id
+    // when expand subscription get latest_invoice object, including latest_invoice.id, otherwise, latest_invoice is id
     const stripeInvoiceId = subscription.latest_invoice.id || subscription.latest_invoice;
+    const invoicePdf = subscription.latest_invoice.invoice_pdf;
+    const invoiceUrl = subscription.latest_invoice.hosted_invoice_url;
     const payload = (getPaymentPayload({
       userid: member.id,
-      salary: member.fields[dbFields.members.salary],
       memberPlans,
-      invoice: stripeInvoiceId,
+      salary: member.fields[dbFields.members.salary],
       hasDiscount,
+      invoice: stripeInvoiceId,
+      invoicePdf,
+      invoiceUrl,
     }));
 
     // TODO: use webhook to check that payment was created from subscription?
@@ -157,6 +160,10 @@ const PaymentForm = ({
     // Reference to mounted CardElement. Only ever one instance.
     const cardElement = elements.getElement(CardElement);
 
+    /**
+     * CREATE PAYMENT METHOD
+     */
+
     cardElement.update({ disabled: true });
     let { error, paymentMethod } = await stripe.createPaymentMethod({
       type: 'card',
@@ -174,6 +181,10 @@ const PaymentForm = ({
     }
 
     setStripeSuccess(`Payment method successfully created!`);
+
+    /**
+     * CREATE SUBSCRIPTION
+     */
 
     // Create the subscription.
     let createSubResult = await createSubscription({
@@ -225,6 +236,11 @@ const PaymentForm = ({
         break;
 
       case 'incomplete':
+
+        /**
+         * CONFIRM PAYMENT
+         */
+
         setStripeError("Please confirm the payment.");
 
         // front-end stripe library
@@ -242,13 +258,17 @@ const PaymentForm = ({
           return;
           // TODO: add new payment method to invoice of last incomplete subscription, instead of creating new subscription
         }
+
+        /**
+         * RETRIEVE SUBSCRIPTION - after card update
+         */
+
         const getSubResp = await getSubscription(subscription.id);
         if (getSubResp.error) {
           setStripeError(getSubResp.error);
           return;
         }
         subscription = getSubResp.subscription;
-        console.log('subscription with extended default_payment_method?', subscription)
         break;
 
       default:
@@ -256,8 +276,8 @@ const PaymentForm = ({
         return;
     }
 
-    /** Update subscription
-     * if user chooses `send invoice` the next time
+    /**
+     * UPDATE SUBSCRIPTION - if user chooses `send invoice` the next time
      */
 
     if (collectionMethod === STRIPE_FIELDS.subscription.collectionMethodValues.sendInvoice) {
@@ -273,6 +293,11 @@ const PaymentForm = ({
       subscription = updatedSubResult.subscription;
     }
 
+    /**
+     * SAVE PAYMENT METHOD
+     */
+
+    // save payment method for last 4 card digits
     const pmObject = getPaymentMethodObject(paymentMethod, {
       type: 'subscription',
       id: subscription.id,
@@ -280,6 +305,7 @@ const PaymentForm = ({
     });
     setDefaultCard(pmObject);
     onSuccess(subscription);
+
     setLoading(false);
     cardElement.update({ disabled: false });
     cardElement.clear();

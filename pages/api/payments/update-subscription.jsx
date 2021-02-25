@@ -20,7 +20,8 @@ export default async (req, res) => {
 
   let updateFields = {
     proration_behavior: 'none',
-    // expand: ['latest_invoice.payment_intent', 'default_payment_method'],
+    // need `latest_invoice.hosted_invoice_url` and `latest_invoice.invoice_pdf`
+    expand: ['latest_invoice'],
   };
 
   // if updating collection method

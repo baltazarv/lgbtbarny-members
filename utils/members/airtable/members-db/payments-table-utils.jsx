@@ -51,10 +51,12 @@ const getNextPaymentDate = ({
  */
 const getPaymentPayload = ({
   userid,
-  salary,
   memberPlans,
-  invoice,
+  salary,
   hasDiscount,
+  invoice,
+  invoicePdf,
+  invoiceUrl,
 }) => {
   if (userid, salary, memberPlans) {
     let planid = null;
@@ -88,6 +90,8 @@ const getPaymentPayload = ({
       discount,
       total,
       invoice: invoice || null,
+      invoicePdf: invoicePdf || null,
+      invoiceUrl: invoiceUrl || null,
     };
     return payload;
   }

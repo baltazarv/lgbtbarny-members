@@ -37,7 +37,7 @@ const PdfModal = ({
             title={item.wintitle ? item.wintitle : item.title}
             url={item.url}
           />
-        </Modal>
+        </Modal>;
       }
     };
     return modal;

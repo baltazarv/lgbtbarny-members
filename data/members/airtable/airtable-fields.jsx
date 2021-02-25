@@ -77,9 +77,16 @@ export const dbFields = {
     discount: 'discount',
     total: 'total',
     invoiceId: '_stripe_invoice_id',
+    invoicePdf: '_stripe_invoice_pdf',
+    invoiceUrl: '_stripe_invoice_url',
   },
   plans: {
     type: 'type',
+    typeValues: {
+      attorney: 'attorney',
+      student: 'student',
+      lawNotes: 'law-notes',
+    },
     status: 'status',
     fee: 'fee',
     salary: 'salary',

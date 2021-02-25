@@ -26,64 +26,64 @@ const getPath = (name, props) => {
     /** members **/
     // members: messages
     case 'bell':
-      return <BellPaths {...props} />
+      return <BellPaths {...props} />;
     // members: profile
     case 'customer-profile':
-      return <CustomerProfilePaths {...props} />
+      return <CustomerProfilePaths {...props} />;
     // members: billing
     case 'annotate':
-      return <AnnotatePaths {...props} />
+      return <AnnotatePaths {...props} />;
     // members: documents
     case 'download':
-      return <DownloadPaths {...props} />
+      return <DownloadPaths {...props} />;
     // members: participate
     case 'demographic':
-      return <DemographicPaths {...props} />
+      return <DemographicPaths {...props} />;
     // members: law notes
     case 'bookmark':
-      return <BookmarkPaths {...props} />
+      return <BookmarkPaths {...props} />;
     // members: cle center
     case 'government':
-      return <GovernmentPaths {...props} />
+      return <GovernmentPaths {...props} />;
     // members: benefits
     case 'star':
-      return <StarPaths {...props} />
+      return <StarPaths {...props} />;
     // jobs
     case 'briefcase':
-      return <BriefcasePaths {...props} />
+      return <BriefcasePaths {...props} />;
     // emailprefs
     case 'email-gear':
-      return <EmailGearPaths {...props} />
+      return <EmailGearPaths {...props} />;
     case 'logout':
-      return <LogoutPaths {...props} />
+      return <LogoutPaths {...props} />;
     // locked items
     case 'lock':
-      return <LockPaths {...props} />
+      return <LockPaths {...props} />;
     // newsletter modal icon
     case 'email':
-      return <EmailPaths {...props} />
+      return <EmailPaths {...props} />;
     // law-notes pdfs
     case 'link-out':
-      return <LinkOutPaths {...props} />
+      return <LinkOutPaths {...props} />;
     case 'modal-window':
-      return <ModalWindowPaths {...props} />
+      return <ModalWindowPaths {...props} />;
     // cle
     case 'ribbon':
-      return <RibbonPaths {...props} />
+      return <RibbonPaths {...props} />;
 
     // not used
     case 'border':
-      return <BorderPaths {...props} />
+      return <BorderPaths {...props} />;
     case 'user-admin':
-      return <UserAdminPaths {...props} />
+      return <UserAdminPaths {...props} />;
     case 'delegate':
-      return <DelegatePaths {...props} />
+      return <DelegatePaths {...props} />;
     case 'gift':
-      return <GiftPaths {...props} />
+      return <GiftPaths {...props} />;
     case 'people-group':
-      return <PeopleGroupPaths {...props} />
+      return <PeopleGroupPaths {...props} />;
     default:
-      return <path />
+      return <path />;
   }
 };
 

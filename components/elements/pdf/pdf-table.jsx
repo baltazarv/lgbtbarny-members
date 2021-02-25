@@ -8,15 +8,15 @@
  * * locked - cle non-sample titles
  * * excerpt - '[Excerpt]' added to end of title (not excerpt if registered or attended)
  */
-import { useState, useMemo, useRef } from 'react';
-import { Table, Input, Button, Space, Tooltip, Typography } from 'antd';
-import Highlighter from 'react-highlight-words';
-import { SearchOutlined } from '@ant-design/icons';
+import { useState, useMemo } from 'react';
+import { Table, Button, Space, Tooltip, Typography } from 'antd';
 // custom components
 import PdfModal from './pdf-modal';
 import SvgIcon from '../svg-icon';
 // data
 import * as memberTypes from '../../../data/members/member-types';
+// utils
+import useTableSearch from '../../../utils/useTableSearch';
 
 const { Link } = Typography;
 
@@ -55,69 +55,14 @@ const PdfTable = ({
   expandable,
   customCols,
 }) => {
-  const [searchText, setSearchText] = useState('');
-  const [searchedColumn, setSearchedColumn] = useState('');
   const [dataKey, setDataKey] = useState('');
   const [pdfModalVisible, setPdfModalVisible] = useState(false);
 
-  const searchInput = useRef();
-
-  const getColumnSearchProps = dataIndex => ({
-    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
-      <div
-        className="law-notes-search-filter"
-        style={{ padding: 8 }}
-      >
-        <Input
-          ref={searchInput}
-          placeholder={`Search ${dataIndex}`}
-          value={selectedKeys[0]}
-          onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
-          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
-          style={{ width: 188, marginBottom: 8, display: 'block' }}
-        />
-        <Space>
-          <Button
-            type="primary"
-            onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
-            icon={<SearchOutlined />}
-            size="small"
-            style={{ width: 90 }}
-          >
-            Search
-          </Button>
-          <Button
-            onClick={() => handleReset(clearFilters)}
-            size="small"
-            style={{ width: 90 }}
-          >
-            Reset
-          </Button>
-        </Space>
-      </div>
-    ),
-    filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
-    onFilter: (value, record) =>
-      record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
-    onFilterDropdownVisibleChange: visible => {
-      if (visible) {
-        setTimeout(() => searchInput.current.select());
-      }
-    },
-  });
-
-  const highlightText = (text) => {
-    return <Highlighter
-      highlightStyle={{ backgroundColor: '#ffd6e7', padding: 0 }}
-      searchWords={[searchText]}
-      autoEscape
-      textToHighlight={text.toString()}
-    />
-  }
+  const { getColumnSearchProps, highlightText, searchText, searchedColumn } = useTableSearch();
 
   const columns = useMemo(() => {
     let custom = customCols.map((col) => {
-      const searchProps = col.search !== false && {...getColumnSearchProps(col.key)};
+      const searchProps = col.search !== false && { ...getColumnSearchProps(col.key) };
       return {
         key: col.key,
         title: col.title,
@@ -125,7 +70,7 @@ const PdfTable = ({
         ...searchProps,
         render: col.render ? col.render : (text, record) => {
           let _text = text;
-          let activeStyle = col.style && {...col.style} || {};
+          let activeStyle = col.style && { ...col.style } || {};
           if (!record.excerpt) activeStyle.fontWeight = 'bold';
           if (searchedColumn === col.key) _text = highlightText(text);
           if (col.linkToPDF && !record.locked) {
@@ -141,7 +86,7 @@ const PdfTable = ({
           }
           return <span style={activeStyle}>{_text}</span>;
         },
-        width: col.width ? col.width: null,
+        width: col.width ? col.width : null,
       };
     });
     const openPdfCol = {
@@ -169,17 +114,6 @@ const PdfTable = ({
     };
     return [...custom, openPdfCol];
   }, [memberTypes, customCols, searchedColumn, searchText]);
-
-  const handleSearch = (selectedKeys, confirm, dataIndex) => {
-    confirm();
-    setSearchText(selectedKeys[0]);
-    setSearchedColumn(dataIndex);
-  };
-
-  const handleReset = (clearFilters) => {
-    clearFilters();
-    setSearchText('');
-  };
 
   const handleOpenModal = (key) => {
     setDataKey(key);

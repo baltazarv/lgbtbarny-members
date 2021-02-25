@@ -290,8 +290,8 @@ const Signup = ({
         if (memberSignUpType === memberTypes.USER_STUDENT) {
           const paymentPayload = getPaymentPayload({
             userid: member.id,
-            salary: 0, // student plan
             memberPlans,
+            salary: 0, // student plan
           });
           const payment = await addPayment(paymentPayload);
           if (payment.error) {

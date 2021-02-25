@@ -1,19 +1,27 @@
-import { useMemo, useContext } from 'react';
+import { useMemo, useContext, useEffect } from 'react';
 import moment from 'moment';
-// import { isEmpty } from 'lodash';
-import PdfTable from '../../../../elements/pdf/pdf-table';
+import PaymentHistoryTable from './payment-history-table';
 // data
 import { dbFields } from '../../../../../data/members/airtable/airtable-fields';
 import { MembersContext } from '../../../../../contexts/members-context';
 // prototype sample
 import paymentsSampleData from '../../../../../data/members/sample/payments-sample';
 
-const BillingList = () => {
+const membershipPlans = {
+  [dbFields.plans.typeValues.attorney]: 'Attorney Membership',
+  [dbFields.plans.typeValues.student]: 'Student Membership',
+  [dbFields.plans.typeValues.lawNotes]: 'Law Notes Subscription',
+};
+
+const PaymentHistory = () => {
   const { member, userPayments, memberPlans } = useContext(MembersContext);
 
-  const getPlanName = (planId) => {
-    const plan = memberPlans && memberPlans.find((plan) => plan.id === planId);
-    return plan.fields.name;
+  const getPlanType = (planId) => {
+    if (memberPlans) {
+      const plan = memberPlans && memberPlans.find((plan) => plan.id === planId);
+      return plan.fields[dbFields.plans.type];
+    }
+    return null;
   };
 
   const userData = useMemo(() => {
@@ -22,7 +30,7 @@ const BillingList = () => {
       return paymentsSampleData.map((item) => {
         let fields = Object.assign({}, item.fields, {
           key: item.id,
-          url: '/pdfs/billing/invoice-simple-template.pdf',
+          url: payment.fields[dbFields.payments.invoiceUrl],
         });
         return fields;
       });
@@ -30,17 +38,19 @@ const BillingList = () => {
 
     if (userPayments) {
       return userPayments.map(payment => {
+        const planType = getPlanType(payment.fields[dbFields.payments.plans][0]);
         return {
           key: payment.id,
-          date: payment.fields.date,
-          [dbFields.payments.plans]: getPlanName(payment.fields[dbFields.payments.plans][0]),
-          total: payment.fields.total,
-          url: '/pdfs/billing/invoice-simple-template.pdf',
+          date: payment.fields[dbFields.payments.date],
+          [dbFields.payments.plans]: membershipPlans[planType],
+          total: payment.fields[dbFields.payments.total],
+          invoicePdf: payment.fields[dbFields.payments.invoicePdf],
+          invoiceUrl: payment.fields[dbFields.payments.invoiceUrl],
         };
       });
     }
     return null;
-  }, [userPayments, member]); // , paymentsSampleData
+  }, [userPayments, member]);
 
   const columns = useMemo(() => {
     return [
@@ -52,22 +62,22 @@ const BillingList = () => {
       },
       {
         key: dbFields.payments.plans,
-        title: 'Membership',
+        title: 'Item',
         dataIndex: dbFields.payments.plans,
       },
       {
         key: dbFields.payments.total,
         title: 'Amount',
         dataIndex: dbFields.payments.total,
-        render: (amt) => `$${amt}`,
+        render: (amt) => !amt ? amt = '$0' : `$${Number(amt).toFixed(2)}`,
       },
     ];
   }, [userData]);
 
-  return <PdfTable
+  return <PaymentHistoryTable
     data={userData}
     customCols={columns}
   />;
 };
 
-export default BillingList;
+export default PaymentHistory;

@@ -11,7 +11,7 @@ const LinkOutIcon = () =>
       height="1.2em"
       fill="currentColor"
     />
-  </span>
+  </span>;
 
 const LawNotesPdfViewer = ({
   title,
@@ -37,7 +37,7 @@ const LawNotesPdfViewer = ({
       <p>Your browser does not support PDFs.
         <a href={`${url}#view=FitBH`} target="_blank">Download the PDF</a>.</p>
     </iframe>
-  </object>
+  </object>;
   }, [title, url]);
 
   return <Card
@@ -48,7 +48,7 @@ const LawNotesPdfViewer = ({
     </Tooltip>}
   >
     {pdf}
-  </Card>
-}
+  </Card>;
+};
 
 export default LawNotesPdfViewer;

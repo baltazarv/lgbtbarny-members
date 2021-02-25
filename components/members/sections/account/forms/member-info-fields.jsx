@@ -4,7 +4,7 @@
  */
 /**
  * TODO: refactor to pull non-editing text outside of Form.Item b/c get error:
- *          Warning: [antd: Form.Item] `name` is only used for validate React element. If you are using Form.Item as layout display, please remove `name` instead.
+ *   Warning: [antd: Form.Item] `name` is only used for validate React element. If you are using Form.Item as layout display, please remove `name` instead.
  *  */
 import { useState, useEffect, useMemo, useContext } from 'react';
 import { Form, Input, Select, Button, Row, Col, Tooltip, DatePicker, Divider, Typography } from 'antd';
@@ -57,18 +57,6 @@ const MemberInfoFields = ({
   /**
    * CERTIFY STATUS - ALL MEMBERS
    */
-
-  /**
-   * TODO: if user has any previous student or attorney (not law notes) payments, restrict next member subscription to attorney only, eg, no student option for certify field
-   */
-  useEffect(() => {
-    // const notStudentEligible = useMemo(() => {
-    if (userPayments) {
-      // get last payment
-      // return student, attorney, or non-member
-      console.log('userPayments', userPayments);
-    }
-  }, [userPayments, memberPlans]);
 
   useEffect(() => {
     setCertifyStatus(member.fields[dbFields.members.certify]);

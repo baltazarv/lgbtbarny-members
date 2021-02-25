@@ -8,7 +8,7 @@
  * * 1-yr membership
  *
  * Modals:
- * * [Payment history] (BillingHistory)
+ * * [Payment history] (PaymentHistory)
  * * [Change method] (CollectionMethodForm)
  *           Modal.onOk => updateCollectMethod
  * * [Change card] (UpdateCardForm)
@@ -19,7 +19,7 @@ import { useState, useContext, useMemo } from 'react';
 import { Row, Col, Typography, Modal, Button, Tooltip, Form } from 'antd';
 import moment from 'moment';
 // modals
-import BillingHistory from '../modals/billing-list';
+import PaymentHistory from '../modals/payment-history';
 import CollectionMethodForm from '../modals/collection-method-form';
 import UpdateCardForm from '../modals/update-card-form';
 import CancelPayment from '../modals/cancel-payment';
@@ -256,7 +256,7 @@ const PaymentInfo = ({
     {/* modals */}
 
     <Modal
-      title="Billing History"
+      title="Payment History"
       visible={billingModalVisible}
       onDone={() => setBillingModalVisible(false)}
       footer={[
@@ -271,7 +271,7 @@ const PaymentInfo = ({
       ]}
       className="member-account-modal"
     >
-      <BillingHistory />
+      <PaymentHistory />
     </Modal>
 
     <Modal
