@@ -1,18 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Button } from "antd";
-import { Container, Row, Col, Navbar, Nav, NavDropdown } from "react-bootstrap";
-// import 'bootstrap/dist/css/bootstrap.min.css';
+import { Navbar, Nav, NavDropdown } from "react-bootstrap";
 import './main-header.less';
-
-const onGetLegalHelpClick = (evt) => {
-  event
-  alert('Legal help info...')
-}
 
 const navItemsData = {
   legalhelpinfo: {
     title: 'GET LEGAL HELP',
-    onClick: onGetLegalHelpClick
+    href: 'https://www.lgbtbarny.org/',
   },
   donate: {
     title: 'DONATE',
@@ -168,7 +161,7 @@ const navItemsData = {
       },
     }
   },
-}
+};
 
 const MainHeader = () => {
 
@@ -183,7 +176,7 @@ const MainHeader = () => {
         items.push(newObject);
       }
       return items;
-    }
+    };
 
     const _navItems = getArrayFromObject(navItemsData).map(item => {
       if (!item.subitems) {
@@ -197,7 +190,7 @@ const MainHeader = () => {
           className={item.key}
         >
           {item.title}
-        </Nav.Link>
+        </Nav.Link>;
       }
       return <NavDropdown
         title={item.title}
@@ -214,10 +207,10 @@ const MainHeader = () => {
             {subitem.title}
           </NavDropdown.Item>)
         }
-      </NavDropdown>
-    })
+      </NavDropdown>;
+    });
     setNavItems(_navItems);
-  }, [navItemsData])
+  }, [navItemsData]);
 
   return (
     <>
@@ -229,7 +222,7 @@ const MainHeader = () => {
         // collapseOnSelect
       >
         <div className="special-btns">
-          <a onClick={onGetLegalHelpClick} className="legalhelpinfo">
+          <a href="https://www.lgbtbarny.org/get-legal-help" className="legalhelpinfo">
             GET LEGAL HELP
           </a>
           <a href='https://www.lgbtbarny.org/donate' className="donate">
@@ -253,7 +246,7 @@ const MainHeader = () => {
         </Navbar.Collapse>
       </Navbar>
     </>
-  )
-}
+  );
+};
 
-export default MainHeader
+export default MainHeader;
