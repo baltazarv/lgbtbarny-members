@@ -54,26 +54,34 @@ const PaymentInfo = ({
   const [cancelModalVisible, setCancelModalVisible] = useState(false);
 
   const lastPayment = useMemo(() => {
-    let payment = null;
-    // TODO: remove sample
-    if (member.sample) {
-      payment = getLastPayment(paymentSample);
-    } else {
-      payment = getLastPayment(userPayments);
+    if (member && userPayments) {
+      let payment = null;
+      // TODO: remove sample
+      if (member.sample) {
+        payment = getLastPayment(paymentSample);
+      } else {
+        payment = getLastPayment(userPayments);
+      }
+      // payment.fields.date is unix date
+      return payment;
     }
-    return payment;
+    return null;
   }, [member, userPayments]);
 
   const memberStatus = useMemo(() => {
-    return getMemberStatus({
+    if (userPayments && memberPlans && member) return getMemberStatus({
       userPayments,
       memberPlans,
       member,
     });
+    return null;
   }, [userPayments, memberPlans, member]);
 
   const accountIsActive = useMemo(() => {
-    return getMemberStatus(userPayments, memberPlans, member);
+    if (userPayments && memberPlans && member) {
+      return getMemberStatus(userPayments, memberPlans, member);
+    }
+    return null;
   }, [userPayments, memberPlans, member]);
 
   /** current annual fee */

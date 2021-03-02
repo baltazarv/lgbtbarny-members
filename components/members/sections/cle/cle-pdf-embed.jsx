@@ -20,7 +20,7 @@ const ClePdfEmbed = ({
   // latest cle or latest sample cle
   const getLatest = (cleItems) => {
     const latest = [...cleItems].reduce((acc, cur) => {
-      if (moment(cur.fields.date).isAfter(moment(acc.fields.date))) {
+      if (moment(cur.fields.date, 'YYYY-M-D').isAfter(moment(acc.fields.date, 'YYYY-M-D'))) {
         return cur;
       }
       return acc;

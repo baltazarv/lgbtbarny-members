@@ -41,6 +41,7 @@ const PaymentHistory = () => {
         const planType = getPlanType(payment.fields[dbFields.payments.plans][0]);
         return {
           key: payment.id,
+          // payment date is unix date
           date: payment.fields[dbFields.payments.date],
           [dbFields.payments.plans]: membershipPlans[planType],
           total: payment.fields[dbFields.payments.total],

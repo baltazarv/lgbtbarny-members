@@ -12,7 +12,10 @@ const CancelMembership = ({
   const { userPayments } = useContext(MembersContext);
 
   const lastPayment = useMemo(() => {
-    return getLastPayment(userPayments);
+    if (userPayments) {
+      // payment.fields.date is unix date
+      return getLastPayment(userPayments);
+    }
   }, [userPayments]);
 
   return <>

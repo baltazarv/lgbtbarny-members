@@ -78,6 +78,7 @@ const cleCenter = ({
 // This should only show up if there is a current CLE
 const cleLatest = ({
   memberType,
+  memberStatus,
   onLink,
   previewUser,
 }) => {

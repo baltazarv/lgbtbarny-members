@@ -48,7 +48,7 @@ const CleArchive = ({
   const latestCleId = useMemo(() => {
     if (cles) {
       const latest = [...cles].reduce((acc, cur) => {
-        if (moment(cur.fields[dbFields.cles.date]).isAfter(moment(acc.fields[dbFields.cles.date]))) {
+        if (moment(cur.fields[dbFields.cles.date], 'YYYY-M-D').isAfter(moment(acc.fields[dbFields.cles.date], 'YYYY-M-D'))) {
           return cur;
         }
         return acc;
@@ -71,7 +71,7 @@ const CleArchive = ({
       const trans = [...cles].map(cle => {
         let cleItem = {
           key: cle.id,
-          date: moment(cle.fields[dbFields.cles.date]).format('M/D/YYYY'),
+          date: moment(cle.fields[dbFields.cles.date], 'YYYY-M-D').format('M/D/YYYY'),
           title: cle.fields[dbFields.cles.title],
           url: cle.fields[dbFields.cles.pdf][0].url,
         };
@@ -114,7 +114,7 @@ const CleArchive = ({
         return cleItem;
       });
       trans.sort((a, b) => {
-        if (moment(a.date).isAfter(moment(b.date))) return -1;
+        if (moment(a.date, 'M/D/YYY').isAfter(moment(b.date, 'M/D/YYY'))) return -1;
         return 1;
       });
       return trans;
@@ -191,7 +191,7 @@ const CleArchive = ({
         width: '10%',
         defaultSortOrder: 'ascend',
         sorter: (a, b) => {
-          if (moment(a.date).isAfter(moment(b.date))) return -1;
+          if (moment(a.date, 'M/D/YYYY').isAfter(moment(b.date, 'M/D/YYYY'))) return -1;
           return 1;
         },
         showSorterTooltip: false,

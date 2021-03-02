@@ -13,6 +13,7 @@ import { dbFields } from '../../../../data/members/airtable/airtable-fields';
 const getLastPayment = (userPayments) => {
   if (!userPayments) return null;
   return userPayments.reduce((acc, cur) => {
+    // payment.fields.date is unix date
     return acc.fields.date > cur.fields.date ? Object.assign({}, acc) : Object.assign({}, cur);
   });
 };
