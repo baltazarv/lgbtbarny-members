@@ -26,6 +26,7 @@ const TabIcon = ({
 const linkText = {
   signup: 'Become a Member',
   'law-notes-subscribe': 'Subscribe to Law Notes',
+  renew: 'Renew Membership',
 };
 
 const MemberContent = ({

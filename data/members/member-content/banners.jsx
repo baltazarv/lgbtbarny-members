@@ -13,7 +13,11 @@ const banners = (type, onLink) => {
   if (type === 'graduated') return <Banner
     title="Upgrade to an Attorney Membership"
     text={<span>Congratulations on your graduation! You can now <Button ghost size="small" ghost style={{ color: '#9e1068', borderColor: '#9e1068' }} onClick={() => onLink('signup')}>upgrade your membership</Button>.</span>}
-    // <Button type="primary" size="small" style={{ backgroundColor: '#9e1068', borderColor: '#9e1068' }} onClick={() => onLink('login')}>upgrade your membership</Button>
+    colors={{ backgroundColor: '#f9f0ff', color: '#9e1068' }} // magenta
+  />;
+  if (type === 'expired') return <Banner
+    title="Renew Your Membership"
+    text={<span>Your membership has expired. Continue getting membership benefits by <Button ghost size="small" ghost style={{ color: '#9e1068', borderColor: '#9e1068' }} onClick={() => onLink('signup')}>renewing!</Button></span>}
     colors={{ backgroundColor: '#f9f0ff', color: '#9e1068' }} // magenta
   />;
   if (type === 'clinicnext') return <Banner
@@ -28,7 +32,7 @@ const banners = (type, onLink) => {
   />;
   if (type === 'lawnotes') return <Banner
     title="Subscribe to Law Notes"
-    text={<span><Link onClick={() => onLink(memberTypes.SIGNUP_LAW_NOTES)}>Sign up</Link> to get your digital subscription...</span>}
+    text={<span><Link onClick={() => onLink('law-notes-subscribe')}>Sign up</Link> to get your digital subscription...</span>}
     colors={{ backgroundColor: '#feffe6', color: '#ad8b00' }} // yellow
   />;
   if (type === 'clelatest') return <Banner

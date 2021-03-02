@@ -1,31 +1,46 @@
-import { useMemo } from 'react';
+import { useMemo, useContext } from 'react';
+import moment from 'moment';
 import PdfTable from '../../../elements/pdf/pdf-table';
 // data
-import certData from '../../../../data/members/sample/cle-certs-data';
-import certCourses from '../../../../data/members/sample/cle-courses';
+import { dbFields } from '../../../../data/members/airtable/airtable-fields';
+import { MembersContext } from '../../../../contexts/members-context';
+
+const fakeCertUrl = '/pdfs/cle-certs/cle-generic-certificate.pdf';
 
 const CleCerts = ({
-  user,
+  cles,
 }) => {
+  const { member } = useContext(MembersContext);
+
+  const clesAttended = useMemo(() => {
+    if (cles && member) {
+      return cles.reduce((acc, cur) => {
+        if (cur.fields[dbFields.cles.attended]) {
+          const attendedFound = cur.fields[dbFields.cles.attended].find(item => item === member.id);
+          if (attendedFound) acc.push(cur);
+        }
+        return acc;
+      }, []);
+    }
+    return null;
+  }, [cles, member]);
 
   const dataTransformed = useMemo(() => {
-    return certData.map((cert) => {
-      const course = certCourses.find((course) => cert.courseid === course.key);
-      if (course) {
-        const credits = course.credits.reduce((acc, cur) => {
-          return acc + Number(cur.number);
-        }, 0);
-        return {
-          key: cert.id,
-          date: course.date,
-          title: course.title,
-          credits,
-          url: cert.url,
+    if (clesAttended) {
+      const trans = [...clesAttended].map((cle) => {
+        const cleItem = {
+          key: cle.id,
+          date: moment(cle.fields[dbFields.cles.date]).format('M/D/YYYY'),
+          title: cle.fields[dbFields.cles.title],
+          credits: cle.fields[dbFields.cles.creditsTotal],
+          url: fakeCertUrl,
         };
-      };
-      return;
-    });
-  }, [certData, certCourses]);
+        return cleItem;
+      });
+      return trans;
+    }
+    return null;
+  }, [cles, member]);
 
   const columns = useMemo(() => {
     return [

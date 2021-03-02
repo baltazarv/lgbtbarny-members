@@ -1,10 +1,15 @@
 const Airtable = require('airtable');
-const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(process.env.AIRTABLE_BASE_ID);
+const membersBase = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(process.env.AIRTABLE_MEMBERS_BASE_ID);
+// const cleBase = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(process.env.AIRTABLE_CLES_BASE_ID);
 
-const membersTable = base('members');
-const emailsTable = base('emails');
-const paymentsTable = base('payments');
-const plansTable = base('plans');
+const membersTable = membersBase('members');
+const emailsTable = membersBase('emails');
+const paymentsTable = membersBase('payments');
+const plansTable = membersBase('plans');
+const membersCleTable = membersBase('cles');
+
+// const clesTable = cleBase('cles');
+// const creditsTable = cleBase('credits');
 
 const getMinifiedRecord = (record) => {
   return {
@@ -18,5 +23,17 @@ const minifyRecords = (records) => {
 };
 
 export {
-  membersTable, emailsTable, paymentsTable, plansTable, getMinifiedRecord, minifyRecords,
+  // members db
+  membersTable,
+  emailsTable,
+  paymentsTable,
+  plansTable,
+  membersCleTable,
+
+  // cle db
+  // clesTable,
+  // creditsTable,
+
+  getMinifiedRecord,
+  minifyRecords,
 };

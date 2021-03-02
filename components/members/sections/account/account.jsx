@@ -22,7 +22,6 @@ import { MembersContext } from '../../../../contexts/members-context';
 import { dbFields } from '../../../../data/members/airtable/airtable-fields';
 import * as memberTypes from '../../../../data/members/member-types';
 import { ACCOUNT_FORMS } from '../../../../data/members/member-form-names';
-import { PAYMENT_FIELDS } from '../../../../data/payments/payment-fields';
 
 const MenuIcon = ({
   name,

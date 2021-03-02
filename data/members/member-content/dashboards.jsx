@@ -1,3 +1,13 @@
+/**
+ * Dashboard object props:
+ *
+ * * links: array of keywords that...
+ * * 1) link to pages:
+ *      See getUsefulLinks() in /components/members/layout/member-content.jsx
+ * * 2) open modals:
+ *      See handleContentLink() in pages/members/[page].jsx
+ *      Modals: signup, law-notes-subscribe, renew, login
+ */
 import { Avatar } from 'antd';
 import { isEmpty } from 'lodash';
 // content-pages
@@ -10,8 +20,8 @@ import { discounts } from './dashboard-pages/discounts-content';
 import { login, logout, MenuIcon } from '../../../components/members/elements/member-icons';
 import SvgIcon from '../../../components/elements/svg-icon';
 // data
-import { dbFields } from '../airtable/airtable-fields';
 import * as memberTypes from '../member-types';
+import banners from './banners';
 
 // for alt anon dashboard
 const anonPromoTxt = {
@@ -31,12 +41,25 @@ export const getDashboard = ({
   onLink,
   previewUser,
 }) => {
+  // banner
+  let banner = null;
+  if (memberType === memberTypes.USER_ANON) {
+    banner = banners('login', onLink);
+  } else if (memberType === memberTypes.USER_NON_MEMBER) {
+    banner = banners('membership', onLink);
+  } else if (memberStatus === 'expired') {
+    banner = banners('expired', onLink);
+  } else if (memberStatus === 'graduated') {
+    banner = banners('graduated', onLink);
+  };
+
   // if no member ojbect or if memberType is anon
   if (!member || isEmpty(member)) {
     return anonDashboard({
       userType: memberTypes.USER_ANON,
       user: member,
       onLink,
+      banner,
       previewUser,
     });
   } else {
@@ -49,24 +72,28 @@ export const getDashboard = ({
       setMember,
       memberStatus,
       onLink,
+      banner,
     });
     if (memberType === memberTypes.USER_NON_MEMBER) return nonMemberDashboard({
       member,
       memberType,
       setMember,
       onLink,
+      banner,
     });
     if (memberType === memberTypes.USER_STUDENT) return studentDashboard({
       user: member,
       memberType,
       setMember,
       onLink,
+      banner,
     });
   }
 };
 
 const anonDashboard = ({
   onLink,
+  banner,
   previewUser = memberTypes.USER_ATTORNEY,
 }) => {
   const memberType = memberTypes.USER_ANON;
@@ -86,10 +113,10 @@ const anonDashboard = ({
   };
   return {
     options,
-    participate: participate({ memberType, onLink, previewUser }),
-    lawnotes: lawNotes({ memberType, onLink, previewUser }),
-    clecenter: cleCenter({ memberType, onLink, previewUser }),
-    discounts: discounts({ memberType, onLink, previewUser }),
+    participate: participate({ memberType, onLink, banner, previewUser }),
+    lawnotes: lawNotes({ memberType, onLink, banner, previewUser }),
+    clecenter: cleCenter({ memberType, onLink, banner, previewUser }),
+    discounts: discounts({ memberType, onLink, banner, previewUser }),
     login: login(),
   };
 };
@@ -100,6 +127,7 @@ const attorneyDashboard = ({
   memberType,
   memberStatus,
   onLink,
+  banner = null,
 }) => {
   return {
     options: {
@@ -108,11 +136,11 @@ const attorneyDashboard = ({
       defaultMenuOpenKeys: [], //
       user: member, // TODO: move outside options
     },
-    account: account({ memberType, user: member, setUser: setMember, onLink }),
-    participate: participate({ memberType, memberStatus, onLink }),
-    lawnotes: lawNotes({ memberType, memberStatus, onLink }),
-    clecenter: cleCenter({ member, memberType, memberStatus, onLink }),
-    discounts: discounts({ memberType, memberStatus, onLink }),
+    account: account({ memberType, memberStatus, user: member, setUser: setMember, onLink, banner }),
+    participate: participate({ memberType, memberStatus, onLink, banner }),
+    lawnotes: lawNotes({ memberType, memberStatus, onLink, banner }),
+    clecenter: cleCenter({ member, memberType, memberStatus, onLink, banner }),
+    discounts: discounts({ memberType, memberStatus, onLink, banner }),
     logout: logout(memberType, onLink),
   };
 };
@@ -122,6 +150,7 @@ const nonMemberDashboard = ({
   setUser, // needed?
   memberType,
   onLink,
+  banner,
   previewUser,
 }) => {
   return {
@@ -131,11 +160,11 @@ const nonMemberDashboard = ({
       defaultMenuOpenKeys: [],
       user: member, // TODO: move outside options
     },
-    account: account({ memberType, user: member, setUser, onLink }),
-    participate: participate({ memberType, onLink }),
-    lawnotes: lawNotes({ memberType, onLink, previewUser }),
-    clecenter: cleCenter({ memberType, user: member, onLink }),
-    discounts: discounts({ memberType, onLink }),
+    account: account({ memberType, user: member, setUser, onLink, banner }),
+    participate: participate({ memberType, onLink, banner }),
+    lawnotes: lawNotes({ memberType, onLink, banner, previewUser }),
+    clecenter: cleCenter({ memberType, user: member, onLink, banner }),
+    discounts: discounts({ memberType, onLink, banner }),
     logout: logout(memberType, onLink),
   };
 };

@@ -1,17 +1,15 @@
 import Account from '../../../../components/members/sections/account/account';
 import { MenuIcon } from '../../../../components/members/elements/member-icons';
 // data
-import * as memberTypes from '../../member-types';
-import banners from '../banners';
+// import * as memberTypes from '../../member-types';
+// import banners from '../banners';
 
 export const account = ({
   memberType,
+  // memberStatus,
   onLink,
+  banner,
 }) => {
-  let banner = null;
-  if (memberType === memberTypes.USER_NON_MEMBER) {
-    banner = banners('membership', onLink);
-  };
 
   return {
     route: 'account',

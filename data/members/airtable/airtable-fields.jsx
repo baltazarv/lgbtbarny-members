@@ -92,5 +92,14 @@ export const dbFields = {
     salary: 'salary',
     termYears: 'term_years',
     stripeId: 'stripe_id',
+  },
+  cles: {
+    title: 'title',
+    date: 'date',
+    pdf: 'pdf',
+    agenda: 'agenda',
+    creditsText: 'credits_text',
+    creditsTotal: 'credits_total',
+    attended: 'attended',
   }
 };

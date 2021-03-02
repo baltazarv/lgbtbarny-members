@@ -9,10 +9,10 @@ export const participate = ({
   memberType,
   memberStatus,
   onLink,
+  banner = null,
   previewUser,
 }) => {
   let locked = false;
-  let banner = null;
   let title = 'Member Participation';
 
   if (memberType === memberTypes.USER_STUDENT && memberStatus !== 'graduated') {

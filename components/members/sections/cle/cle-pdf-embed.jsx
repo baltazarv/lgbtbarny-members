@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { Typography, Button } from 'antd';
+import moment from 'moment';
 // custom components
 import PdfViewer from '../../../elements/pdf/pdf-viewer';
 // data
@@ -8,7 +9,7 @@ import * as memberTypes from '../../../../data/members/member-types';
 const { Link } = Typography;
 
 const ClePdfEmbed = ({
-  data, // full CLE data file
+  cles,
   type, // 'latest', 'sample'
   memberType,
   memberStatus,
@@ -16,25 +17,57 @@ const ClePdfEmbed = ({
   onLink,
 }) => {
 
-  const itemData = useMemo(() => {
-    if (data && type) {
-      return data.find((item) => item[type] === true);
+  // latest cle or latest sample cle
+  const getLatest = (cleItems) => {
+    const latest = [...cleItems].reduce((acc, cur) => {
+      if (moment(cur.fields.date).isAfter(moment(acc.fields.date))) {
+        return cur;
+      }
+      return acc;
+    });
+    return latest;
+};
+
+  const getLatestCle = () => {
+    if (cles) {
+      return getLatest(cles);
     }
     return null;
-  }, [data, type]);
+  };
+
+  const getSampleCle = () => {
+    if (cles) {
+      const samples = [...cles].reduce((acc, cur) => {
+        if (cur.fields.sample) acc.push(cur);
+        return acc;
+      }, []);
+      if (samples.length > 1) return getLatest(samples);
+      return samples[0];
+    }
+  };
+
+  const itemData = useMemo(() => {
+    if (cles) {
+      if (type === 'latest') {
+        return getLatestCle();
+      } else {
+        return getSampleCle();
+      }
+    }
+  }, [type, cles]);
 
   const url = useMemo(() => {
-    if (itemData) {
-      if (itemData.urlsample) return itemData.urlsample;
-      return itemData.url;
+    if (itemData?.fields?.pdf.length) {
+      return itemData.fields.pdf[0].url;
     }
     return null;
   }, [itemData]);
 
   const title = useMemo(() => {
-    let _title = '';
-    if (itemData && itemData.title) _title = itemData.title;
-    return _title;
+    if (itemData?.fields?.title) {
+      return itemData.fields.title;
+    }
+    return null;
   }, [itemData]);
 
   const introText = useMemo(() => {

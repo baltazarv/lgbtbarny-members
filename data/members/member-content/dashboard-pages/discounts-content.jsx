@@ -9,21 +9,20 @@ export const discounts = ({
   memberType,
   memberStatus,
   onLink,
+  banner = null,
   previewUser
 }) => {
   let locked = false;
   let title = 'Discounts';
-  let banner = null;
 
   if (
     memberType === memberTypes.USER_ANON ||
     memberType === memberTypes.USER_NON_MEMBER ||
-    memberStatus === 'graduated'
+    memberStatus === 'graduated' ||
+    memberStatus === 'expired'
   ) {
     locked = true;
     title = 'Member Discounts';
-    banner = banners('membership', onLink);
-    if (memberStatus === 'graduated') banner = banners('graduated', onLink);
   }
 
   return {

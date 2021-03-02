@@ -12,16 +12,17 @@ const lawNotes = ({
   memberType,
   memberStatus,
   onLink,
+  banner = null,
   previewUser
 }) => {
   // let redirect = '';
   let locked = false;
-  let banner = null;
   let links = [];
   let children = null;
   if (
-    memberType === memberTypes.USER_ATTORNEY ||
-    (memberType === memberTypes.USER_STUDENT && memberStatus === 'active')
+    memberStatus === 'active' &&
+    (memberType === memberTypes.USER_ATTORNEY ||
+      memberType === memberTypes.USER_STUDENT)
   ) {
     // redirect = 'lnlatest';
     children = {
@@ -35,12 +36,9 @@ const lawNotes = ({
       lnarchive: lnArchive({ memberType, memberStatus, onLink, previewUser }),
     };
   }
-  if (memberType === memberTypes.USER_ANON) {
-    banner = banners('login', onLink);
-  } else if (memberType === memberTypes.USER_NON_MEMBER) {
+  if (memberType === memberTypes.USER_NON_MEMBER) {
     banner = banners('lawnotes', onLink);
   };
-  if (memberStatus === 'graduated') banner = banners('graduated', onLink);
 
   return {
     // redirect to `law-notes-latest?
@@ -129,6 +127,7 @@ const lnArchive = ({
   if (
     memberType === memberTypes.USER_NON_MEMBER ||
     memberType === memberTypes.USER_ANON ||
+    memberStatus === 'expired' ||
     memberStatus === 'graduated'
   ) {
     locked = true;

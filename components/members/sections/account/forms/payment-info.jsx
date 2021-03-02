@@ -55,6 +55,7 @@ const PaymentInfo = ({
 
   const lastPayment = useMemo(() => {
     let payment = null;
+    // TODO: remove sample
     if (member.sample) {
       payment = getLastPayment(paymentSample);
     } else {

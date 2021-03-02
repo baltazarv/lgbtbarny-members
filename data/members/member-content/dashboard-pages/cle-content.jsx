@@ -1,3 +1,4 @@
+import Cles from '../../../../components/members/sections/cle/cles';
 import ClePdfEmbed from '../../../../components/members/sections/cle/cle-pdf-embed';
 import CleArchive from '../../../../components/members/sections/cle/cle-archive';
 import CleCerts from '../../../../components/members/sections/cle/cle-certs';
@@ -8,7 +9,6 @@ import { MenuIcon } from '../../../../components/members/elements/member-icons';
 import SvgIcon from '../../../../components/elements/svg-icon';
 // data
 import * as memberTypes from '../../member-types';
-import cleCourses from '../../sample/cle-courses';
 
 const CleCertIcon = () => <span role="img" aria-label="See CLE certificate" className="anticon">
   <SvgIcon
@@ -24,38 +24,38 @@ const cleCenter = ({
   memberType,
   memberStatus,
   onLink,
+  banner = null,
   previewUser
 }) => {
   let locked = false;
   let children = null;
+  if (memberStatus === 'active') banner = banners('clelatest', onLink);
   // children
-  if (memberType === memberTypes.USER_ATTORNEY) {
-    children = {
-      clelatest: cleLatest({ memberType, onLink }),
-      clearchive: cleArchive({ memberType, onLink, previewUser }),
-      clecerts: cleCerts({ memberType, member, onLink }),
-    };
-  } else if (
-    memberType === memberTypes.USER_STUDENT && memberStatus !== 'graduated'
-  ) {
-    children = {
-      clelatest: cleLatest({ memberType, onLink }),
-      clearchive: cleArchive({ memberType, onLink, previewUser }),
-    };
-  } else if (
+  if (
     memberType === memberTypes.USER_NON_MEMBER ||
+    memberStatus === 'expired' ||
     memberStatus === 'graduated'
   ) {
     children = {
       clesample: cleSample({ memberType, memberStatus, onLink }),
       clearchive: cleArchive({ memberType, memberStatus, onLink, previewUser }),
-      clecerts: cleCerts({ memberType, member, onLink }),
+      clecerts: cleCerts({ memberType, memberStatus, member, onLink }),
+    };
+  } else if (memberType === memberTypes.USER_ATTORNEY) {
+    children = {
+      clelatest: cleLatest({ memberType, memberStatus, onLink }),
+      clearchive: cleArchive({ memberType, memberStatus, onLink, previewUser }),
+      clecerts: cleCerts({ memberType, memberStatus, member, onLink }),
+    };
+  } else if (memberType === memberTypes.USER_STUDENT) {
+    children = {
+      clelatest: cleLatest({ memberType, memberStatus, onLink }),
+      clearchive: cleArchive({ memberType, memberStatus, onLink, previewUser }),
     };
   } else if (memberType === memberTypes.USER_ANON) {
     children = {
-      clelatest: cleLatest({ memberType, onLink, previewUser }),
-      clesample: cleSample({ memberType, onLink, previewUser }),
-      clearchive: cleArchive({ memberType, onLink, previewUser }),
+      clelatest: cleSample({ memberType, memberStatus, onLink, previewUser }),
+      clearchive: cleArchive({ memberType, memberStatus, onLink, previewUser }),
     };
   }
 
@@ -64,11 +64,16 @@ const cleCenter = ({
     icon: <MenuIcon name="government" ariaLabel="CLE Center" />,
     label: 'CLE Center',
     locked,
-    banner: banners('clelatest', onLink),
+    banner,
     title: 'CLE Center',
     children,
   };
 };
+
+/**
+ * See notes in /data/members/member-content/dashboards.jsx for dashboard object props:
+ * * links
+ */
 
 // This should only show up if there is a current CLE
 const cleLatest = ({
@@ -81,7 +86,9 @@ const cleLatest = ({
   let title = 'Latest CLE Materials';
   let links = [];
 
-  if (memberType === memberTypes.USER_ANON || memberType === memberTypes.USER_NON_MEMBER) {
+  if (memberType === memberTypes.USER_ANON ||
+    memberType === memberTypes.USER_NON_MEMBER ||
+    memberStatus === 'expired') {
     locked = true;
     title = 'Latest CLE Materials [Excerpt]';
   }
@@ -102,12 +109,12 @@ const cleLatest = ({
     label,
     locked,
     title,
-    content: <ClePdfEmbed
-      data={cleCourses}
+    content: <Cles
       type='latest'
       memberType={memberType}
       previewUser={previewUser}
       onLink={onLink}
+      render={(args) => <ClePdfEmbed {...args} />}
     />,
     links,
   };
@@ -137,13 +144,13 @@ const cleSample = ({
     label: 'Sample',
     locked: false,
     title: 'Sample CLE Materials',
-    content: <ClePdfEmbed
-      data={cleCourses}
+    content: <Cles
       type='sample'
       memberType={memberType}
       memberStatus={memberStatus}
       onLink={onLink}
       previewUser={previewUser}
+      render={(args) => <ClePdfEmbed {...args} />}
     />,
     links,
   };
@@ -153,32 +160,35 @@ const cleArchive = ({
   memberType,
   memberStatus,
   onLink,
+  banner = null,
   previewUser
 }) => {
   let locked = false;
   let links = [];
 
-  if (memberType === memberTypes.USER_ATTORNEY) {
+  // links
+  if (memberType === memberTypes.USER_NON_MEMBER ||
+    memberStatus === 'graduated') {
+    links = ['signup', 'clesample', 'clecerts'];
+  } else if (memberStatus === 'expired') {
+    links = ['renew', 'clesample', 'clecerts'];
+  } else if (memberType === memberTypes.USER_ATTORNEY) {
     links = ['clelatest', 'clecerts'];
   } else if (memberType === memberTypes.USER_STUDENT && memberStatus !== 'graduated') {
     if (memberStatus === 'graduated')
       links = ['clelatest'];
-  } else if (memberType === memberTypes.USER_NON_MEMBER && memberStatus === 'graduated') {
-    links = ['signup', 'clelatest', 'clesample', 'clecerts'];
   } else if (memberType === memberTypes.USER_ANON) {
-    links = ['signup', 'clelatest', 'clesample'];
+    links = ['signup', 'clesample'];
     if (previewUser === memberTypes.USER_NON_MEMBER) links = ['signup', 'clelatest', 'clesample'];
   };
 
+  // locked
   if (
     memberType === memberTypes.USER_NON_MEMBER ||
     memberType === memberTypes.USER_ANON ||
+    memberStatus === 'expired' ||
     memberStatus === 'graduated'
   ) locked = true;
-
-  let banner = null;
-  if (memberStatus === 'graduated') banner = banners('graduated', onLink);
-  if (memberType === memberTypes.USER_NON_MEMBER) banner = banners('membership', onLink);
 
   return {
     route: 'cle-archive',
@@ -186,11 +196,11 @@ const cleArchive = ({
     locked,
     title: 'CLE Materials Archive',
     banner,
-    content: <CleArchive
-      data={cleCourses}
+    content: <Cles
       memberType={memberType}
       previewUser={previewUser}
       onLink={onLink}
+      render={(args) => <CleArchive {...args} />}
     />,
     links,
   };
@@ -198,7 +208,6 @@ const cleArchive = ({
 
 const cleCerts = ({
   memberType,
-  member,
   onLink
 }) => {
   let links = [];
@@ -211,8 +220,8 @@ const cleCerts = ({
     route: 'cle-certs',
     label: 'My Certificates',
     title: <span><CleCertIcon /> My CLE Certifications</span>,
-    content: <CleCerts
-      user={member}
+    content: <Cles
+      render={(args) => <CleCerts {...args} />}
     />,
     links,
   };

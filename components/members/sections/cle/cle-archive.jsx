@@ -1,12 +1,18 @@
-//TODO: Rename CleTable vs CleDetail?
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useContext, useEffect } from 'react';
 import { Button, Divider, Tooltip, Typography } from 'antd';
+import moment from 'moment';
+import ReactMarkdown from 'react-markdown';
 import { ScheduleOutlined } from '@ant-design/icons';
+// components
 import PdfTable from '../../../elements/pdf/pdf-table';
 import PdfModal from '../../../elements/pdf/pdf-modal';
 import SvgIcon from '../../../elements/svg-icon';
 // data
+import { MembersContext } from '../../../../contexts/members-context';
 import * as memberTypes from '../../../../data/members/member-types';
+import { dbFields } from '../../../../data/members/airtable/airtable-fields';
+// utils
+import { getAccountIsActive } from '../../../../utils/members/airtable/members-db';
 
 const { Link } = Typography;
 
@@ -21,41 +27,100 @@ const CertIcon = () =>
   </span>;
 
 const CleArchive = ({
-  data,
-  memberType,
+  cles,
+  memberType, // = memberTypes.USER_ATTORNEY,
   previewUser,
   onLink,
 }) => {
-
+  const { member, userPayments, memberPlans } = useContext(MembersContext);
   const [modalKey, setModalKey] = useState('');
   const [pdfModalVisible, setPdfModalVisible] = useState(false);
 
-  const dataTransformed = useMemo(() => {
-    let _dataTransformed = [...data].map(row => {
-      if (
-        memberType === memberTypes.USER_ANON ||
-        memberType === memberTypes.USER_NON_MEMBER
-      ) {
-        // excerpt & url
-        if (
-          row.sample ||
-          (
-            memberType === memberTypes.USER_NON_MEMBER &&
-            (row.registered || row.attended)
-          )
-        ) {
-          row.excerpt = false;
-        } else {
-          row.excerpt = true;
-          row.url = row.urlsample;
-        }
-      } else {
-        row.sample = false;
-      }
-      return row;
+  const accountIsActive = useMemo(() => {
+    const isActive = getAccountIsActive({
+      userPayments,
+      memberPlans,
+      member,
     });
-    return _dataTransformed;
-  }, [data]);
+    return isActive; // null if params null
+  }, [userPayments, memberPlans, member]);
+
+  const latestCleId = useMemo(() => {
+    if (cles) {
+      const latest = [...cles].reduce((acc, cur) => {
+        if (moment(cur.fields[dbFields.cles.date]).isAfter(moment(acc.fields[dbFields.cles.date]))) {
+          return cur;
+        }
+        return acc;
+      });
+      return latest.id;
+    }
+    return null;
+  }, [cles]);
+
+  // airtable long text rich-text fields that get pulled in as markdown from api
+  const mdToHtml = (md) => {
+    let mdParagraphs = md.split('\n');
+    return mdParagraphs.map((p) => {
+      return <ReactMarkdown key={p}>{p}</ReactMarkdown>;
+    });
+  };
+
+  const dataTransformed = useMemo(() => {
+    if (cles) {
+      const trans = [...cles].map(cle => {
+        let cleItem = {
+          key: cle.id,
+          date: moment(cle.fields[dbFields.cles.date]).format('M/D/YYYY'),
+          title: cle.fields[dbFields.cles.title],
+          url: cle.fields[dbFields.cles.pdf][0].url,
+        };
+        if (cle.fields.agenda) cleItem.agenda = cle.fields.agenda;
+
+        // credits
+        if (cle.fields[dbFields.cles.creditsText]) {
+          cleItem[dbFields.cles.creditsText] = mdToHtml(cle.fields[dbFields.cles.creditsText]);
+        }
+
+        // Sample for anon, non-member, expired, graduated - not for student & attorney
+        if (
+          cle.fields.sample &&
+          (
+            !accountIsActive ||
+            memberType === memberTypes.USER_NON_MEMBER ||
+            memberType === memberTypes.USER_ANON
+          )) {
+          cleItem.sample = cle.fields.sample;
+        } else if (cle.id === latestCleId) {
+          cleItem.latest = true;
+        } else {
+          if (!accountIsActive ||
+            memberType === memberTypes.USER_ANON ||
+            memberType === memberTypes.USER_NON_MEMBER) {
+            cleItem.locked = true;
+          }
+        }
+
+        // registered & attended for logged-in users
+        if (cle.fields.registered && member) {
+          const registeredFound = [...cle.fields.registered].find(item => item === member.id);
+          if (registeredFound) cleItem.registered = true;
+
+          if (cle.fields[dbFields.cles.attended]) {
+            const attendedFound = [...cle.fields[dbFields.cles.attended]].find(item => item === member.id);
+            if (attendedFound) cleItem.attended = true;
+          }
+        }
+        return cleItem;
+      });
+      trans.sort((a, b) => {
+        if (moment(a.date).isAfter(moment(b.date))) return -1;
+        return 1;
+      });
+      return trans;
+    }
+    return null;
+  }, [cles, accountIsActive]);
 
   const introText = useMemo(() => {
     let text = null;
@@ -66,7 +131,7 @@ const CleArchive = ({
 
     const certTxt = <p>Courses with <CertIcon /> icon are ones which you have attended. Click the icon to view and download your certificate. Or view all <Link onClick={() => onLink('clecerts')}>certificates</Link> attained.</p>;
 
-    const registeredText = <>You have registered for courses with the <ScheduleOutlined style={{ width: '1.6em', fontSize: '20px' }} /> icon.</>
+    const registeredText = <>You have registered for courses with the <ScheduleOutlined style={{ width: '1.6em', fontSize: '20px' }} /> icon.</>;
 
     if (memberType === memberTypes.USER_ANON) {
       if (previewUser === memberTypes.USER_NON_MEMBER) {
@@ -77,13 +142,13 @@ const CleArchive = ({
       } else {
         text = <>
           <p>{previewUser === memberTypes.USER_ATTORNEY &&
-              <Button type="primary" size="small" onClick={() => onLink('signup')}>Become a member</Button>
-            }{previewUser === memberTypes.USER_STUDENT &&
-              <Button type="primary" size="small" onClick={() => onLink('signup')}>Become a member</Button>
+            <Button type="primary" size="small" onClick={() => onLink('signup')}>Become a member</Button>
+          }{previewUser === memberTypes.USER_STUDENT &&
+            <Button type="primary" size="small" onClick={() => onLink('signup')}>Become a member</Button>
             } to get access to all CLE materials, current materials, as well as the archives.&nbsp;
           {previewUser === memberTypes.USER_ATTORNEY &&
-            <span>When you sign up, you will be able to download CLE certificates for courses which you have attended.</span>
-          }</p>
+              <span>When you sign up, you will be able to download CLE certificates for courses which you have attended.</span>
+            }</p>
           <p>{whatYouGetTxt}</p>
         </>;
       }
@@ -96,22 +161,43 @@ const CleArchive = ({
       </>;
     } else {
       text = <>
-      <p>Read course material for any CLE.</p>
-      {memberType === memberTypes.USER_ATTORNEY &&
-        <>
-          {certTxt}
-          <p>{registeredText}</p>
-        </>
-      }{memberType === memberTypes.USER_STUDENT &&
-        <>
-          <p>{registeredText}</p>
-        </>
-      }</>;
+        <p>Read course material for any CLE.</p>
+        {memberType === memberTypes.USER_ATTORNEY &&
+          <>
+            {certTxt}
+            <p>{registeredText}</p>
+          </>
+        }{memberType === memberTypes.USER_STUDENT &&
+          <>
+            <p>{registeredText}</p>
+          </>
+        }</>;
     };
     return text;
-  }, [memberType, previewUser]);
+  }, [memberType, previewUser, accountIsActive]);
 
   const customCols = useMemo(() => {
+    const defaultCols = [
+      {
+        key: 'title',
+        title: 'Title',
+        width: '90%',
+        style: { fontStyle: 'italic' },
+        linkToPDF: true, // when not locked
+      },
+      {
+        key: 'date',
+        title: 'Date',
+        width: '10%',
+        defaultSortOrder: 'ascend',
+        sorter: (a, b) => {
+          if (moment(a.date).isAfter(moment(b.date))) return -1;
+          return 1;
+        },
+        showSorterTooltip: false,
+      },
+    ];
+    // cert registered or attended
     const certCol = {
       key: 'cert',
       title: 'Cert',
@@ -120,7 +206,7 @@ const CleArchive = ({
         if (
           record.attended &&
           (memberType === memberTypes.USER_ATTORNEY || memberType === memberTypes.USER_NON_MEMBER)
-          ) {
+        ) {
           output = <Tooltip title="open certificate">
             <Button
               onClick={() => onLink('clecerts')}
@@ -139,22 +225,7 @@ const CleArchive = ({
       },
       search: false,
     };
-    const defaultCols = [
-      {
-        key: 'title',
-        title: 'Title',
-        width: '90%',
-        style: { fontStyle: 'italic' },
-        linkToPDF: true, // when not locked
-      },
-      {
-        key: 'date',
-        title: 'Date',
-        // style: { fontWeight: 'bold' },
-        width: '10%',
-      },
-    ];
-    if (memberType !== memberTypes.USER_ANON) return [certCol, ...defaultCols];
+    if (memberType !== memberTypes.USER_ANON) return [...defaultCols, certCol];
     return [...defaultCols];
   }, [dataTransformed]);
 
@@ -163,33 +234,20 @@ const CleArchive = ({
       expandedRowRender: (record) => {
         let credits = null;
         let agenda = null;
-        if (record.credits) {
-          const getLabel = (number) => {
-            let singPlural = 'CLE Credit';
-            if (number > 1) singPlural = 'CLE Credits';
-            return <strong>{number.toFixed(1)} {singPlural}</strong>
-          };
-          if (record.credits.length) {
-            credits = <ul>
-              {
-                record.credits.map((item) => <li key={record.key}>{getLabel(item.number)} {item.type}</li>)
-              }
-            </ul>;
-          }
-        }
-        if (record.agenda) agenda = <div>{record.agenda}</div>
+        if (record[dbFields.cles.creditsText]) credits = record[dbFields.cles.creditsText]; // JSX
+        if (record.agenda) agenda = <div>{record.agenda}</div>;
         return <div>
           {agenda}
           {credits && agenda && <Divider
             dashed={true}
             className="my-2"
-            />}
+          />}
           {credits}
         </div>;
       },
-      rowExpandable: (record) => record.credits || record.agenda,
-      // expandRowByClick: true,
-      // indentSize: 40,
+      rowExpandable: (record) => record[dbFields.cles.creditsText] || record.agenda,
+      expandRowByClick: true,
+      // indentSize: 40, // doesn't work
     };
   });
 

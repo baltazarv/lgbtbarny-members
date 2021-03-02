@@ -44,7 +44,7 @@ const Discounts = ({
 
   const filters = useMemo(() => {
     let _filters = null;
-    if (memberType === memberTypes.USER_ATTORNEY) {
+    if (memberType === memberTypes.USER_ATTORNEY && memberStatus === 'active') {
       _filters = <div className="mb-3">
         <Select
           mode="multiple"
@@ -62,7 +62,7 @@ const Discounts = ({
 
   const cards = useMemo(() => {
     let output = null;
-    if (memberType === memberTypes.USER_ATTORNEY) {
+    if (memberType === memberTypes.USER_ATTORNEY && memberStatus === 'active') {
       const _cards = [];
       let _data = DISCOUNTS;
       setData(_data);
@@ -143,6 +143,10 @@ const Discounts = ({
 
     if (memberStatus === 'graduated') {
       joinText = <>.&nbsp;<Button type="primary" size="small" onClick={() => onLink('signup')}>Upgrade your membership</Button> to get attorney member discounts</>
+    };
+
+    if (memberStatus === 'expired') {
+      joinText = <>.&nbsp;<Button type="primary" size="small" onClick={() => onLink('signup')}>Renew your membership</Button> to continue getting member discounts</>
     };
 
     if (

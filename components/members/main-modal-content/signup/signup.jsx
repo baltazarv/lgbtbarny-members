@@ -505,7 +505,7 @@ const Signup = ({
   const activeAttorneyContent = useMemo(() => {
     if (memberStatus === memberStatus.USER_ATTORNEY) return null;
     return <>
-      <p>{member.fields[dbFields.members.firstName] ? member.fields[dbFields.members.firstName] : 'Hi'}, your membership is up-to-date.<br />
+      <p>{member?.fields[dbFields.members.firstName] ? member.fields[dbFields.members.firstName] : 'Hi'}, your membership is up-to-date.<br />
         {nextPaymentDate && <>Your next payment is due on&nbsp;<strong>{nextPaymentDate}</strong>.</>}</p>
     </>;
   }, [memberStatus]);

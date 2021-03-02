@@ -25,7 +25,7 @@ const PaymentHistory = () => {
   };
 
   const userData = useMemo(() => {
-    // prototype sample data
+    // TODO: remove prototype sample data
     if (member.sample) {
       return paymentsSampleData.map((item) => {
         let fields = Object.assign({}, item.fields, {

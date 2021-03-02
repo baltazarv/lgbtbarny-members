@@ -68,6 +68,12 @@ const PdfTable = ({
         title: col.title,
         dataIndex: col.key,
         ...searchProps,
+
+        // sorting
+        defaultSortOrder: col.defaultSortOrder ? col.defaultSortOrder : null,
+        sorter: col.sorter ? col.sorter : null,
+        showSorterTooltip: col.showSorterTooltip ? col.showSorterTooltip : null,
+
         render: col.render ? col.render : (text, record) => {
           let _text = text;
           let activeStyle = col.style && { ...col.style } || {};
