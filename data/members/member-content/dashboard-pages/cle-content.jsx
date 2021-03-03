@@ -29,7 +29,6 @@ const cleCenter = ({
 }) => {
   let locked = false;
   let children = null;
-  if (memberStatus === 'active') banner = banners('clelatest', onLink);
   // children
   if (
     memberType === memberTypes.USER_NON_MEMBER ||
@@ -42,12 +41,14 @@ const cleCenter = ({
       clecerts: cleCerts({ memberType, memberStatus, member, onLink }),
     };
   } else if (memberType === memberTypes.USER_ATTORNEY) {
+    // if (memberStatus !== 'expired') banner = banners('clelatest', onLink);
     children = {
       clelatest: cleLatest({ memberType, memberStatus, onLink }),
       clearchive: cleArchive({ memberType, memberStatus, onLink, previewUser }),
       clecerts: cleCerts({ memberType, memberStatus, member, onLink }),
     };
   } else if (memberType === memberTypes.USER_STUDENT) {
+    // if (memberStatus !== 'graduated') banner = banners('clelatest', onLink);
     children = {
       clelatest: cleLatest({ memberType, memberStatus, onLink }),
       clearchive: cleArchive({ memberType, memberStatus, onLink, previewUser }),

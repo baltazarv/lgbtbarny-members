@@ -1,4 +1,7 @@
+// Airtable bases with table fields
 export const dbFields = {
+  /** `members` base */
+  // members base: members table
   members: {
     emails: 'emails',
     stripeId: 'stripe_id',
@@ -66,11 +69,13 @@ export const dbFields = {
       ],
     }
   },
+  // members base: emails table
   emails: {
     email: 'email',
     verified: 'verified',
     primary: 'primary',
   },
+  // members base: payments table
   payments: {
     date: 'date',
     plans: 'plans',
@@ -80,6 +85,7 @@ export const dbFields = {
     invoicePdf: '_stripe_invoice_pdf',
     invoiceUrl: '_stripe_invoice_url',
   },
+  // members base: plans table
   plans: {
     type: 'type',
     typeValues: {
@@ -93,6 +99,7 @@ export const dbFields = {
     termYears: 'term_years',
     stripeId: 'stripe_id',
   },
+  // members base: cles table
   cles: {
     title: 'title',
     date: 'date',
@@ -101,5 +108,16 @@ export const dbFields = {
     creditsText: 'credits_text',
     creditsTotal: 'credits_total',
     attended: 'attended',
-  }
+  },
+
+  /** `law notes` base */
+  lawNotes: {
+    // issues table
+    issues: {
+      date: 'date',
+      title: 'title',
+      pdf: 'pdf',
+      sample: 'sample',
+    }
+  },
 };

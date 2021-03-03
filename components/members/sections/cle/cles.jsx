@@ -1,7 +1,7 @@
 // could be CleMain
 import { Spin } from 'antd';
 // utils
-import { useCles } from '../../../../utils/cles/cles-fetch';
+import { useCles } from '../../../../utils/cles/cles-utils';
 
 const Cles = ({
   type,

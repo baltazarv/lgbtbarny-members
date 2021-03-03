@@ -31,6 +31,11 @@ const linkText = {
 
 const MemberContent = ({
   data, // dashboard content
+
+  // can set title from dashboard component, eg, latest Law Notes "June 2020 Edition"
+  title,
+  setTitle,
+
   dataKey,
   onLinkClick,
   onPreviewUserTabClick,
@@ -56,9 +61,8 @@ const MemberContent = ({
     return null;
   }, [pageData]);
 
-  const pageTitle = useMemo(() => {
-    if (pageData && pageData.title) return pageData.title;
-    return '';
+  useMemo(() => {
+    if (pageData && pageData.title) setTitle(pageData.title);
   }, [pageData]);
 
   const breadcrumbs = useMemo(() => {
@@ -154,7 +158,7 @@ const MemberContent = ({
               </Breadcrumb>
             }
             <Card.Title>
-              <h2 className="h2">{pageTitle}</h2>
+              <h2 className="h2">{title}</h2>
             </Card.Title>
             <div>{pageContent}</div>
           </Card.Body>

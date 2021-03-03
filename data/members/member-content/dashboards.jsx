@@ -39,6 +39,7 @@ export const getDashboard = ({
   setMember, // when making edits on user object
   memberStatus, // student graduated, show attorney
   onLink,
+  setTitle, // Law Notest latest for active accounts
   previewUser,
 }) => {
   // banner
@@ -72,6 +73,7 @@ export const getDashboard = ({
       setMember,
       memberStatus,
       onLink,
+      setTitle,
       banner,
     });
     if (memberType === memberTypes.USER_NON_MEMBER) return nonMemberDashboard({
@@ -86,6 +88,7 @@ export const getDashboard = ({
       memberType,
       setMember,
       onLink,
+      setTitle,
       banner,
     });
   }
@@ -127,6 +130,7 @@ const attorneyDashboard = ({
   memberType,
   memberStatus,
   onLink,
+  setTitle, // Law Notest latest
   banner = null,
 }) => {
   return {
@@ -138,7 +142,7 @@ const attorneyDashboard = ({
     },
     account: account({ memberType, memberStatus, user: member, setUser: setMember, onLink, banner }),
     participate: participate({ memberType, memberStatus, onLink, banner }),
-    lawnotes: lawNotes({ memberType, memberStatus, onLink, banner }),
+    lawnotes: lawNotes({ memberType, memberStatus, onLink, setTitle, banner }),
     clecenter: cleCenter({ member, memberType, memberStatus, onLink, banner }),
     discounts: discounts({ memberType, memberStatus, onLink, banner }),
     logout: logout(memberType, onLink),
@@ -174,6 +178,7 @@ const studentDashboard = ({
   memberType,
   setUser, // needed?
   onLink,
+  setTitle, // Law Notest latest
 }) => {
   return {
     options: {
@@ -184,7 +189,7 @@ const studentDashboard = ({
     },
     account: account({ memberType, user, setUser, onLink }),
     participate: participate({ memberType, onLink }),
-    lawnotes: lawNotes({ memberType, onLink }),
+    lawnotes: lawNotes({ memberType, onLink, setTitle }),
     clecenter: cleCenter({ memberType, onLink }),
     logout: logout(memberType, onLink),
   };

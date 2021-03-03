@@ -1,26 +1,49 @@
+// TODO: very similar to LawNotesLatest, maybe wrap in LawNotesIssue?
 import { useMemo } from 'react';
-import { Typography, Button } from 'antd';
+import { Button, Spin } from 'antd';
 import './law-notes.less';
 import PdfViewer from '../../../elements/pdf/pdf-viewer';
 // data
 import * as memberTypes from '../../../../data/members/member-types';
-
-const { Link } = Typography;
+import { dbFields } from '../../../../data/members/airtable/airtable-fields';
+// utils
+import { useLawNotes, getSampleLawNotes, getLawNotesPdf } from '../../../../utils/law-notes/law-notes-utils';
 
 const LawNotesSample = ({
-  data, // one item
   memberType,
   memberStatus,
-  previewUser,
   onLink,
+  previewUser,
 }) => {
 
+  const { lawNotes, isLoading, isError } = useLawNotes();
+
+  const sampleLawNotes = useMemo(() => {
+    if (lawNotes) {
+      return getSampleLawNotes(lawNotes);
+    }
+    return null;
+  }, [lawNotes]);
+
   const title = useMemo(() => {
-    // let _title = data.title;
-    // if (memberType == memberTypes.USER_NON_MEMBER) _title = `${data.month} ${data.year}`;
-    // return _title;
-    return data.title;
-  }, [data]);
+    if (sampleLawNotes) {
+      return sampleLawNotes.fields[dbFields.lawNotes.issues.title];
+    }
+    return null;
+  }, [sampleLawNotes]);
+
+  const url = useMemo(() => {
+    if (sampleLawNotes) {
+      return getLawNotesPdf(sampleLawNotes);
+    }
+    return null;
+  }, [sampleLawNotes]);
+
+  const loading = useMemo(() => {
+    if (isLoading) return true;
+    if (!url) return true;
+    return false;
+  }, [isLoading, url]);
 
   const introText = useMemo(() => {
     let text = null;
@@ -60,10 +83,23 @@ const LawNotesSample = ({
     return text;
   }, [memberType, previewUser]);
 
-  return <div className="law-notes law-notes-latest">
-    {introText}
-    <PdfViewer title={title} url={data.url} />
-  </div>;
+  return <>
+    {loading ?
+      <div style={{
+        margin: '20px 0',
+        marginBottom: '20px',
+        marginLeft: '200px',
+        padding: '30px 50px',
+      }}>
+        {/* Spinner while data is loading */}
+        <Spin size="large" />
+      </div> :
+      <div className="law-notes law-notes-latest">
+        {introText}
+        <PdfViewer title={title} url={url} />
+      </div>
+    }
+  </>;
 };
 
 export default LawNotesSample;

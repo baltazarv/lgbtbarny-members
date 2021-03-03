@@ -88,6 +88,8 @@ const Members = ({
   const [queryKey, setQueryKey] = useState('');
 
   const [data, setData] = useState(null);
+  // dashboard component to set title, eg, latest Law Notes "June 2020 Edition"
+  const [contentTitle, setContentTitle] = useState('');
   // TODO: remove setSignupType from all children
   const [signupType, setSignupType] = useState('');
 
@@ -292,7 +294,8 @@ const Members = ({
       memberType,
       memberStatus,
       onLink: handleContentLink,
-      previewUser
+      setTitle: setContentTitle,
+      previewUser,
     }));
   }, [member, memberType, memberStatus, previewUser]);
 
@@ -467,6 +470,8 @@ const Members = ({
                 {/* TODO: render props to manage content types from this component? */}
                 <MemberContent
                   data={data} // dashboard content
+                  title={contentTitle}
+                  setTitle={setContentTitle}
                   dataKey={selectedKey}
                   onLinkClick={handleContentLink}
                   onPreviewUserTabClick={handleSelectPreviewUser}
