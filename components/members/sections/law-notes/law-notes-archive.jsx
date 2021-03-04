@@ -1,56 +1,57 @@
 import { useMemo, useState } from 'react';
 import { Typography, Button } from 'antd';
+import moment from 'moment';
 // custom components
 import PdfTable from '../../../elements/pdf/pdf-table';
 import PdfModal from '../../../elements/pdf/pdf-modal';
 import './law-notes.less';
 // data
 import * as memberTypes from '../../../../data/members/member-types';
+import { dbFields } from '../../../../data/members/airtable/airtable-fields';
+// utils
+import { useLawNotes, getLawNotesPdf, getIssueMoAndYear } from '../../../../utils/law-notes/law-notes-utils';
 
 const { Link } = Typography;
 
-const LawNotesArchives = ({
-  data,
+const LawNotesArchive = ({
   memberType,
   memberStatus,
   previewUser,
   onLink,
 }) => {
 
+  const { lawNotes, isLoading, isError } = useLawNotes();
   const [modalKey, setModalKey] = useState('');
   const [pdfModalVisible, setPdfModalVisible] = useState(false);
 
   const dataTransformed = useMemo(() => {
-    let _dataTransformed = [...data];
+    if (lawNotes) {
+      const trans = [...lawNotes].map((ln) => {
+        const issue = getIssueMoAndYear(ln);
+        let lnItem = {
+          key: ln.id,
+          issue,
+          title: ln.fields[dbFields.lawNotes.issues.title],
+          // window props
+          wintitle: `${issue} - ${ln.fields[dbFields.lawNotes.issues.title]}`,
+          url: getLawNotesPdf(ln),
+        };
 
-    _dataTransformed = _dataTransformed.map(row => {
-      // window title
-      const wintitle = `${row.month} ${row.year} - ${row.title}`;
-      row.wintitle = wintitle;
-
-      // issue
-      const issue = `${row.month} ${row.year}`;
-      row.issue = issue;
-
-      // locked
-      if (row.sample) {
-        row.locked = false;
-      } else if (
-        memberType === memberTypes.USER_NON_MEMBER ||
-        memberType === memberTypes.USER_ANON ||
-        memberStatus !== 'active'
-      ) {
-        row.locked = true;
-      } else {
-        row.locked = false;
-      };
-
-      return row;
-    });
-
-    // console.log(_dataTransformed);
-    return _dataTransformed;
-  }, [data]);
+        // sample or locked
+        if (memberStatus !== memberTypes.USER_ATTORNEY &&
+          memberStatus !== memberTypes.USER_STUDENT) {
+          if (ln.fields[dbFields.lawNotes.issues.sample]) {
+            lnItem.sample = true;
+          } else {
+            lnItem.locked = true;
+          }
+        }
+        return lnItem;
+      });
+      return trans;
+    }
+    return null;
+  }, [lawNotes]);
 
   const introText = useMemo(() => {
     let text = null;
@@ -114,26 +115,26 @@ const LawNotesArchives = ({
     ];
   }, [dataTransformed]);
 
-  const expandableContent = useMemo(() => {
-    return {
-      expandedRowRender: (record, index, indent, expanded) => {
-        const expandArticle = (chapter, articleIndex) => {
-          console.log(record, index, indent, expanded, chapter, articleIndex);
-        };
-        return <ul style={{
-          maxHeight: '200px',
-          overflow: 'auto'
-        }}>{record.chapters && record.chapters.length > 0 &&
-          record.chapters.map((chapter, articleIndex) => {
-            return <li key={articleIndex}>{chapter}</li>;
-            // {articleIndex === record.chapters.length -1 && <Link onClick={() => expandArticle(chapter, articleIndex)}>MORE</Link>}
-          })
-          }</ul>;
-      },
-      rowExpandable: (record) => record.chapters,
-      // expandRowByClick: true,
-    };
-  });
+  // Law Notes chapters
+
+  // const expandableContent = useMemo(() => {
+  //   return {
+  //     expandedRowRender: (record, index, indent, expanded) => {
+  //       const expandArticle = (chapter, articleIndex) => {
+  //         console.log(record, index, indent, expanded, chapter, articleIndex);
+  //       };
+  //       return <ul style={{
+  //         maxHeight: '200px',
+  //         overflow: 'auto'
+  //       }}>{record.chapters && record.chapters.length > 0 &&
+  //         record.chapters.map((chapter, articleIndex) => {
+  //           return <li key={articleIndex}>{chapter}</li>;
+  //         })
+  //         }</ul>;
+  //     },
+  //     rowExpandable: (record) => record.chapters,
+  //   };
+  // });
 
   const pdfModal = useMemo(() => {
     return <PdfModal
@@ -150,11 +151,11 @@ const LawNotesArchives = ({
     <PdfTable
       data={dataTransformed}
       memberType={memberType}
-      expandable={expandableContent}
+      // expandable={expandableContent}
       customCols={customCols}
     />
     {pdfModal}
   </div>;
 };
 
-export default LawNotesArchives;
+export default LawNotesArchive;

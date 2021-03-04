@@ -200,6 +200,7 @@ const cleArchive = ({
     banner,
     content: <Cles
       memberType={memberType}
+      memberStatus={memberStatus}
       previewUser={previewUser}
       onLink={onLink}
       render={(args) => <CleArchive {...args} />}

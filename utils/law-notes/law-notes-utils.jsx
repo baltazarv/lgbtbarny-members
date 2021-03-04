@@ -49,9 +49,19 @@ const getLawNotesPdf = (issue) => {
   return null;
 };
 
+const getIssueMoAndYear = (issue) => {
+  if (issue) {
+    const date = issue.fields[dbFields.lawNotes.issues.date];
+    const month = moment(date, 'YYYY-M-D').format('MMMM');
+    const year = moment(date, 'YYYY-M-D').year();
+    return `${month} ${year}`;
+  }
+};
+
 export {
   useLawNotes,
   getSampleLawNotes,
   getLatest,
   getLawNotesPdf,
+  getIssueMoAndYear,
 };

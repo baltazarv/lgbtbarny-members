@@ -6,7 +6,7 @@ import './law-notes.less';
 import PdfViewer from '../../../elements/pdf/pdf-viewer';
 import { dbFields } from '../../../../data/members/airtable/airtable-fields';
 // utils
-import { useLawNotes, getLatest, getLawNotesPdf } from '../../../../utils/law-notes/law-notes-utils';
+import { useLawNotes, getLatest, getLawNotesPdf, getIssueMoAndYear } from '../../../../utils/law-notes/law-notes-utils';
 
 const { Link } = Typography;
 
@@ -33,10 +33,8 @@ const LawNotesLatest = ({
 
   useEffect(() => {
     if (latestLawNotes) {
-      const date = latestLawNotes.fields[dbFields.lawNotes.issues.date];
-      const month = moment(date, 'YYYY-M-D').format('MMMM');
-      const year = moment(date, 'YYYY-M-D').year();
-      setTitle(`${month} ${year} Edition`);
+      const moAndYear = getIssueMoAndYear(latestLawNotes);
+      setTitle(`${moAndYear} Edition`);
     } else {
       setTitle('Latest Law Notes');
     }

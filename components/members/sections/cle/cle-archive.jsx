@@ -11,8 +11,6 @@ import SvgIcon from '../../../elements/svg-icon';
 import { MembersContext } from '../../../../contexts/members-context';
 import * as memberTypes from '../../../../data/members/member-types';
 import { dbFields } from '../../../../data/members/airtable/airtable-fields';
-// utils
-import { getAccountIsActive } from '../../../../utils/members/airtable/members-db';
 
 const { Link } = Typography;
 
@@ -28,35 +26,14 @@ const CertIcon = () =>
 
 const CleArchive = ({
   cles,
-  memberType, // = memberTypes.USER_ATTORNEY,
+  memberType,
+  memberStatus,
   previewUser,
   onLink,
 }) => {
-  const { member, userPayments, memberPlans } = useContext(MembersContext);
+  const { member } = useContext(MembersContext);
   const [modalKey, setModalKey] = useState('');
   const [pdfModalVisible, setPdfModalVisible] = useState(false);
-
-  const accountIsActive = useMemo(() => {
-    const isActive = getAccountIsActive({
-      userPayments,
-      memberPlans,
-      member,
-    });
-    return isActive; // null if params null
-  }, [userPayments, memberPlans, member]);
-
-  const latestCleId = useMemo(() => {
-    if (cles) {
-      const latest = [...cles].reduce((acc, cur) => {
-        if (moment(cur.fields[dbFields.cles.date], 'YYYY-M-D').isAfter(moment(acc.fields[dbFields.cles.date], 'YYYY-M-D'))) {
-          return cur;
-        }
-        return acc;
-      });
-      return latest.id;
-    }
-    return null;
-  }, [cles]);
 
   // airtable long text rich-text fields that get pulled in as markdown from api
   const mdToHtml = (md) => {
@@ -83,20 +60,11 @@ const CleArchive = ({
         }
 
         // Sample for anon, non-member, expired, graduated - not for student & attorney
-        if (
-          cle.fields.sample &&
-          (
-            !accountIsActive ||
-            memberType === memberTypes.USER_NON_MEMBER ||
-            memberType === memberTypes.USER_ANON
-          )) {
-          cleItem.sample = cle.fields.sample;
-        } else if (cle.id === latestCleId) {
-          cleItem.latest = true;
-        } else {
-          if (!accountIsActive ||
-            memberType === memberTypes.USER_ANON ||
-            memberType === memberTypes.USER_NON_MEMBER) {
+        if (memberStatus !== memberTypes.USER_ATTORNEY &&
+          memberStatus !== memberTypes.USER_STUDENT) {
+          if (cle.fields.sample) {
+            cleItem.sample = cle.fields.sample;
+          } else {
             cleItem.locked = true;
           }
         }
@@ -120,7 +88,7 @@ const CleArchive = ({
       return trans;
     }
     return null;
-  }, [cles, accountIsActive]);
+  }, [cles]); // , accountIsActive
 
   const introText = useMemo(() => {
     let text = null;
@@ -174,7 +142,7 @@ const CleArchive = ({
         }</>;
     };
     return text;
-  }, [memberType, previewUser, accountIsActive]);
+  }, [memberType, previewUser]);
 
   const customCols = useMemo(() => {
     const defaultCols = [

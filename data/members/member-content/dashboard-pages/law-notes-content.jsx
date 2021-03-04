@@ -6,7 +6,6 @@ import banners from '../banners';
 import { MenuIcon } from '../../../../components/members/elements/member-icons';
 // data
 import * as memberTypes from '../../member-types';
-import lawNotesData from '../../sample/law-notes-data';
 
 const getLinks = (memberType, previewUser, defaultValues) => {
   let links = defaultValues || [];
@@ -31,24 +30,25 @@ const lawNotes = ({
   let locked = false;
   let links = [];
   let children = null;
-  if (
-    (memberType === memberTypes.USER_ATTORNEY ||
-      memberType === memberTypes.USER_STUDENT) &&
-    memberStatus !== 'expired' ||
-    memberStatus !== 'graduated'
+
+  // children
+  if (memberStatus !== memberTypes.USER_ATTORNEY &&
+    memberStatus !== memberTypes.USER_STUDENT
   ) {
-    // redirect = 'lnlatest';
-    children = {
-      lnlatest: lnLatest({ memberType, onLink, setTitle, previewUser }),
-      lnarchive: lnArchive({ memberType, memberStatus, onLink, previewUser }),
-    };
-  } else {
     // redirect = 'lnsample';
     children = {
       lnsample: lnSample({ memberType, memberStatus, onLink, previewUser }),
       lnarchive: lnArchive({ memberType, memberStatus, onLink, previewUser }),
     };
+  } else {
+    // redirect = 'lnlatest';
+    children = {
+      lnlatest: lnLatest({ memberType, onLink, setTitle, previewUser }),
+      lnarchive: lnArchive({ memberType, memberStatus, onLink, previewUser }),
+    };
   }
+
+  // banner
   if (memberType === memberTypes.USER_NON_MEMBER) {
     banner = banners('lawnotes', onLink);
   };
@@ -73,7 +73,6 @@ const lnLatest = ({ memberType, onLink, setTitle, }) => {
     // title: 'Latest Law Notes', // set by <LawNotesLatest />
     label: 'Latest',
     content: <LawNotesLatest
-      memberType={memberType}
       onLink={onLink}
       setTitle={setTitle}
     />,
@@ -128,7 +127,6 @@ const lnArchive = ({
     locked,
     title: 'Law Notes Archive',
     content: <LawNotesArchive
-      data={lawNotesData}
       memberType={memberType}
       memberStatus={memberStatus}
       previewUser={previewUser}

@@ -6,6 +6,7 @@ import { useCles } from '../../../../utils/cles/cles-utils';
 const Cles = ({
   type,
   memberType,
+  memberStatus,
   previewUser,
   onLink,
   render,
@@ -28,6 +29,7 @@ const Cles = ({
       cles,
       type,
       memberType,
+      memberStatus,
       previewUser,
       onLink,
       render,
