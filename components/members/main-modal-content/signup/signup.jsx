@@ -417,14 +417,14 @@ const Signup = ({
           memberSignUpType={memberSignUpType}
           hideFormElements={hideFormElements}
           initialValues={{
-            [dbFields.members.certify]: member && member.fields.certify,
-            [dbFields.members.firstName]: member && member.fields[dbFields.members.firstName],
-            [dbFields.members.lastName]: member && member.fields[dbFields.members.lastName],
-            [dbFields.members.certify]: member && member.fields[dbFields.members.certify],
-            [dbFields.members.employer]: member && member.fields[dbFields.members.employer],
-            [dbFields.members.salary]: member && member.fields[dbFields.members.salary],
-            [dbFields.members.lawSchool]: member && member.fields[dbFields.members.lawSchool],
-            [dbFields.members.gradYear]: member && member.fields[dbFields.members.gradYear],
+            [dbFields.members.certify]: member?.fields[dbFields.members.certify],
+            [dbFields.members.firstName]: member?.fields[dbFields.members.firstName],
+            [dbFields.members.lastName]: member?.fields[dbFields.members.lastName],
+            [dbFields.members.certify]: member?.fields[dbFields.members.certify],
+            [dbFields.members.employer]: member?.fields[dbFields.members.employer],
+            [dbFields.members.salary]: member?.fields[dbFields.members.salary],
+            [dbFields.members.lawSchool]: member?.fields[dbFields.members.lawSchool],
+            [dbFields.members.gradYear]: member?.fields[dbFields.members.gradYear],
           }}
           // choose student or attorney membership
           certifyChoice={certifyChoice}

@@ -1,8 +1,9 @@
 import Account from '../../../../components/members/sections/account/account';
 import { MenuIcon } from '../../../../components/members/elements/member-icons';
-// data
-// import * as memberTypes from '../../member-types';
-// import banners from '../banners';
+
+/****************
+ * Account Page
+ ****************/
 
 export const account = ({
   memberType,

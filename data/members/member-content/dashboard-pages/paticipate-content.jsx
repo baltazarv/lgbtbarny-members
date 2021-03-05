@@ -4,6 +4,11 @@ import banners from '../banners';
 import { MenuIcon } from '../../../../components/members/elements/member-icons';
 // data
 import * as memberTypes from '../../member-types';
+import { addToSignupLinks } from '../dashboards';
+
+/********************
+ * Participate Page
+ ********************/
 
 export const participate = ({
   memberType,
@@ -12,8 +17,11 @@ export const participate = ({
   banner = null,
   previewUser,
 }) => {
+  // console.log('memberType', memberType, 'memberStatus', memberStatus);
+
   let locked = false;
   let title = 'Member Participation';
+  let links = null;
 
   if (memberType === memberTypes.USER_STUDENT && memberStatus !== 'graduated') {
     title = 'Law Student Programs & Events';
@@ -22,8 +30,8 @@ export const participate = ({
     banner = banners('graduated', onLink);
   }
   if (memberType === memberTypes.USER_NON_MEMBER) {
-    banner = banners('membership', onLink);
     locked = true;
+    banner = banners('membership', onLink);
   }
   if (memberType === memberTypes.USER_ANON) {
     locked = true;
@@ -39,6 +47,12 @@ export const participate = ({
     };
   }
 
+  // links
+  if (memberStatus !== memberTypes.USER_ATTORNEY &&
+    memberStatus !== memberTypes.USER_STUDENT) {
+    links = addToSignupLinks({ memberType, memberStatus, previewUser });
+  }
+
   return {
     route: 'participate',
     icon: <MenuIcon name="demographic" ariaLabel="Participate" />,
@@ -51,5 +65,6 @@ export const participate = ({
       onLink={onLink}
       previewUser={previewUser}
     />,
+    links,
   };
 };

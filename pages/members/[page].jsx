@@ -236,8 +236,10 @@ const Members = ({
     // add query string to url, useEffect will open modal
     else if (key === 'signup' ||
       key === 'law-notes-subscribe' ||
-      key === 'renew') {
+      key === 'renew' ||
+      key === 'upgrade') {
       if (key === 'renew') key = 'signup';
+      if (key === 'upgrade') key = 'signup';
       // add key as query string
       let asPath = router.asPath;
       let query = `?${key}`; //'?signup';

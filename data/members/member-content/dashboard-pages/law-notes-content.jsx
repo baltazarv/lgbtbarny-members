@@ -6,17 +6,11 @@ import banners from '../banners';
 import { MenuIcon } from '../../../../components/members/elements/member-icons';
 // data
 import * as memberTypes from '../../member-types';
+import { addToSignupLinks } from '../dashboards';
 
-const getLinks = (memberType, previewUser, defaultValues) => {
-  let links = defaultValues || [];
-  if ((memberType === memberTypes.USER_ANON && previewUser === memberTypes.USER_NON_MEMBER) ||
-    memberType === memberTypes.USER_NON_MEMBER) {
-    links = ['signup', 'law-notes-subscribe'].concat(defaultValues);
-  } else if (memberType === memberTypes.USER_ANON) {
-    links = ['signup'].concat(defaultValues);
-  };
-  return links;
-};
+/*********************
+ * Law Notes Section
+ *********************/
 
 const lawNotes = ({
   memberType,
@@ -31,7 +25,9 @@ const lawNotes = ({
   let links = [];
   let children = null;
 
-  // children
+  // console.log('memberType', memberType, 'memberStatus', memberStatus);
+
+  // children & links
   if (memberStatus !== memberTypes.USER_ATTORNEY &&
     memberStatus !== memberTypes.USER_STUDENT
   ) {
@@ -64,13 +60,17 @@ const lawNotes = ({
   };
 };
 
+/*************************
+ * Latest Law Notes Page
+ *************************/
+
 // member only
 const lnLatest = ({ memberType, onLink, setTitle, }) => {
   let locked = false;
   if (memberType === memberTypes.USER_NON_MEMBER || memberTypes.USER_ANON) locked = true;
   return {
     route: 'law-notes-latest',
-    // title: 'Latest Law Notes', // set by <LawNotesLatest />
+    title: 'Latest Law Notes', // reset by <LawNotesLatest /> to issue month and year; useful link label
     label: 'Latest',
     content: <LawNotesLatest
       onLink={onLink}
@@ -79,6 +79,10 @@ const lnLatest = ({ memberType, onLink, setTitle, }) => {
     links: ['lnarchive'],
   };
 };
+
+/*************************
+ * Law Notes Sample Page
+ *************************/
 
 // non-member & anon & not active
 const lnSample = ({
@@ -93,7 +97,12 @@ const lnSample = ({
     onLink={onLink}
     previewUser={previewUser}
   />;
-  const links = getLinks(memberType, previewUser, ['lnarchive']);
+  const links = addToSignupLinks({
+    memberType,
+    memberStatus,
+    previewUser,
+    defaultLinks: ['lnarchive'],
+  });
   return {
     route: 'law-notes-sample',
     title: 'Sample Law Notes - January Edition',
@@ -103,6 +112,10 @@ const lnSample = ({
   };
 };
 
+/**************************
+ * Law Notes Archive Page
+ **************************/
+
 const lnArchive = ({
   memberType,
   memberStatus,
@@ -110,15 +123,24 @@ const lnArchive = ({
   previewUser
 }) => {
   let locked = false;
-  let links = getLinks(memberType, previewUser, ['lnlatest']);
+  let links = null;
   if (
-    memberType === memberTypes.USER_NON_MEMBER ||
-    memberType === memberTypes.USER_ANON ||
-    memberStatus === 'expired' ||
-    memberStatus === 'graduated'
+    memberStatus === memberTypes.USER_STUDENT ||
+    memberStatus === memberTypes.USER_ATTORNEY
   ) {
+    links = addToSignupLinks({
+      memberType,
+      previewUser,
+      defaultLinks: ['lnlatest'],
+    });
+  } else {
     locked = true;
-    links = getLinks(memberType, previewUser, ['lnsample']);
+    links = addToSignupLinks({
+      memberType,
+      memberStatus,
+      previewUser,
+      defaultLinks: ['lnsample'],
+    });
   }
 
   return {

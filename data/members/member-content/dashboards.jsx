@@ -33,6 +33,30 @@ const anonPromoTxt = {
   discounts: 'Discounts for Annual Dinner, merchandise, National LGBT Bar Association, and third-party discounts.',
 };
 
+export const addToSignupLinks = ({
+  memberType,
+  memberStatus,
+  previewUser,
+  defaultLinks,
+}) => {
+  let links = defaultLinks || [];
+  if (memberType === memberTypes.USER_ANON && previewUser === memberTypes.USER_NON_MEMBER) {
+    links = ['signup', 'law-notes-subscribe'].concat(links);
+  } else if (memberType === memberTypes.USER_ANON ||
+    memberType === memberTypes.USER_NON_MEMBER) {
+    links = ['signup'].concat(links);
+  } else if (memberStatus === 'expired') {
+    links = ['renew'].concat(links);
+  } else if (memberStatus === 'graduated') {
+    links = ['upgrade'].concat(links);
+  };
+  return links;
+};
+
+/**********************************
+ * All dashboards => user-specific
+ **********************************/
+
 export const getDashboard = ({
   member,
   memberType,
@@ -54,7 +78,10 @@ export const getDashboard = ({
     banner = banners('graduated', onLink);
   };
 
-  // if no member ojbect or if memberType is anon
+/***************************
+ * User-specific dashboards
+ ***************************/
+
   if (!member || isEmpty(member)) {
     return anonDashboard({
       userType: memberTypes.USER_ANON,
@@ -86,6 +113,7 @@ export const getDashboard = ({
     if (memberType === memberTypes.USER_STUDENT) return studentDashboard({
       user: member,
       memberType,
+      memberStatus,
       setMember,
       onLink,
       setTitle,
@@ -176,6 +204,7 @@ const nonMemberDashboard = ({
 const studentDashboard = ({
   user,
   memberType,
+  memberStatus,
   setUser, // needed?
   onLink,
   setTitle, // Law Notest latest
@@ -189,8 +218,8 @@ const studentDashboard = ({
     },
     account: account({ memberType, user, setUser, onLink }),
     participate: participate({ memberType, onLink }),
-    lawnotes: lawNotes({ memberType, onLink, setTitle }),
-    clecenter: cleCenter({ memberType, onLink }),
+    lawnotes: lawNotes({ memberType, memberStatus, onLink, setTitle }),
+    clecenter: cleCenter({ memberType, memberStatus, onLink }),
     logout: logout(memberType, onLink),
   };
 };

@@ -7,6 +7,7 @@ import banners from '../banners';
 import { MenuIcon } from '../../../../components/members/elements/member-icons';
 //utils
 import SvgIcon from '../../../../components/elements/svg-icon';
+import { addToSignupLinks } from '../dashboards';
 // data
 import * as memberTypes from '../../member-types';
 
@@ -18,6 +19,10 @@ const CleCertIcon = () => <span role="img" aria-label="See CLE certificate" clas
     fill="currentColor"
   />
 </span>;
+
+/***************
+ * CLE Section
+ ***************/
 
 const cleCenter = ({
   member,
@@ -55,7 +60,7 @@ const cleCenter = ({
     };
   } else if (memberType === memberTypes.USER_ANON) {
     children = {
-      clelatest: cleSample({ memberType, memberStatus, onLink, previewUser }),
+      clesample: cleSample({ memberType, memberStatus, onLink, previewUser }),
       clearchive: cleArchive({ memberType, memberStatus, onLink, previewUser }),
     };
   }
@@ -71,12 +76,11 @@ const cleCenter = ({
   };
 };
 
-/**
- * See notes in /data/members/member-content/dashboards.jsx for dashboard object props:
- * * links
- */
+/*******************
+ * Latest CLE Page
+ *******************/
 
-// This should only show up if there is a current CLE
+// only for active members
 const cleLatest = ({
   memberType,
   memberStatus,
@@ -88,22 +92,10 @@ const cleLatest = ({
   let title = 'Latest CLE Materials';
   let links = [];
 
-  if (memberType === memberTypes.USER_ANON ||
-    memberType === memberTypes.USER_NON_MEMBER ||
-    memberStatus === 'expired') {
-    locked = true;
-    title = 'Latest CLE Materials [Excerpt]';
-  }
-
-  if (memberType === memberTypes.USER_ATTORNEY) {
+  if (memberStatus === memberTypes.USER_ATTORNEY) {
     links = ['clearchive', 'clecerts'];
-  } else if (memberType === memberTypes.USER_STUDENT) {
+  } else if (memberStatus === memberTypes.USER_STUDENT) {
     links = ['clearchive'];
-  } else if (memberType === memberTypes.USER_NON_MEMBER) {
-    links = ['signup', 'clearchive', 'clesample', 'clecerts'];
-  } else if (memberType === memberTypes.USER_ANON) {
-    links = ['signup', 'clearchive', 'clesample'];
-    if (previewUser === memberTypes.USER_NON_MEMBER) links = ['signup', 'clearchive', 'clesample'];
   }
 
   return {
@@ -122,7 +114,11 @@ const cleLatest = ({
   };
 };
 
-// Sample for anon and non-member
+/*******************
+ * Sample CLE Page
+ *******************/
+
+// anon, non-member, expired attorneys, & graduated students
 const cleSample = ({
   memberType,
   memberStatus,
@@ -131,20 +127,28 @@ const cleSample = ({
 }) => {
   let links = [];
 
-  if (
-    memberType === memberTypes.USER_NON_MEMBER ||
-    memberStatus == 'graduated'
-  ) {
-    links = ['signup', 'clelatest', 'clearchive', 'clecerts'];
-  } else if (memberType === memberTypes.USER_ANON) {
-    links = ['signup', 'clelatest', 'clearchive'];
-    if (previewUser === memberTypes.USER_NON_MEMBER) links = ['signup', 'clelatest', 'clearchive'];
+  if (memberType === memberTypes.USER_ANON ||
+    memberStatus === 'expired') {
+    // no certs
+    links = addToSignupLinks({
+      memberType,
+      memberStatus,
+      previewUser,
+      defaultLinks: ['clearchive'],
+    });
+  } else {
+    links = addToSignupLinks({
+      memberType,
+      memberStatus,
+      previewUser,
+      defaultLinks: ['clearchive', 'clecerts'],
+    });
   }
 
   return {
     route: 'cle-sample',
     label: 'Sample',
-    locked: false,
+    locked: true,
     title: 'Sample CLE Materials',
     content: <Cles
       type='sample'
@@ -165,32 +169,33 @@ const cleArchive = ({
   banner = null,
   previewUser
 }) => {
+  // console.log('memberType', memberType, 'memberStatus', memberStatus);
+
   let locked = false;
   let links = [];
 
-  // links
-  if (memberType === memberTypes.USER_NON_MEMBER ||
-    memberStatus === 'graduated') {
-    links = ['signup', 'clesample', 'clecerts'];
-  } else if (memberStatus === 'expired') {
-    links = ['renew', 'clesample', 'clecerts'];
-  } else if (memberType === memberTypes.USER_ATTORNEY) {
+  if (memberStatus === memberTypes.USER_ATTORNEY) {
     links = ['clelatest', 'clecerts'];
-  } else if (memberType === memberTypes.USER_STUDENT && memberStatus !== 'graduated') {
-    if (memberStatus === 'graduated')
-      links = ['clelatest'];
-  } else if (memberType === memberTypes.USER_ANON) {
-    links = ['signup', 'clesample'];
-    if (previewUser === memberTypes.USER_NON_MEMBER) links = ['signup', 'clelatest', 'clesample'];
-  };
-
-  // locked
-  if (
-    memberType === memberTypes.USER_NON_MEMBER ||
-    memberType === memberTypes.USER_ANON ||
-    memberStatus === 'expired' ||
-    memberStatus === 'graduated'
-  ) locked = true;
+  } else if (memberStatus === memberTypes.USER_STUDENT) {
+    links = ['clelatest'];
+  } else {
+    locked = true;
+    if (memberType === memberTypes.USER_ANON || memberStatus === 'graduated') {
+      links = addToSignupLinks({
+        memberType,
+        memberStatus,
+        previewUser,
+        defaultLinks: ['clesample'],
+      });
+    } else {
+      links = addToSignupLinks({
+        memberType,
+        memberStatus,
+        previewUser,
+        defaultLinks: ['clesample', 'clecerts'],
+      });
+    }
+  }
 
   return {
     route: 'cle-archive',
@@ -209,16 +214,28 @@ const cleArchive = ({
   };
 };
 
+/************************
+ * CLE Certificates Page
+ ************************/
+
+// not seen by students or non-members
 const cleCerts = ({
   memberType,
-  onLink
+  memberStatus,
+  onLink,
 }) => {
   let links = [];
-  if (memberType === memberTypes.USER_ATTORNEY) {
+
+  if (memberStatus === memberTypes.USER_ATTORNEY) {
     links = ['clelatest', 'clearchive'];
-  } else if (memberType === memberTypes.USER_NON_MEMBER) {
-    links = ['signup', 'clelatest', 'clearchive', 'clesample'];
-  };
+  } else {
+    links = addToSignupLinks({
+      memberType,
+      memberStatus,
+      defaultLinks: ['clesample', 'clearchive'],
+    });
+  }
+
   return {
     route: 'cle-certs',
     label: 'My Certificates',

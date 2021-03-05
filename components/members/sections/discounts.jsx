@@ -44,7 +44,7 @@ const Discounts = ({
 
   const filters = useMemo(() => {
     let _filters = null;
-    if (memberType === memberTypes.USER_ATTORNEY && memberStatus === 'active') {
+    if (memberStatus === memberTypes.USER_ATTORNEY) {
       _filters = <div className="mb-3">
         <Select
           mode="multiple"
@@ -62,7 +62,7 @@ const Discounts = ({
 
   const cards = useMemo(() => {
     let output = null;
-    if (memberType === memberTypes.USER_ATTORNEY && memberStatus === 'active') {
+    if (memberStatus === memberTypes.USER_ATTORNEY) {
       const _cards = [];
       let _data = DISCOUNTS;
       setData(_data);

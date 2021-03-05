@@ -23,10 +23,12 @@ const TabIcon = ({
     />
   </span>;
 
+// [page] handleContentLink() key=
 const linkText = {
   signup: 'Become a Member',
   'law-notes-subscribe': 'Subscribe to Law Notes',
   renew: 'Renew Membership',
+  upgrade: 'Upgrade Membership',
 };
 
 const MemberContent = ({
@@ -61,8 +63,13 @@ const MemberContent = ({
     return null;
   }, [pageData]);
 
-  useMemo(() => {
-    if (pageData && pageData.title) setTitle(pageData.title);
+  useEffect(() => {
+    if (pageData && pageData.title) {
+      // Law Notes component sets its own title, which includes issue month and year
+      if (pageData.key !== 'lnlatest') {
+        setTitle(pageData.title);
+      }
+    }
   }, [pageData]);
 
   const breadcrumbs = useMemo(() => {

@@ -388,7 +388,7 @@ export const STUDENT_GROUPS = {
   careerfair: {
     key: 'careerfair',
     colors: ['#fa541c', '#ff9c6e'],
-    image: 'images/groups/career-fair.jpg',
+    image: '/images/groups/career-fair.jpg',
     imageOptions: { backgroundPosition: 'center -43px' },
     label: 'Law Student Career Fair',
     title: 'LGBTQ Law Student Career Fair',

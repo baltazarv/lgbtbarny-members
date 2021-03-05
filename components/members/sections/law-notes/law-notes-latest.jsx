@@ -35,8 +35,6 @@ const LawNotesLatest = ({
     if (latestLawNotes) {
       const moAndYear = getIssueMoAndYear(latestLawNotes);
       setTitle(`${moAndYear} Edition`);
-    } else {
-      setTitle('Latest Law Notes');
     }
   }, [latestLawNotes]);
 

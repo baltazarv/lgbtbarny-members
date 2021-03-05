@@ -1,10 +1,15 @@
 import Discounts from '../../../../components/members/sections/discounts';
 // parts
-import banners from '../banners';
 import { MenuIcon } from '../../../../components/members/elements/member-icons';
 // data
 import * as memberTypes from '../../member-types';
+import { addToSignupLinks } from '../dashboards';
 
+/******************
+ * Discounts Page
+ ******************/
+
+// students don't get discounts
 export const discounts = ({
   memberType,
   memberStatus,
@@ -14,6 +19,7 @@ export const discounts = ({
 }) => {
   let locked = false;
   let title = 'Discounts';
+  let links = null;
 
   if (
     memberType === memberTypes.USER_ANON ||
@@ -23,6 +29,11 @@ export const discounts = ({
   ) {
     locked = true;
     title = 'Member Discounts';
+  }
+
+  // links // students don't get discounts
+  if (memberStatus !== memberTypes.USER_ATTORNEY) {
+    links = addToSignupLinks({ memberType, memberStatus, previewUser });
   }
 
   return {
@@ -38,5 +49,6 @@ export const discounts = ({
       onLink={onLink}
       previewUser={previewUser}
     />,
+    links,
   };
 };
