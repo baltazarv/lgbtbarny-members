@@ -30,17 +30,22 @@ import SvgIcon from '../../components/elements/svg-icon';
 // import NewsNotification from '../../components/utils/open-notification';
 import './members.less';
 // data
-import { getMemberType, getMemberStatus } from '../../utils/members/airtable/members-db';
 import { getDashboard } from '../../data/members/member-content/dashboards';
-import { getMemberPageParentKey } from '../../utils/members/dashboard-utils';
-import { dbFields } from '../../data/members/airtable/airtable-fields';
 import * as memberTypes from '../../data/members/member-types';
 import sampleMembers from '../../data/members/sample/members-sample';
-import { membersTable, emailsTable, paymentsTable, plansTable, minifyRecords } from '../api/utils/Airtable';
+// utils
+import { getMemberType, getMemberStatus } from '../../utils/members/airtable/members-db';
+import { getMemberPageParentKey } from '../../utils/members/dashboard-utils';
+// server-side functions
+import {
+  processUser,
+  getPlans,
+  processEmail,
+  processStripeCust,
+  getPayments,
+} from '../api/members/members-processes';
 // contexts
 import { MembersContext } from '../../contexts/members-context';
-// payment utils
-import { stripe, getActiveSubscription, getPaymentMethodObject } from '../api/utils/stripe';
 
 const { Sider } = Layout;
 
@@ -156,9 +161,17 @@ const Members = ({
   // set data from airtable into MemberContext vars
 
   useEffect(() => {
-    setMember(loggedInMember);
     setAuthUser(loggedInUser);
-  }, [loggedInUser, loggedInMember]);
+  }, [loggedInUser]);
+
+  // track when auth session changes
+  useEffect(() => {
+    console.log('authUser', authUser)
+  }, [authUser]);
+
+  useEffect(() => {
+    setMember(loggedInMember);
+  }, [loggedInMember]);
 
   useEffect(() => {
     setUserEmails(loggedInMemberEmails);
@@ -540,12 +553,6 @@ export async function getServerSideProps(context) {
 
       // TODO: maybe move following requests to client-side
       if (email) {// already checking for session!
-        // AUTH0 user
-        // console.log('SESSION', session);
-
-        // AIRTABLE
-        // TODO: replace firstPage if not getting all records (page limited to 100 records)
-
         /******************
          * Airtable Notes
          *******************
@@ -555,96 +562,43 @@ export async function getServerSideProps(context) {
          * * Beside `select`, can also use: find(recId, (err, records) => {})
          */
 
-        // get membership plans
-        const planRecords = await plansTable.select().firstPage();
-        plans = minifyRecords(planRecords);
+        /** membership plans */
+        const plansResult = await getPlans();
+        if (plansResult.plans) plans = plansResult.plans;
+        // console.log('PLANS', plans)
 
-        // get members table data
-        const memberRecords = await membersTable.select({
-          filterByFormula: `SEARCH("${email}", ARRAYJOIN(${dbFields.members.emails}))`,
-        }).firstPage();
-        loggedInMember = minifyRecords(memberRecords)[0];
+        /** user */
+        let userResult = await processUser(email);
+        let isNewUser = null;
+        if (userResult.user) loggedInMember = userResult.user;
+        if (userResult.isNewUser !== null) isNewUser = userResult.isNewUser;
+        // console.log('loggedInMember', loggedInMember, 'isNewUser', isNewUser)
 
-        // if no stripe id, create stripe customer, & populate field
-        // TODO: if id does not exist on stripe replace on airtable
-        if (!loggedInMember.fields[dbFields.members.stripeId]) {
-          try {
-            const stripeCustomer = await stripe.customers.create({ email });
-            console.log('stripeCustomer', stripeCustomer);
-            const fieldsToUpdate = { [dbFields.members.stripeId]: stripeCustomer.id };
-            const updatedRecords = await membersTable.update([{
-              id: loggedInMember.id,
-              fields: fieldsToUpdate,
-            }]);
-            loggedInMember = minifyRecords(updatedRecords)[0];
-            ;
-            console.log('loggedInMember', loggedInMember);
-          } catch (err) {
-            console.log(err);
-          }
-        }
+        /** stripe customer associated to user */
+        const stripeResult = await processStripeCust({ user: loggedInMember, email });
+        if (stripeResult.user) loggedInMember = stripeResult.user;
+        if (stripeResult.subscriptions) userSubscriptions = stripeResult.subscriptions;
+        if (stripeResult.defaultCard) userDefaultCard = stripeResult.defaultCard;
+        // console.log('loggedInMember', loggedInMember, 'userSubscriptions', userSubscriptions, 'userDefaultCard', userDefaultCard)
 
-
-        // find & mark logged-in email as verified
-        let emailRecords = [];
-        emailRecords = await emailsTable.select({
-          filterByFormula: `FIND("${email}", email)`,
-        }).firstPage();
-        if (emailRecords.length > 0) {
-          const id = emailRecords[0].id;
-          const updateRecord = await emailsTable.update([
-            { id, fields: { verified: true } }
-          ]);
-        }
-
-        // get all emails for user
-        if (loggedInMember.fields.emails) {
-          const memberEmailIds = loggedInMember.fields.emails.join(',');
-          emailRecords = await emailsTable.select({
-            filterByFormula: `SEARCH(RECORD_ID(), "${memberEmailIds}")`
-          }).firstPage();
-          // add emails variable to members variable
-          loggedInMemberEmails = minifyRecords(emailRecords);
+        /** user emails */
+        const emailResult = await processEmail({ email, user: loggedInMember, isNewUser })
+        if (emailResult.emails) {
+          loggedInMemberEmails = emailResult.emails;
           // add as separate variable `_emails` member context state
           loggedInMember.fields.__emails = loggedInMemberEmails;
         }
+        // console.log('EMAILS', loggedInMemberEmails, 'USER', loggedInMember, 'EMAIL', emailResult.email)
 
-        // get user's payments
-        if (loggedInMember.fields.payments) {
-          let paymentRecords = [];
-          const paymentIds = loggedInMember.fields.payments.join(',');
-          paymentRecords = await paymentsTable.select({
-            filterByFormula: `SEARCH(RECORD_ID(), "${paymentIds}")`
-          }).firstPage();
-          // add emails variable to members variable
-          loggedInUserPayments = minifyRecords(paymentRecords);
+        /** user payments */
+        const { payments } = await getPayments(loggedInMember)
+        if (payments) {
+          loggedInUserPayments = payments;
           // add as separate variable `_emails` member context state
           loggedInMember.fields.__payments = loggedInUserPayments;
         }
+        // console.log('PAYMENTS', payments);
 
-        // console.log('loggedInMember', loggedInMember);
-
-        // Get stripe info
-        const stripeId = loggedInMember.fields[dbFields.members.stripeId];
-        if (stripeId) {
-          try {
-            const subscriptions = await stripe.subscriptions.list({ customer: stripeId });
-            userSubscriptions = subscriptions.data;
-            // get info about active subscription's default payment method, eg, last4
-            const activeSubscription = getActiveSubscription(userSubscriptions);
-            if (activeSubscription && activeSubscription.default_payment_method) {
-              const paymentMethod = await stripe.paymentMethods.retrieve(activeSubscription.default_payment_method);
-              const defaultCard = getPaymentMethodObject(paymentMethod, {
-                type: 'subscription',
-                id: activeSubscription.id,
-                field: 'default_payment_method',
-              });
-              userDefaultCard = defaultCard;
-            }
-          } catch (err) {
-            console.log(err);
-          }
-        }
       }
     } catch (error) {
       console.log(error);

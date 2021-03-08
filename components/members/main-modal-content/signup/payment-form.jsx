@@ -111,7 +111,11 @@ const PaymentForm = ({
     let primary = '';
     if (userEmails) {
       const emailFound = userEmails.find((email) => email.fields[dbFields.emails.primary]);
-      if (emailFound) primary = emailFound.fields[dbFields.emails.email];
+      if (emailFound) {
+        primary = emailFound.fields[dbFields.emails.address];
+      } else {
+        primary = loggedInEmail;
+      }
     }
     return primary;
   }, [userEmails]);

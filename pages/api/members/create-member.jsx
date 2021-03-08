@@ -1,10 +1,16 @@
 import { membersTable } from '../utils/Airtable';
 
 export default async (req, res) => {
-  const { first_name, last_name } = req.body;
+  const { first_name, last_name, emailid } = req.body;
+
+  let fields = {};
+  if (first_name) fields.first_name = first_name;
+  if (last_name) fields.last_name = last_name;
+  if (emailid) fields.emails = [ emailid ];
+
   try {
     const createdRecords = await membersTable.create([
-      { fields: { first_name, last_name } }
+      { fields }
     ]);
     const createdRecord = {
       id: createdRecords[0].id,

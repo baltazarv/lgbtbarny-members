@@ -71,7 +71,7 @@ export const dbFields = {
   },
   // members base: emails table
   emails: {
-    email: 'email',
+    address: 'address',
     verified: 'verified',
     primary: 'primary',
   },

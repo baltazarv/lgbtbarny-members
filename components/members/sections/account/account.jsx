@@ -118,8 +118,8 @@ const Account = ({
           name={ACCOUNT_FORMS.editProfile}
           title="Profile"
           initialValues={{
-            [dbFields.members.firstName]: member.fields && member.fields[dbFields.members.firstName],
-            [dbFields.members.lastName]: member.fields && member.fields[dbFields.members.lastName],
+            [dbFields.members.firstName]: member?.fields[dbFields.members.firstName],
+            [dbFields.members.lastName]: member?.fields[dbFields.members.lastName],
           }}
           onLink={onLink} // signup button when student graduated
           loading={loading}

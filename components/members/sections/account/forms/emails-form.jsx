@@ -161,11 +161,11 @@ const EmailsForm = ({
     if (email) {
       try {
         await form.validateFields();
-        const repeatEmail = userEmails.find(address => address.fields.email === email);
+        const repeatEmail = userEmails.find(address => address.fields.address === address);
         // console.log('repeatEmail', repeatEmail, 'email', email, )
         if (repeatEmail) {
           form.setFields([{
-            name: dbFields.emails.email,
+            name: dbFields.emails.address,
             errors: ['Enter a unique email address.'],
           }]);
         } else {
@@ -182,7 +182,7 @@ const EmailsForm = ({
       }
     } else {
       form.setFields([{
-        name: dbFields.emails.email,
+        name: dbFields.emails.address,
         errors: ['Enter an email.'],
       }]);
       setAddEmailLoading(false);
@@ -206,7 +206,7 @@ const EmailsForm = ({
       </>}
     />
     <Form.Item
-      name={dbFields.emails.email}
+      name={dbFields.emails.address}
       label={null}
       rules={[{ type: 'email', message: 'Enter a valid email address.' },]}
       wrapperCol={{ span: 16, offset: 4 }}

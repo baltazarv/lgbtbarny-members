@@ -33,9 +33,9 @@ const EmailPrefs = ({
   const newsletterEmail = useMemo(() => {
     // prototype sample data
     if (userEmails && userEmails.length > 0) {
-      let newsletterEmail = userEmails[0].fields[dbFields.emails.email];
+      let newsletterEmail = userEmails[0].fields[dbFields.emails.address];
       userEmails.forEach(email => {
-        if (email.fields[dbFields.emails.primary]) newsletterEmail = email.fields[dbFields.emails.email];
+        if (email.fields[dbFields.emails.primary]) newsletterEmail = email.fields[dbFields.emails.address];
       });
       return newsletterEmail;
     }
