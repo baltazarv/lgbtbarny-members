@@ -187,7 +187,7 @@ const Members = ({
           return;
         }
         if (emails) setUserEmails(emails);
-        console.log('emails', emails);
+        // console.log('emails', emails);
       }
       processUserEmails();
     }
@@ -211,7 +211,7 @@ const Members = ({
           return;
         }
         if (payments) setUserPayments(payments);
-        console.log('userPayments', payments);
+        // console.log('userPayments', payments);
       }
       getUserPayments();
     }

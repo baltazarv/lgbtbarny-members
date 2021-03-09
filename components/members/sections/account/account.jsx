@@ -165,11 +165,11 @@ const Account = ({
           name={ACCOUNT_FORMS.editAdditionalInfo}
           title={<Tooltip title="The following information is voluntary and will be used strictly for the purposes of better serving our membership. The information will be kept confidential."><span style={{ borderBottom: '1px dotted' }}>Additional info</span></Tooltip>}
           initialValues={{
-            [dbFields.members.ageRange]: member.fields && member.fields[dbFields.members.ageRange],
-            [dbFields.members.race]: member.fields && member.fields[dbFields.members.race],
-            [dbFields.members.sexGender]: member.fields && member.fields[dbFields.members.sexGender],
-            [dbFields.members.specialAccom]: member.fields && member.fields[dbFields.members.specialAccom],
-            [dbFields.members.howFound]: member.fields && member.fields[dbFields.members.howFound],
+            [dbFields.members.ageRange]: member?.fields[dbFields.members.ageRange],
+            [dbFields.members.race]: member?.fields[dbFields.members.race],
+            [dbFields.members.sexGender]: member?.fields[dbFields.members.sexGender],
+            [dbFields.members.specialAccom]: member?.fields[dbFields.members.specialAccom],
+            [dbFields.members.howFound]: member?.fields[dbFields.members.howFound],
           }}
           loading={loading}
           render={(args) => <AdditionalInfoForm {...args} />}

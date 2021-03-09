@@ -26,6 +26,7 @@ export const dbFields = {
     sexGender: 'sex_gender',
     specialAccom: 'special_accom',
     howFound: 'how_found',
+    lastLoggedIn: '_last_logged_in',
     valueLists: {
       // salaries: [],
       // certify: [],

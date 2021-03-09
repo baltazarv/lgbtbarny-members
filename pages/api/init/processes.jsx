@@ -8,7 +8,7 @@
  * *   |_ getUserPayments
  * * getPlans
  */
-import { membersTable, emailsTable, paymentsTable, plansTable, minifyRecords } from '../utils/Airtable';
+import { membersTable, emailsTable, paymentsTable, plansTable, minifyRecords, getMinifiedRecord } from '../utils/Airtable';
 import { stripe, getActiveSubscription, getPaymentMethodObject } from '../utils/stripe';
 import { dbFields } from '../../../data/members/airtable/airtable-fields';
 
@@ -43,6 +43,19 @@ const processUser = async (emailAddress) => {
       }
       isNewUser = true;
     }
+
+    // add last logged-in date to member record
+    const updatedUser = await membersTable.update([
+      {
+        id: user.id,
+        fields: {
+          [dbFields.members.lastLoggedIn]: new Date(),
+        }
+      }
+    ]);
+    user = getMinifiedRecord(updatedUser[0]);
+    console.log('updated user', user)
+
     return { user, emailAddress, isNewUser }; // may not need to return isNewUser
   } catch (error) {
     console.log(error);
