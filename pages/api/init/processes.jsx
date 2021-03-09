@@ -1,3 +1,13 @@
+/**
+ * Processes for initialization
+ *
+ * Dependencies:
+ * * processUser (may create new email & member records)
+ * *   |_ processUserEmails (may update logged-in email; get all user emails)
+ * *   |_ processStripeCust
+ * *   |_ getUserPayments
+ * * getPlans
+ */
 import { membersTable, emailsTable, paymentsTable, plansTable, minifyRecords } from '../utils/Airtable';
 import { stripe, getActiveSubscription, getPaymentMethodObject } from '../utils/stripe';
 import { dbFields } from '../../../data/members/airtable/airtable-fields';
@@ -8,12 +18,12 @@ import { dbFields } from '../../../data/members/airtable/airtable-fields';
  *   (1) Create email record.
  *   (2) Create member record with associated email
  */
-const processUser = async (email) => {
+const processUser = async (emailAddress) => {
   try {
     let user = null;
     let isNewUser = null;
     const memberRecords = await membersTable.select({
-      filterByFormula: `SEARCH("${email}", ARRAYJOIN(${dbFields.members.emails}))`,
+      filterByFormula: `SEARCH("${emailAddress}", ARRAYJOIN(${dbFields.members.emails}))`,
     }).firstPage();
 
     if (memberRecords?.length > 0) { // member record exists
@@ -22,7 +32,7 @@ const processUser = async (email) => {
     } else { // member records doesn't exist
 
       // create email record
-      const emailRecord = await emailsTable.create([{ fields: { address: email } }]);
+      const emailRecord = await emailsTable.create([{ fields: { address: emailAddress } }]);
       const minEmailRecords = minifyRecords(emailRecord);
 
       // create user with email address
@@ -33,7 +43,7 @@ const processUser = async (email) => {
       }
       isNewUser = true;
     }
-    return { user, email, isNewUser }; // may not need to return isNewUser
+    return { user, emailAddress, isNewUser }; // may not need to return isNewUser
   } catch (error) {
     console.log(error);
     return { error };
@@ -41,6 +51,7 @@ const processUser = async (email) => {
 }
 
 /** get membership plans */
+// TODO: get more than 100 plans?
 const getPlans = async () => {
   try {
     let plans = null;
@@ -54,19 +65,20 @@ const getPlans = async () => {
 }
 
 /**
- * Get all user emails.
+ * When log in get all user emails.
  * Mark logged-in email verified.
  * Mark logged-in email primary if user doesn't have one.
  */
-const processEmail = async ({
-  email,
+const processUserEmails = async ({
+  emailAddress,
   user,
   isNewUser = false, // not used
 }) => {
   try {
+    let email = null;
     let emails = null;
     const getUserEmails = async () => {
-      const memberEmailIds = user.fields.emails.join(',');
+      const memberEmailIds = user?.fields.emails.join(',');
       const emailRecords = await emailsTable.select({
         filterByFormula: `SEARCH(RECORD_ID(), "${memberEmailIds}")`
       }).firstPage();
@@ -83,7 +95,7 @@ const processEmail = async ({
 
     let emailRecords = [];
     emailRecords = await emailsTable.select({
-      filterByFormula: `FIND("${email}", address)`,
+      filterByFormula: `FIND("${emailAddress}", address)`,
     }).firstPage();
     if (emailRecords.length > 0) {
       // email if not modified
@@ -97,7 +109,8 @@ const processEmail = async ({
       emails = await getUserEmails();
     }
     // return unchanged email or updated email record
-    return { user, email, emails };
+    // user never changed
+    return { email, emails };
   } catch (error) {
     console.log(error);
     return { error };
@@ -105,13 +118,13 @@ const processEmail = async ({
 }
 
 /**
- * Get stripe info, if already a stripe customer:
+   * When log in get stripe info, if already a stripe customer:
  * * subscriptions
  * * default card minimal info
  *
  * If not stripe customer, create and add stripe customer id to members table
  *  */
-const processStripeCust = async ({ user, email }) => {
+const processStripeCust = async ({ user, emailAddress }) => {
   try {
     let subscriptions = null;
     let defaultCard = null;
@@ -134,7 +147,7 @@ const processStripeCust = async ({ user, email }) => {
       }
     } else {
       // no stripe customer yet
-      const stripeCustomer = await stripe.customers.create({ email });
+      const stripeCustomer = await stripe.customers.create({ email: emailAddress });
       const fieldsToUpdate = { [dbFields.members.stripeId]: stripeCustomer.id };
       const updatedRecords = await membersTable.update([{
         id: user.id,
@@ -152,7 +165,7 @@ const processStripeCust = async ({ user, email }) => {
 }
 
 /** get user's payments */
-const getPayments = async (user) => {
+const getUserPayments = async (user) => {
   try {
     let payments = null;
     if (user?.fields[dbFields.members.payments]) {
@@ -174,7 +187,7 @@ const getPayments = async (user) => {
 export {
   processUser,
   getPlans,
-  processEmail,
+  processUserEmails,
   processStripeCust,
-  getPayments,
+  getUserPayments,
 }

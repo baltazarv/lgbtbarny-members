@@ -201,10 +201,13 @@ const PaymentInfo = ({
     </>}
 
     {/* last payment + history */}
-    <Row justify="space-between mt-2">
-      <Col><span className={memberStatus === 'expired' ? 'text-danger' : ''}><label className={memberStatus === 'expired' ? 'text-danger' : ''}>Last payment:</label> on {lastPayment.fields && moment(lastPayment.fields.date).format('MMMM Do, YYYY')}.</span></Col>
-      <Col><Link onClick={() => setBillingModalVisible(true)}>Payment history</Link></Col>
-    </Row>
+    {lastPayment &&
+      <Row justify="space-between mt-2">
+        <Col><span className={memberStatus === 'expired' ? 'text-danger' : ''}><label className={memberStatus === 'expired' ? 'text-danger' : ''}>Last payment:</label> on {lastPayment.fields && moment(lastPayment.fields.date).format('MMMM Do, YYYY')}.</span></Col>
+        <Col><Link onClick={() => setBillingModalVisible(true)}>Payment history</Link></Col>
+      </Row>
+    }
+
 
     {/* collection method */}
     {!subscriptionCancelled && collectionMethod && <div className="mt-2">

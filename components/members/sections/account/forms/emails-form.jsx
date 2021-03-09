@@ -16,10 +16,13 @@ const EmailsForm = ({
   const [addEmailLoading, setAddEmailLoading] = useState(false);
 
   const primaryEmails = useMemo(() => {
-    return userEmails.reduce((acc, cur) => {
-      if (cur.fields.newsletter) acc.push(cur.id);
-      return acc;
-    }, []);
+    if (userEmails) {
+      return userEmails.reduce((acc, cur) => {
+        if (cur.fields.newsletter) acc.push(cur.id);
+        return acc;
+      }, []);
+    }
+    return null;
   }, [userEmails]);
 
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
@@ -146,14 +149,17 @@ const EmailsForm = ({
   }, [editing]);
 
   const dataSource = useMemo(() => {
-    return userEmails.map(email => {
-      return {
-        key: email.id,
-        email: email.fields.email,
-        verified: email.fields.verified,
-        newsletter: email.fields.newsletter,
-      };
-    });
+    if (userEmails) {
+      return userEmails.map(email => {
+        return {
+          key: email.id,
+          email: email.fields.email,
+          verified: email.fields.verified,
+          newsletter: email.fields.newsletter,
+        };
+      });
+    }
+    return null;
   });
 
   const saveEmail = async (email) => {

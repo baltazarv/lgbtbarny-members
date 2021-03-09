@@ -36,14 +36,8 @@ import sampleMembers from '../../data/members/sample/members-sample';
 // utils
 import { getMemberType, getMemberStatus } from '../../utils/members/airtable/members-db';
 import { getMemberPageParentKey } from '../../utils/members/dashboard-utils';
-// server-side functions
-import {
-  processUser,
-  getPlans,
-  processEmail,
-  processStripeCust,
-  getPayments,
-} from '../api/members/members-processes';
+// server-side function to populate loggedInMember => member
+import { processUser } from '../api/init/processes';
 // contexts
 import { MembersContext } from '../../contexts/members-context';
 
@@ -58,11 +52,6 @@ const Members = ({
   // set server-side
   loggedInUser,
   loggedInMember,
-  loggedInMemberEmails,
-  loggedInUserPayments,
-  plans,
-  userSubscriptions,
-  userDefaultCard,
 }) => {
   const router = useRouter();
 
@@ -76,7 +65,7 @@ const Members = ({
   // const { subscriptions, setSubscriptions } = useContext(PaymentsContext);
   const {
     // members
-    member, setMember, authUser, setAuthUser, setUserEmails, userPayments, setUserPayments, memberPlans, setMemberPlans,
+    member, setMember, authUser, setAuthUser, userEmails, setUserEmails, userPayments, setUserPayments, memberPlans, setMemberPlans,
     // payments
     setSubscriptions, setDefaultCard
   } = useContext(MembersContext);
@@ -158,7 +147,7 @@ const Members = ({
     ),
   });
 
-  // set data from airtable into MemberContext vars
+  // when loggedInUser & loggedInUser set by getServerSideProps on page loads
 
   useEffect(() => {
     setAuthUser(loggedInUser);
@@ -173,27 +162,114 @@ const Members = ({
     setMember(loggedInMember);
   }, [loggedInMember]);
 
+  /**
+   *** USER EMAILS ***
+   * When log in get all user emails.
+   * Mark logged-in email verified.
+   * Mark logged-in email primary if user doesn't have one.
+   */
   useEffect(() => {
-    setUserEmails(loggedInMemberEmails);
-  }, [loggedInMemberEmails]);
-
-  useEffect(() => {
-    setUserPayments(loggedInUserPayments);
-  }, [loggedInUserPayments]);
-
-  useEffect(() => {
-    setMemberPlans(plans);
-  }, [plans]);
-
-  useEffect(() => {
-    if (userSubscriptions && userSubscriptions.length && userSubscriptions.length > 0) {
-      setSubscriptions(userSubscriptions);
+    if (authUser && !userEmails) {
+      const emailAddress = authUser.name;
+      const processUserEmails = async () => {
+        const user = member || loggedInMember;
+        const result = await fetch('/api/init/process-user-emails', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user,
+            emailAddress,
+          })
+        });
+        const { emails, error } = await result.json();
+        if (error) {
+          console.log('error', error);
+          return;
+        }
+        if (emails) setUserEmails(emails);
+        console.log('emails', emails);
+      }
+      processUserEmails();
     }
-  }, [userSubscriptions]);
+  }, [authUser]);
 
+  /**
+   *** USER PAYMENTS ***
+   */
   useEffect(() => {
-    setDefaultCard(userDefaultCard);
-  }, [userDefaultCard]);
+    if (authUser && !userPayments) {
+      const getUserPayments = async () => {
+        const user = member || loggedInMember;
+        const result = await fetch('/api/init/get-user-payments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user })
+        });
+        const { payments, error } = await result.json();
+        if (error) {
+          console.log('error', error);
+          return;
+        }
+        if (payments) setUserPayments(payments);
+        console.log('userPayments', payments);
+      }
+      getUserPayments();
+    }
+  }, [authUser]);
+
+  /** PLANS */
+  useEffect(() => {
+    if (!memberPlans) {
+      const getPlans = async () => {
+        const result = await fetch('/api/init/get-plans', {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        })
+        const { plans, error } = await result.json();
+        if (error) {
+          console.log('error', error);
+          return;
+        }
+        if (plans) setMemberPlans(plans);
+        // console.log('memberPlans', plans);
+      }
+      getPlans();
+    }
+  }, []);
+
+  /**
+   *** STRIPE CUSTOMER ***
+   * When log in get stripe info, if already a stripe customer:
+   * * subscriptions
+   * * default card minimal info
+   *
+   * If not stripe customer, create and add stripe customer id to members table
+   *  */
+  useEffect(() => {
+    if (authUser) {
+      const emailAddress = authUser.name;
+      const processStripeCust = async () => {
+        const result = await fetch('/api/init/process-stripe-cust', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user: loggedInMember,
+            emailAddress,
+          })
+        });
+        const { user, subscriptions, defaultCard, error } = await result.json();
+        if (error) {
+          console.log('error', error);
+          return;
+        }
+        if (user) setMember(user);
+        if (subscriptions?.length > 0) setSubscriptions(subscriptions);
+        if (defaultCard) setDefaultCard(defaultCard);
+        // console.log('user', user, 'subscriptions', subscriptions, 'defaultCard', defaultCard);
+      }
+      processStripeCust();
+    }
+  }, [authUser]);
 
   /** When query string changes
    *  * Open signup & subscribe motals.
@@ -526,33 +602,27 @@ const Members = ({
 
 export default Members;
 
-/**
- * TODO: try loading data client-side instead
- * https://nextjs.org/docs/basic-features/data-fetching#fetching-data-on-the-client-side
- * "This approach works well for user dashboard pages"
- */
 export async function getServerSideProps(context) {
   // req not available with getStaticProps
   const session = await auth0.getSession(context.req);
   console.log('BACKEND session:', session, '; params:', context.params, '; query:', context.query);
 
-  let email = '',
+  let emailAddress = null,
     loggedInUser = null,
-    loggedInMember = null,
-    loggedInMemberEmails = null,
-    loggedInUserPayments = null,
-    plans = null,
-    // stripe vars
-    userSubscriptions = null,
-    userDefaultCard = null;
+    loggedInMember = null;
+  // plans = null,
+  // userSubscriptions = null,
+  // userDefaultCard = null;
+  // loggedInMemberEmails = null,
+  // loggedInUserPayments = null,
 
   if (session) {
     try {
-      email = session.user.name;
+      emailAddress = session.user.name;
       loggedInUser = session.user;
 
       // TODO: maybe move following requests to client-side
-      if (email) {// already checking for session!
+      if (emailAddress) {// already checking for session!
         /******************
          * Airtable Notes
          *******************
@@ -562,43 +632,67 @@ export async function getServerSideProps(context) {
          * * Beside `select`, can also use: find(recId, (err, records) => {})
          */
 
-        /** membership plans */
-        const plansResult = await getPlans();
-        if (plansResult.plans) plans = plansResult.plans;
-        // console.log('PLANS', plans)
-
-        /** user */
-        let userResult = await processUser(email);
+        /*** user ***/
+        let userResult = await processUser(emailAddress);
         let isNewUser = null;
         if (userResult.user) loggedInMember = userResult.user;
         if (userResult.isNewUser !== null) isNewUser = userResult.isNewUser;
-        // console.log('loggedInMember', loggedInMember, 'isNewUser', isNewUser)
+        // console.log('loggedInMember', loggedInMember, 'isNewUser', isNewUser);
+
+        // moved to useEffect functions
+
+        /**
+        *** membership plans ***
+        * runs in parallel with processUser() below
+        */
+        // (() => {
+        //   return new Promise(async (resolve, reject) => {
+        //     const { plans, error } = await getPlans();
+        //     if (plans) return resolve({ plans });
+        //     return reject({ error });
+        //   });
+        // })().then((result) => {
+        //   if (result.plans) plans = result.plans;
+        // });
 
         /** stripe customer associated to user */
-        const stripeResult = await processStripeCust({ user: loggedInMember, email });
-        if (stripeResult.user) loggedInMember = stripeResult.user;
-        if (stripeResult.subscriptions) userSubscriptions = stripeResult.subscriptions;
-        if (stripeResult.defaultCard) userDefaultCard = stripeResult.defaultCard;
-        // console.log('loggedInMember', loggedInMember, 'userSubscriptions', userSubscriptions, 'userDefaultCard', userDefaultCard)
+        // (() => {
+        //   return new Promise(async (resolve, reject) => {
+        //     const { user, subscriptions, defaultCard, error } = await processStripeCust({ user: loggedInMember, emailAddress });
+        //     if (error) return reject({ error });
+        //     return resolve({ user, subscriptions, defaultCard });
+        //   });
+        // })().then((result) => {
+        //   if (result.user) loggedInMember = result.user;
+        //   if (result.subscriptions) userSubscriptions = result.subscriptions;
+        //   if (result.defaultCard) userDefaultCard = result.defaultCard;
+        // });
 
         /** user emails */
-        const emailResult = await processEmail({ email, user: loggedInMember, isNewUser })
-        if (emailResult.emails) {
-          loggedInMemberEmails = emailResult.emails;
-          // add as separate variable `_emails` member context state
-          loggedInMember.fields.__emails = loggedInMemberEmails;
-        }
-        // console.log('EMAILS', loggedInMemberEmails, 'USER', loggedInMember, 'EMAIL', emailResult.email)
+        // (() => {
+        //   return new Promise(async (resolve, reject) => {
+        //     const { email, emails, error } = await processUserEmails({ emailAddress, user: loggedInMember }); // , isNewUser
+        //     if (error) return reject({ error });
+        //     return resolve({ email, emails });
+        //   });
+        // })().then((result) => {
+        //   if (result.emails) {
+        //     loggedInMemberEmails = result.emails;
+        //     loggedInMember.fields.__emails = loggedInMemberEmails;
+        //   }
+        // });
 
         /** user payments */
-        const { payments } = await getPayments(loggedInMember)
-        if (payments) {
-          loggedInUserPayments = payments;
-          // add as separate variable `_emails` member context state
-          loggedInMember.fields.__payments = loggedInUserPayments;
-        }
-        // console.log('PAYMENTS', payments);
-
+        // (() => {
+        //   return new Promise(async (resolve, reject) => {
+        //     const { payments, error } = await getUserPayments(loggedInMember)
+        //     if (error) return reject({ error });
+        //     return resolve({ payments });
+        //   });
+        // })().then((result) => {
+        //   if (result.payments) loggedInUserPayments = result.payments;
+        //   loggedInMember.fields.__payments = loggedInUserPayments;
+        // });
       }
     } catch (error) {
       console.log(error);
@@ -619,11 +713,11 @@ export async function getServerSideProps(context) {
     props: {
       loggedInUser,
       loggedInMember,
-      loggedInMemberEmails,
-      loggedInUserPayments,
-      plans,
-      userSubscriptions,
-      userDefaultCard,
+      //   plans,
+      //   userSubscriptions,
+      //   userDefaultCard,
+      //   loggedInMemberEmails,
+      //   loggedInUserPayments,
     }
   }
 };
