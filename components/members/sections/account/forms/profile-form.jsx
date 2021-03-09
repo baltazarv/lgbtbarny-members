@@ -43,6 +43,16 @@ const ProfileForm = ({
   }, [userPayments, memberPlans, member]);
 
   const introMessage = useMemo(() => {
+    // non-member
+    if (memberStatus === 'pending') return <>
+      <p className="text-center">
+        If you are an attorney or a law student, join the LGBT Bar Association:
+        </p>
+      <p className="text-center">
+        <Button type="primary" onClick={() => onLink('signup')}>Become a member</Button>
+      </p>
+    </>;
+
     // graduated student
     if (memberStatus === 'graduated') return <>
       <p className="text-danger text-center">
@@ -77,6 +87,55 @@ const ProfileForm = ({
     return null;
   }, [memberStatus]);
 
+  const userName = useMemo(() => {
+    if (!editing && !member?.fields[dbFields.members.firstName] && !member?.fields[dbFields.members.lastName]) return <>
+      <div><label className="ant-form-item-label">Name</label></div>
+      <div style={{ fontSize: 16 }} className="text-danger">Please add your name to your profile.</div></>
+    if (editing) return <>
+      <Form.Item
+        name={dbFields.members.firstName}
+        label="First Name"
+        rules={[
+          {
+            required: true,
+            message: 'Enter your first name.',
+            whitespace: true,
+          },
+        ]}
+      >
+        <Input
+          prefix={<UserOutlined className="site-form-item-icon" />}
+          placeholder="First Name"
+          disabled={loading}
+        />
+      </Form.Item>
+
+      <Form.Item
+        name={dbFields.members.lastName}
+        label="Last Name"
+        rules={[
+          {
+            required: true,
+            message: 'Enter your last name.',
+            whitespace: true,
+          },
+        ]}
+      >
+        <Input
+          prefix={<UserOutlined className="site-form-item-icon" />}
+          placeholder="Last Name"
+          disabled={loading}
+        />
+      </Form.Item>
+    </>
+    return <>
+      <div><label className="ant-form-item-label">Name</label></div>
+      {member.fields &&
+        <div style={{ fontSize: 16 }}>{member?.fields[dbFields.members.firstName]} {member?.fields[dbFields.members.lastName]}</div>
+      }
+    </>
+  }, [editing, member.fields]);
+
   return <>
     {introMessage}
     <Row>
@@ -89,65 +148,14 @@ const ProfileForm = ({
         {/* {editing ? <div className="mt-1"><UploadPhoto /></div> : <Avatar />} */}
         <Avatar
           size={90}
-          src={member && member.sample && member.auth
-            ?
-            member.auth.picture
-            :
-            authUser && authUser.picture}
+          src={authUser?.picture}
         />
       </Col>
       <Col
         xs={24}
         sm={14}
         md={16}
-      >{editing
-        ?
-        <>
-          <Form.Item
-            name={dbFields.members.firstName}
-            label="First Name"
-            rules={[
-              {
-                required: true,
-                message: 'Enter your first name.',
-                whitespace: true,
-              },
-            ]}
-          >
-            <Input
-              prefix={<UserOutlined className="site-form-item-icon" />}
-              placeholder="First Name"
-              disabled={loading}
-            />
-          </Form.Item>
-
-          <Form.Item
-            name={dbFields.members.lastName}
-            label="Last Name"
-            rules={[
-              {
-                required: true,
-                message: 'Enter your last name.',
-                whitespace: true,
-              },
-            ]}
-          >
-            <Input
-              prefix={<UserOutlined className="site-form-item-icon" />}
-              placeholder="Last Name"
-              disabled={loading}
-            />
-          </Form.Item>
-
-        </>
-        :
-        <>
-          <div><label className="ant-form-item-label">Name</label></div>
-          {member.fields &&
-            <div style={{ fontSize: 16 }}>{member.fields.first_name} {member.fields.last_name}</div>
-          }
-        </>
-        }</Col>
+      >{userName}</Col>
     </Row>
   </>;
 };

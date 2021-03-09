@@ -130,7 +130,7 @@ const anonDashboard = ({
   const memberType = memberTypes.USER_ANON;
   const options = {
     key: memberType,
-    defaultSelectedKeys: ['participate'], //
+    defaultSelectedKeys: ['participate'],
     defaultMenuOpenKeys: [],
     avatar: <Avatar
       icon={<SvgIcon
@@ -164,7 +164,7 @@ const attorneyDashboard = ({
   return {
     options: {
       key: memberType,
-      defaultSelectedKeys: ['participate'],
+      defaultSelectedKeys: ['account'],
       defaultMenuOpenKeys: [], //
       user: member, // TODO: move outside options
     },
@@ -188,7 +188,7 @@ const nonMemberDashboard = ({
   return {
     options: {
       key: memberType,
-      defaultSelectedKeys: ['participate'],
+      defaultSelectedKeys: ['account'],
       defaultMenuOpenKeys: [],
       user: member, // TODO: move outside options
     },
@@ -212,7 +212,7 @@ const studentDashboard = ({
   return {
     options: {
       key: memberType,
-      defaultSelectedKeys: ['participate'],
+      defaultSelectedKeys: ['account'],
       defaultMenuOpenKeys: [], //
       user, // TODO: move outside options
     },

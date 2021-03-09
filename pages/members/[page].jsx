@@ -154,8 +154,12 @@ const Members = ({
   }, [loggedInUser]);
 
   // track when auth session changes
+  // if not logged in, redirect from pages for logged-in users
   useEffect(() => {
-    console.log('authUser', authUser)
+    console.log('authUser', authUser);
+    if (!authUser) {
+      if (router.asPath === '/members/account') router.replace(`/members/[page]`, `/members/participate`, { shallow: true });
+    }
   }, [authUser]);
 
   useEffect(() => {
@@ -271,7 +275,8 @@ const Members = ({
     }
   }, [authUser]);
 
-  /** When query string changes
+  /**
+   *** QUERY STRING ***
    *  * Open signup & subscribe motals.
    *  * Show prototype users.
    */
@@ -310,7 +315,8 @@ const Members = ({
     }
   }, [router.query, member, authUser]); // , member, authUser
 
-  /** On clicking links in content:
+  /**
+   *** CONTENT CLICK HANDLER ***
    *  * Go to login page.
    *  * Add query string >> useEffect(() => {...}, [router.query])
    *  * Navigate between anon preview users
@@ -376,8 +382,11 @@ const Members = ({
       changeRoute(key);
     }
   }
-
-  // set data, ie, dashboard, when user info is established
+  /**
+   *** DASHBOARD ***
+   * set data, ie, dashboard, when user info is established
+   * TODO: set up a dashboard that requires some or no data. On certain pages data not even needed.
+   */
   useEffect(() => {
     setData(getDashboard({
       member,
@@ -390,7 +399,10 @@ const Members = ({
     }));
   }, [member, memberType, memberStatus, previewUser]);
 
-  // parse routes from dashboard data
+  /**
+   *** DASHBOARD ROUTES ***
+   * parse routes from dashboard data
+   */
   const routes = useMemo(() => {
     if (!isEmpty(data)) {
       let _routes = {};
