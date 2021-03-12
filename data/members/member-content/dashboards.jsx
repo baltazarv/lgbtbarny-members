@@ -166,7 +166,7 @@ const attorneyDashboard = ({
       key: memberType,
       defaultSelectedKeys: ['account'],
       defaultMenuOpenKeys: [], //
-      user: member, // TODO: move outside options
+      // user: member,
     },
     account: account({ memberType, memberStatus, user: member, setUser: setMember, onLink, banner }),
     participate: participate({ memberType, memberStatus, onLink, banner }),
@@ -190,7 +190,7 @@ const nonMemberDashboard = ({
       key: memberType,
       defaultSelectedKeys: ['account'],
       defaultMenuOpenKeys: [],
-      user: member, // TODO: move outside options
+      // user: member,
     },
     account: account({ memberType, user: member, setUser, onLink, banner }),
     participate: participate({ memberType, onLink, banner }),
@@ -214,7 +214,7 @@ const studentDashboard = ({
       key: memberType,
       defaultSelectedKeys: ['account'],
       defaultMenuOpenKeys: [], //
-      user, // TODO: move outside options
+      // user,
     },
     account: account({ memberType, user, setUser, onLink }),
     participate: participate({ memberType, onLink }),

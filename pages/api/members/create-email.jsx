@@ -1,13 +1,15 @@
 import { emailsTable, minifyRecords } from '../utils/Airtable';
+// data
+import { dbFields } from '../../../data/members/airtable/airtable-fields';
 
 export default async (req, res) => {
   const {
+    emailAddress,
     userid, // optional
-    email,
   } = req.body;
 
   let fields = {
-    email,
+    [dbFields.emails.address]: emailAddress,
   };
 
   if (userid) fields.members = [ userid ];

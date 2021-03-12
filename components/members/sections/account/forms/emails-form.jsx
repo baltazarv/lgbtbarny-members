@@ -1,66 +1,106 @@
-import { useState, useEffect, useMemo, useContext } from 'react';
-import { Table, Form, Checkbox, Input, Row, Col, Tag, Tooltip, Typography, Button, Popconfirm } from 'antd';
+// TODO: rename emails-table
+// TODO: add label to new email input
+/**
+ * Intermediary `AccountItem` with render props between this component and `Accounts` component.
+ *
+ * Primary email switch handled by grand-parent component Account.
+ * * `dataSource`, `selectedRowKeys`, and `setSelectedRowKeysprop` inside `value` prop sent by Account.
+ * * `selectChanges` also managed by parent.
+ *
+ * * Deleting emails....
+ *
+ * Saving a new email handled within this component by `saveEmail`. The form surrounding the `Search` input that holds the new email value is the only form on this component.
+ */
+import { useState, useMemo, useContext } from 'react';
+import { Table, Form, Input, Tag, Tooltip, Typography, Popconfirm } from 'antd';
 // data
 import { MembersContext } from '../../../../../contexts/members-context';
 import { dbFields } from '../../../../../data/members/airtable/airtable-fields';
 
-const { Text, Link } = Typography;
+const { Link } = Typography;
 const { Search } = Input;
 
 const EmailsForm = ({
-  form,
   loading,
   editing,
+  // primary email
+  values,
+  selectChanges,
 }) => {
-  const { userEmails, setUserEmails, addEmail, member } = useContext(MembersContext);
+  const { userEmails, createEmail, member } = useContext(MembersContext);
+  const [form] = Form.useForm(); // save email form
   const [addEmailLoading, setAddEmailLoading] = useState(false);
 
-  const primaryEmails = useMemo(() => {
-    if (userEmails) {
-      return userEmails.reduce((acc, cur) => {
-        if (cur.fields.newsletter) acc.push(cur.id);
-        return acc;
-      }, []);
-    }
-    return null;
-  }, [userEmails]);
+  /**
+   * Update primary email
+   */
 
-  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-
-  useEffect(() => {
-    setSelectedRowKeys(primaryEmails);
-  }, [userEmails]);
-
-  const onSelectChange = selectedRowKeys => {
-    setSelectedRowKeys(selectedRowKeys);
+  const onSelectChange = (selectedRowKeys) => {
+    values.setSelectedRowKeys(selectedRowKeys);
   };
 
-  const onSelect = (record) => { // , selected, selectedRows, nativeEvent
-    console.log('onSelect record', record, 'id', record.key);
-    form.setFieldValue
+  const onSelectPrimary = (record) => {
+    selectChanges(record);
+  };
+
+  /**
+   * Save new email
+   */
+
+   const saveEmail = async (emailAddress) => {
+    setAddEmailLoading(true);
+    if (emailAddress) {
+      try {
+        await form.validateFields();
+        const repeatEmail = userEmails.find(address => address.fields.address === address);
+        // console.log('repeatEmail', repeatEmail, 'emailAddress', emailAddress,)
+        if (repeatEmail) {
+          form.setFields([{
+            name: dbFields.emails.address,
+            errors: ['Enter a unique email address.'],
+          }]);
+        } else {
+          const userid = member.id;
+          const newEmail = await createEmail({
+            emailAddress,
+            userid,
+          });// > setUserEmails
+        }
+        setAddEmailLoading(false);
+      } catch (error) {
+        console.log('ERROR', error);
+        setAddEmailLoading(false);
+      }
+    } else {
+      form.setFields([{
+        name: dbFields.emails.address,
+        errors: ['Enter an email address.'],
+      }]);
+      setAddEmailLoading(false);
+    }
   };
 
   const rowSelection = useMemo(() => {
     if (editing) return {
       type: "radio",
       // columnTitle: "Make primary",
-      selectedRowKeys,
+      selectedRowKeys: values.selectedRowKeys,
       onChange: onSelectChange,
-      onSelect: onSelect,
+      onSelect: onSelectPrimary,
       getCheckboxProps: (record) => ({
-        disabled: record.newsletter || !record.verified,
+        disabled: record.primary || !record.verified,
       }),
       renderCell: (checked, record, index, originNode) => {
-        let label = (record.newsletter) ? 'Primary' : 'Make Primary';
-        let boldClass = (record.newsletter) ? 'font-weight-bold' : 'font-weight-normal';
-        let primaryColorClass = (!record.newsletter && record.verified) ? 'text-primary' : 'text-muted';
+        let label = (record.primary) ? 'Primary' : (record.verified) ? 'Make Primary' : '';
+        let boldClass = (record.primary) ? 'font-weight-bold' : 'font-weight-normal';
+        let primaryColorClass = (!record.primary && record.verified) ? 'text-primary' : 'text-muted';
         return <Tooltip title={tooltipTitle}>
-          {originNode} <label className={`${boldClass} ${primaryColorClass}`}>{label}</label>
+          {originNode} <label style={{ fontSize: 12 }} className={`${boldClass} ${primaryColorClass}`}>{label}</label>
         </Tooltip>;
       },
     };
     return null;
-  }, [editing, selectedRowKeys]);
+  }, [editing, values]);
 
   const verifiedEmailColRender = (text) => text ? <Tooltip title="You have logged into your account using this email address.">
     <Tag style={{
@@ -71,7 +111,7 @@ const EmailsForm = ({
   </Tooltip> : '';
 
   const deleteButton = (text, record, index) => {
-    if (record.newsletter) return '';
+    if (record.primary) return '';
     return <Popconfirm
       title={<span>Delete <strong>{record.email}</strong>?</span>} onConfirm={() => console.log('DELETE', record.key)}
       okText="Delete"
@@ -95,11 +135,11 @@ const EmailsForm = ({
     if (!editing) {
       cols.push(
         {
-          title: 'Newsletter',
-          dataIndex: 'newsletter',
-          key: 'newsletter',
+          title: 'Primary',
+          dataIndex: 'primary',
+          key: 'primary',
           render: (text, record) => {
-            if (record.newsletter) return <Tooltip title={tooltipTitle}>
+            if (record.primary) return <Tooltip title={tooltipTitle}>
               <Tag color="blue" style={{
                 background: 'white',
                 borderStyle: "dashed",
@@ -109,9 +149,9 @@ const EmailsForm = ({
           },
           defaultSortOrder: 'ascend',
           sorter: (a, b) => {
-            if (a.newsletter === b.newsletter) return 0;
-            if (a.newsletter) return -1;
-            if (b.newsletter) return 1;
+            if (a.primary === b.primary) return 0;
+            if (a.primary) return -1;
+            if (b.primary) return 1;
           },
         });
     }
@@ -121,7 +161,7 @@ const EmailsForm = ({
         dataIndex: 'email',
         key: 'email',
         render: (text, record) => {
-          if (record.newsletter) return <strong>{text}</strong>;
+          if (record.primary) return <strong>{text}</strong>;
           return <span>{text}</span>;
         }
       },
@@ -148,59 +188,12 @@ const EmailsForm = ({
     return cols;
   }, [editing]);
 
-  const dataSource = useMemo(() => {
-    if (userEmails) {
-      return userEmails.map(email => {
-        return {
-          key: email.id,
-          email: email.fields.email,
-          verified: email.fields.verified,
-          newsletter: email.fields.newsletter,
-        };
-      });
-    }
-    return null;
-  });
-
-  const saveEmail = async (email) => {
-    setAddEmailLoading(true);
-    if (email) {
-      try {
-        await form.validateFields();
-        const repeatEmail = userEmails.find(address => address.fields.address === address);
-        // console.log('repeatEmail', repeatEmail, 'email', email, )
-        if (repeatEmail) {
-          form.setFields([{
-            name: dbFields.emails.address,
-            errors: ['Enter a unique email address.'],
-          }]);
-        } else {
-          const userid = member.id;
-          const newEmail = await addEmail({
-            email,
-            userid,
-          });// > setUserEmails
-        }
-        setAddEmailLoading(false);
-      } catch (error) {
-        console.log('ERROR', error);
-        setAddEmailLoading(false);
-      }
-    } else {
-      form.setFields([{
-        name: dbFields.emails.address,
-        errors: ['Enter an email.'],
-      }]);
-      setAddEmailLoading(false);
-    }
-  };
-
   const tooltipTitle = 'Primary address will receive emails from the LGBT Bar of NY. Only verified addresses qualify.';
 
   return <>
     <Table
       rowSelection={rowSelection}
-      dataSource={dataSource}
+      dataSource={values && values.dataSource}
       columns={columns}
       pagination={false}
       showHeader={false}
@@ -211,6 +204,8 @@ const EmailsForm = ({
         <p className="mb-0">The <strong>primary</strong> email address is the one that receives emails from the LGBT Bar of NY. Only verified addresses qualify.</p>
       </>}
     />
+
+    {/* add new user email */}
     <Form.Item
       name={dbFields.emails.address}
       label={null}

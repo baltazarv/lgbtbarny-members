@@ -37,15 +37,37 @@ const MembersProvider = ({ children }) => {
    * * Add new email address to account
    *    - components/members/account/forms/emails-form
    */
-  const addEmail = async (body) => {
+  const createEmail = async (body) => {
     try {
       const res = await fetch('/api/members/create-email', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body), // { userid, email }
-        headers: { 'Content-Type': 'application/json' }
       })
       const newEmails = await res.json();
       setUserEmails(userEmails.concat(newEmails));
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  /**
+   * Used to switch primary emails.
+   */
+  const updateEmails = async (body) => {
+    try {
+      const res = await fetch('/api/members/update-emails', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      const updatedEmails = await res.json();
+      const emails = [...userEmails].map((email) => {
+        const emailFound = updatedEmails.find((updatedEmail) => updatedEmail.id === email.id);
+        if (emailFound) return emailFound;
+        return email;
+      })
+      setUserEmails(emails);
     } catch (error) {
       console.log(error);
     }
@@ -116,9 +138,10 @@ const MembersProvider = ({ children }) => {
   */
 
   /** Not used yet */
+
   const refreshMember = async (email) => {
     try {
-      const res = await fetch('/api/members/get-member-by-email', {
+      const res = await fetch('/api/members/__get-member-by-email', {
         method: 'GET',
         body: JSON.stringify({ email }),
         headers: { 'Content-Type': 'application/json' }
@@ -132,7 +155,7 @@ const MembersProvider = ({ children }) => {
 
   const addMember = async (user) => {
     try {
-      const res = await fetch('/api/members/create-member', {
+      const res = await fetch('/api/members/__create-member', {
         method: 'POST',
         body: JSON.stringify(user),
         headers: { 'Content-Type': 'application/json' }
@@ -179,7 +202,7 @@ const MembersProvider = ({ children }) => {
       }).then(r => r.json());
       if (error) return { error };
       return { subscription };
-    } catch(error) {
+    } catch (error) {
       console.log(error);
       return { error }
     }
@@ -256,8 +279,10 @@ const MembersProvider = ({ children }) => {
     userEmails, setUserEmails,
     userPayments, setUserPayments,
     memberPlans, setMemberPlans,
+    // functions
     updateMember,
-    addEmail,
+    createEmail,
+    updateEmails,
     addPayment,
     // functions not used
     refreshMember,
@@ -265,6 +290,7 @@ const MembersProvider = ({ children }) => {
 
     // Stripe payments
     subscriptions, setSubscriptions,
+    // functions
     createSubscription,
     getSubscription,
     updateSubscription,

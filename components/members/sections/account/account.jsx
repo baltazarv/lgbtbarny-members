@@ -1,10 +1,16 @@
+/**
+ * Form.Provider in this Accounts component.
+ * * Forms in AccountsForm submitted in this onFormFinish().
+ * * EmailsForm handle its new email form.
+ *     `changePrimaryEmail` on this Accounts form handles switching primary emails.
+ */
 import { useState, useContext, useMemo, useEffect } from 'react';
 import { Form, Tooltip } from 'antd';
 import SvgIcon from '../../../elements/svg-icon';
 import moment from 'moment';
-// main component
+// main components with render props
 import AccountsForm from './forms/accounts-form';
-// render functions in AccountsForm
+import AccountsItem from './forms/accounts-item';
 // TODO: rename './forms/' to './sections'; move './modals' to './sections/modals/'?
 import ProfileForm from './forms/profile-form';
 import EmailsForm from './forms/emails-form';
@@ -45,12 +51,18 @@ const Account = ({
   const {
     member,
     updateMember,
+    userEmails,
+    updateEmails,
     memberPlans,
     userPayments,
     subscriptions,
     updateSubscription,
+    updateCustomer,
   } = useContext(MembersContext);
   const [loading, setLoading] = useState(false);
+
+  const [emailTableValues, setEmailTableValues] = useState(null);
+  const [emailTableSelectedRowKeys, setEmailTableSelectedRowKeys] = useState([]);
 
   const activeSubscription = useMemo(() => {
     return getActiveSubscription(subscriptions);
@@ -73,12 +85,16 @@ const Account = ({
     return status;
   }, [userPayments, memberPlans, member]);
 
+  /**
+   * AccountForm form handling
+   */
+
   const onFormChange = (formName, info) => {
     // console.log('onFormChange formName', formName, 'changedFields', info.changedFields);
   }
 
+  // formName: string, info: { values, forms })
   const onFormFinish = async (formName, info) => {
-    // formName: string, info: { values, forms })
     // console.log('onFormFinish formName', formName, 'info.values', info.values, 'info.forms', info.forms);
     let fields = Object.assign({}, info.values);
 
@@ -108,6 +124,70 @@ const Account = ({
     }
   }
 
+  /**
+   * AccountItem switch primary email
+   */
+
+  const emailTableDataSource = useMemo(() => {
+    if (userEmails) {
+      return userEmails.map(email => {
+        return {
+          key: email.id,
+          email: email.fields.email,
+          verified: email.fields.verified,
+          primary: email.fields.primary,
+        };
+      });
+    }
+    return null;
+  }, [userEmails]);
+
+  const primaryEmails = useMemo(() => {
+    if (userEmails) {
+      return userEmails.reduce((acc, cur) => {
+        if (cur?.fields[dbFields.emails.primary]) acc.push(cur.id);
+        return acc;
+      }, []);
+    }
+    return null;
+  }, [userEmails]);
+
+  useEffect(() => {
+    if (primaryEmails) setEmailTableSelectedRowKeys(primaryEmails);
+  }, [primaryEmails]);
+
+  useEffect(() => {
+    // if (emailTableDataSource) {
+      setEmailTableValues({
+        dataSource: emailTableDataSource,
+        selectedRowKeys: emailTableSelectedRowKeys,
+        setSelectedRowKeys: setEmailTableSelectedRowKeys,
+      })
+    // }
+  }, [emailTableDataSource, emailTableSelectedRowKeys]);
+
+  const resetEmailTableData = () => {
+    setEmailTableSelectedRowKeys(primaryEmails);
+  }
+
+  const changePrimaryEmail = async (newPrimaryEmail) => {
+    const emailUpdate = Object.assign({}, {...newPrimaryEmail});
+    let emails = [
+      { id: emailUpdate.key, fields: { primary: true } },
+      { id: primaryEmails[0], fields: { primary: false } }
+    ];
+    // console.log('changePrimaryEmail', emails);
+    const updatedEmails = await updateEmails(emails);
+
+    // update Stripe customer
+    const customerId = member.fields[dbFields.members.stripeId];
+    const email = newPrimaryEmail.email;
+    const updateCusResult = await updateCustomer({
+      customerId,
+      email,
+    });
+  };
+
   return <div className="members-account">
     <Form.Provider
       onFormFinish={onFormFinish}
@@ -128,10 +208,13 @@ const Account = ({
       </div>
 
       <div id="edit-emails" className="mb-3">
-        <AccountsForm
-          name={ACCOUNT_FORMS.editEmails}
+        <AccountsItem
+          // name={ACCOUNT_FORMS.editEmails}
           title="Email addresses"
           loading={loading}
+          values={emailTableValues}
+          changeValues={changePrimaryEmail}
+          resetValues={resetEmailTableData}
           render={(args) => <EmailsForm {...args} />}
         />
       </div>

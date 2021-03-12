@@ -1,8 +1,4 @@
 /**
- * Form.Provider in Accounts, submitted onFormFinish()
- * Form in AccountsForm
- */
-/**
  * TODO: refactor to pull non-editing text outside of Form.Item b/c get error:
  *   Warning: [antd: Form.Item] `name` is only used for validate React element. If you are using Form.Item as layout display, please remove `name` instead.
  *  */

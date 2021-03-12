@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Card, Form, Button } from 'antd';
-import { EditOutlined } from '@ant-design/icons';
+import { Card, Form } from 'antd';
+import EditCardButtons from '../../../../elements/edit-card-buttons';
 
 const longFieldFormat = {
   labelCol: {
@@ -42,7 +42,7 @@ const AccountsForm = ({
     setEditing(prev => !prev);
   };
 
-  const cancel = () => {
+  const onCancel = () => {
     form.resetFields();
     setEditing(false);
     setFieldValuesChanged(false);
@@ -61,37 +61,21 @@ const AccountsForm = ({
     return false; // errors in validation
   };
 
-  const formButtons = useMemo(() => {
+  const editCardButtons = useMemo(() => {
     if (!editable) return null;
-    // submit button
-    if (editing) {
-      return <>
-        <Button
-          style={{ marginRight: '8px' }}
-          size="small"
-          onClick={() => cancel()}
-        >
-          Cancel
-        </Button>
-        <Button
-          size="small"
-          type="primary"
-          disabled={!fieldValuesChanged}
-          onClick={onSave}
-        >
-          Save
-        </Button>
-      </>;
-    }
-
-    // edit button
-    return <Button size="small" onClick={() => toggleEditing()}>Edit<EditOutlined style={{ verticalAlign: '0.17em' }} /></Button>;
+    return <EditCardButtons
+      editing={editing}
+      toggleEditing={toggleEditing}
+      onCancel={onCancel}
+      valuesChanged={fieldValuesChanged}
+      onSave={onSave}
+    />
   }, [editing, fieldValuesChanged]);
 
   return <>
     <Card
       title={<span>{title}</span>}
-      extra={formButtons}
+      extra={editCardButtons}
       style={{ maxWidth: 600 }}
     >
       <Form

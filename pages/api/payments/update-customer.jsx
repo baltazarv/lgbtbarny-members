@@ -1,8 +1,12 @@
 import { stripe } from '../utils/stripe';
 
 const updateCustomer = async (req, res) => {
+  console.log('/api/payments/update-customer', req.body);
+
   const {
     customerId,
+    name,
+    email,
     defaultPaymentMethod,
   } = req.body;
 
@@ -25,6 +29,9 @@ const updateCustomer = async (req, res) => {
       return res.status('400').send({ error: error.message })
     }
   }
+
+  if (name) updateFields.name = name;
+  if (email) updateFields.email = email;
 
   try {
     const customer = await stripe.customers.update(customerId, updateFields);
