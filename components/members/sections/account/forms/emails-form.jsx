@@ -1,5 +1,4 @@
 // TODO: rename emails-table
-// TODO: add label to new email input
 /**
  * Intermediary `AccountItem` with render props between this component and `Accounts` component.
  *
@@ -7,12 +6,13 @@
  * * `dataSource`, `selectedRowKeys`, and `setSelectedRowKeysprop` inside `value` prop sent by Account.
  * * `selectChanges` also managed by parent.
  *
- * * Deleting emails....
+ * * Deleting emails handled within this component by`onDeleteEmail`.
  *
- * Saving a new email handled within this component by `saveEmail`. The form surrounding the `Search` input that holds the new email value is the only form on this component.
+ * Saving a new email handled within this component by `saveEmail`. The form surrounding the `Search` input is the only form on this component.
  */
 import { useState, useMemo, useContext } from 'react';
 import { Table, Form, Input, Tag, Tooltip, Typography, Popconfirm } from 'antd';
+import { MailOutlined } from '@ant-design/icons';
 // data
 import { MembersContext } from '../../../../../contexts/members-context';
 import { dbFields } from '../../../../../data/members/airtable/airtable-fields';
@@ -23,11 +23,15 @@ const { Search } = Input;
 const EmailsForm = ({
   loading,
   editing,
+
   // primary email
   values,
+
   selectChanges,
+  // delete email
+  onCancel,
 }) => {
-  const { userEmails, createEmail, member } = useContext(MembersContext);
+  const { userEmails, createEmail, deleteEmail, member, authUser } = useContext(MembersContext);
   const [form] = Form.useForm(); // save email form
   const [addEmailLoading, setAddEmailLoading] = useState(false);
 
@@ -47,13 +51,12 @@ const EmailsForm = ({
    * Save new email
    */
 
-   const saveEmail = async (emailAddress) => {
+  const saveEmail = async (emailAddress) => {
     setAddEmailLoading(true);
     if (emailAddress) {
       try {
         await form.validateFields();
-        const repeatEmail = userEmails.find(address => address.fields.address === address);
-        // console.log('repeatEmail', repeatEmail, 'emailAddress', emailAddress,)
+        const repeatEmail = userEmails.find(address => address.fields[dbFields.emails.address].toLowerCase() === emailAddress.toLowerCase());
         if (repeatEmail) {
           form.setFields([{
             name: dbFields.emails.address,
@@ -65,6 +68,7 @@ const EmailsForm = ({
             emailAddress,
             userid,
           });// > setUserEmails
+          form.resetFields();
         }
         setAddEmailLoading(false);
       } catch (error) {
@@ -79,6 +83,22 @@ const EmailsForm = ({
       setAddEmailLoading(false);
     }
   };
+
+  /**
+   * Delete email
+   */
+
+  const loggedInEmail = useMemo(() => {
+    if (authUser) {
+      return authUser.name;
+    }
+    return null;
+  }, [authUser]);
+
+  const onDeleteEmail = async (key) => {
+    await deleteEmail(key);
+    onCancel();
+  }
 
   const rowSelection = useMemo(() => {
     if (editing) return {
@@ -111,13 +131,11 @@ const EmailsForm = ({
   </Tooltip> : '';
 
   const deleteButton = (text, record, index) => {
-    if (record.primary) return '';
+    if (record.primary || record.email === loggedInEmail) return '';
     return <Popconfirm
-      title={<span>Delete <strong>{record.email}</strong>?</span>} onConfirm={() => console.log('DELETE', record.key)}
+      title={<span>Delete <strong>{record.email}</strong>?</span>} onConfirm={() => onDeleteEmail(record.key)}
       okText="Delete"
-      okButtonProps={{
-        danger: true,
-      }}
+      okButtonProps={{ danger: true }}
       placement="topLeft"
     >
       <Link
@@ -200,27 +218,35 @@ const EmailsForm = ({
       size="small"
       className="mb-2"
       title={() => <>
-        <p className="mb-0"><strong>Verified</strong> email addresses are those which you have used to log into your account. Any email address can be used to log in.</p>
-        <p className="mb-0">The <strong>primary</strong> email address is the one that receives emails from the LGBT Bar of NY. Only verified addresses qualify.</p>
+        <p>The <strong className="text-primary">primary</strong> email address is the one that receives emails from the LGBT Bar of NY. Only verified addresses qualify.</p>
+        <p><strong className="text-success">Verified</strong> email addresses are those which you have used to log into your account. Any verified email address can be used to log into your account.</p>
+        {editing && <p>You may not <strong className="text-danger">delete</strong> the primary email address or the one you used to log you into the current session.</p>}
       </>}
     />
 
     {/* add new user email */}
-    <Form.Item
-      name={dbFields.emails.address}
-      label={null}
-      rules={[{ type: 'email', message: 'Enter a valid email address.' },]}
-      wrapperCol={{ span: 16, offset: 4 }}
-    >
-      <Search
-        enterButton="Add"
-        addonBefore="@"
-        placeholder="user@domain.com"
-        onSearch={saveEmail}
-        loading={addEmailLoading}
-        disabled={addEmailLoading}
-      />
-    </Form.Item>
+    <Form
+      form={form}
+      scrollToFirstError
+      >
+      <Form.Item
+        name={dbFields.emails.address}
+        label={null}
+        rules={[{ type: 'email', message: 'Enter a valid email address.' },]}
+        wrapperCol={{ span: 18, offset: 2 }}
+      >
+        <Search
+          enterButton="Add"
+          addonBefore="Alternate Email"
+          placeholder="user@domain.com"
+          onSearch={saveEmail}
+          loading={addEmailLoading}
+          disabled={addEmailLoading}
+          allowClear={true}
+          prefix={<MailOutlined />}
+        />
+      </Form.Item>
+    </Form>
   </>;
 };
 

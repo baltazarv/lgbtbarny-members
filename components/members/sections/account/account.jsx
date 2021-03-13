@@ -9,8 +9,8 @@ import { Form, Tooltip } from 'antd';
 import SvgIcon from '../../../elements/svg-icon';
 import moment from 'moment';
 // main components with render props
-import AccountsForm from './forms/accounts-form';
-import AccountsItem from './forms/accounts-item';
+import AccountsForm from './accounts-form';
+import AccountsItem from './accounts-item';
 // TODO: rename './forms/' to './sections'; move './modals' to './sections/modals/'?
 import ProfileForm from './forms/profile-form';
 import EmailsForm from './forms/emails-form';

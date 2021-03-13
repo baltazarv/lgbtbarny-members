@@ -73,6 +73,26 @@ const MembersProvider = ({ children }) => {
     }
   }
 
+  const deleteEmail = async (id) => {
+    try {
+      const res = await fetch('/api/members/delete-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(id),
+      })
+      const { emailid, error } = await res.json();
+      if (emailid) {
+        const emails = [...userEmails].reduce((acc, cur) => {
+          if (emailid !== cur.id) acc.push(cur);
+          return acc;
+        }, [])
+        setUserEmails(emails);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   /**
    * Create payment for user w/ particular plan
    *
@@ -283,6 +303,8 @@ const MembersProvider = ({ children }) => {
     updateMember,
     createEmail,
     updateEmails,
+    deleteEmail,
+
     addPayment,
     // functions not used
     refreshMember,

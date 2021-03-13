@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Card } from "antd";
-import EditCardButtons from '../../../../elements/edit-card-buttons';
+import EditCardButtons from '../../../elements/edit-card-buttons';
 
 const AccountsItem = ({
   title,
@@ -57,6 +57,7 @@ const AccountsItem = ({
         editing,
         values,
         selectChanges,
+        onCancel,
       })}
     </Card>
   </>

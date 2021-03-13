@@ -1,6 +1,6 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, Form } from 'antd';
-import EditCardButtons from '../../../../elements/edit-card-buttons';
+import EditCardButtons from '../../../elements/edit-card-buttons';
 
 const longFieldFormat = {
   labelCol: {
