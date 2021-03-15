@@ -7,10 +7,6 @@ import { Card, Divider, Form, Row, Col, Button } from 'antd';
 import CardFields from '../../../payments/card-fields';
 import CollectMethodRadios from '../../../payments/collect-method-radios';
 import './payment-form.less';
-// utils
-import { getStripePriceId } from '../../../../utils/members/airtable/members-db';
-import { getPaymentPayload } from '../../../../utils/members/airtable/members-db';
-import { getPaymentMethodObject } from '../../../../utils/payments/stripe-utils';
 // contexts
 import { MembersContext } from '../../../../contexts/members-context';
 // data
@@ -18,6 +14,14 @@ import { SIGNUP_FORMS } from '../../../../data/members/member-form-names';
 import { STRIPE_FIELDS } from '../../../../data/payments/stripe/stripe-fields';
 import { dbFields } from '../../../../data/members/airtable/airtable-fields';
 import { FIRST_TIME_COUPON } from '../../../../data/payments/stripe/stripe-values';
+// utils
+import {
+  // free student plan
+  addPayment,
+  getStripePriceId,
+  getPaymentPayload,
+} from '../../../../utils/members/airtable/members-db';
+import { getPaymentMethodObject } from '../../../../utils/payments/stripe-utils';
 
 const PaymentForm = ({
   duesSummList,
@@ -32,20 +36,20 @@ const PaymentForm = ({
 
   // context
   const {
-    member,
-    userEmails,
     authUser,
+    member,
+    setMember,
+    userEmails,
     memberPlans,
 
-    // free student plan
-    addPayment,
+    setUserPayments,
+    getNewPaymentState,
 
     // attorney stripe plan
     createSubscription,
     updateSubscription,
     saveSubscription,
     getSubscription,
-
     // save payment method info
     setDefaultCard,
   } = useContext(MembersContext);
@@ -140,9 +144,18 @@ const PaymentForm = ({
     }));
 
     // TODO: use webhook to check that payment was created from subscription?
-    const payment = await addPayment(payload);
-    if (payment.error) {
-      console.log(payment);
+    const addedPayment = await addPayment(payload);
+    if (addedPayment.error) {
+      console.log(addedPayment.error);
+    } else {
+      const newStateItems = getNewPaymentState({
+        member,
+        payment: addedPayment.payment,
+      })
+      // payment added to userPayments
+      setUserPayments(newStateItems.payments);
+      // add payment to member payments
+      setMember(newStateItems.member);
     }
 
     setLoading(false);

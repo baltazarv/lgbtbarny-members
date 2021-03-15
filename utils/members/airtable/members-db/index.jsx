@@ -6,6 +6,7 @@
 
  // members
  import {
+  updateMember,
   getMemberType,
   getMemberStatus,
   getAccountIsActive,
@@ -23,6 +24,7 @@ import {
 
 // payments
 import {
+  addPayment,
   getLastPayment,
   getNextPaymentDate,
   getPaymentPayload,
@@ -31,6 +33,7 @@ import {
 
 export {
   // members
+  updateMember,
   getMemberType,
   getMemberStatus,
   getAccountIsActive,
@@ -44,6 +47,7 @@ export {
   getStripePriceId,
 
   // payments
+  addPayment,
   getLastPayment,
   getNextPaymentDate,
   getPaymentPayload,

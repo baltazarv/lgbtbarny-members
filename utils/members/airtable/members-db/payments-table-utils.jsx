@@ -9,6 +9,35 @@ import {
 } from './plans-table-utils';
 import { dbFields } from '../../../../data/members/airtable/airtable-fields';
 
+/** API calls */
+
+/**
+ * Create payment for user w/ particular plan
+ *
+ * body = {
+  "userid": "recXXX",
+  "plan": "recXXX",
+  "type": "Website Payment",
+  "status": "Processed",
+  "total": 0
+ }
+ */
+const addPayment = async (newPayment) => {
+  try {
+    const res = await fetch('/api/members/create-payment', {
+      method: 'POST',
+      body: JSON.stringify(newPayment),
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const payments = await res.json();
+    // addPaymentContext(payments[0]);
+    return { payment: payments[0] };
+  } catch (error) {
+    console.log({ error });
+    // return error;
+  }
+}
+
 // given userPayments object, returns the last payment record
 const getLastPayment = (userPayments) => {
   if (!userPayments) return null;
@@ -110,6 +139,9 @@ const getPaymentIsDiscounted = (userPayments, memberPlans) => {
 };
 
 export {
+  // API calls
+  addPayment,
+
   getLastPayment,
   getNextPaymentDate,
   getPaymentPayload,

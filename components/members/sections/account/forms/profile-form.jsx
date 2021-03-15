@@ -15,7 +15,12 @@ const ProfileForm = ({
   loading,
   editing,
 }) => {
-  const { member, authUser, userPayments, memberPlans } = useContext(MembersContext);
+  const {
+    member,
+    authUser,
+    userPayments,
+    memberPlans,
+  } = useContext(MembersContext);
 
   // no payment date for plans with no term limits, eg, Volunteer
   const nextPaymentDate = useMemo(() => {

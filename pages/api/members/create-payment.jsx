@@ -11,6 +11,8 @@ import { dbFields } from '../../../data/members/airtable/airtable-fields';
  * date will be today's date
  *  */
 export default auth0.requireAuthentication(async function createPayment(req, res) {
+  // console.log('/api/members/create-payment', req.body)
+
   const {
     userid,
     planid,

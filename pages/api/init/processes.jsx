@@ -11,6 +11,7 @@
 import { membersTable, emailsTable, paymentsTable, plansTable, minifyRecords, getMinifiedRecord } from '../utils/Airtable';
 import { stripe, getActiveSubscription, getPaymentMethodObject } from '../utils/stripe';
 import { dbFields } from '../../../data/members/airtable/airtable-fields';
+import { getMemberFullName } from '../../../utils/members/airtable/members-db/members-table-utils';
 
 /**
  * Get members table data.
@@ -54,7 +55,6 @@ const processUser = async (emailAddress) => {
       }
     ]);
     user = getMinifiedRecord(updatedUser[0]);
-    console.log('updated user', user)
 
     return { user, emailAddress, isNewUser }; // may not need to return isNewUser
   } catch (error) {
@@ -142,6 +142,7 @@ const processStripeCust = async ({ user, emailAddress }) => {
     let subscriptions = null;
     let defaultCard = null;
     const stripeId = user.fields[dbFields.members.stripeId];
+    const fullName = getMemberFullName(user)
     if (stripeId) {
       // get stripe info
       let subsResults = await stripe.subscriptions.list({ customer: stripeId });
@@ -160,7 +161,9 @@ const processStripeCust = async ({ user, emailAddress }) => {
       }
     } else {
       // no stripe customer yet
-      const stripeCustomer = await stripe.customers.create({ email: emailAddress });
+      let fields = { email: emailAddress };
+      if (fullName) fields.name = fullName;
+      const stripeCustomer = await stripe.customers.create(fields);
       const fieldsToUpdate = { [dbFields.members.stripeId]: stripeCustomer.id };
       const updatedRecords = await membersTable.update([{
         id: user.id,

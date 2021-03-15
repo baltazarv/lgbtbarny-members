@@ -54,7 +54,7 @@ const MemberFields = ({
         />
       </Form.Item>
     </>;
-  });
+  }, [loading]);
 
   const employmentField = useMemo(() => {
     return <>
@@ -108,6 +108,7 @@ const MemberFields = ({
           <Select
             style={{ width: '100%' }}
             placeholder="Choose year..."
+            disabled={loading}
           >
             {gradYearOptions()}
           </Select>
@@ -115,7 +116,7 @@ const MemberFields = ({
       </>;
     }
     return fields;
-  }, [memberType, gradYearOptions]);
+  }, [memberType, gradYearOptions, loading]);
 
   // TODO: if no payment, show
   const lawNotesButton = () => {

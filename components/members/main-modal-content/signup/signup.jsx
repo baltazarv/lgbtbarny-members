@@ -3,7 +3,7 @@
  * * MemberInfoForm
  * * PaymentForm
  *
- * Submitting `onFormChange`.
+ * Submitting `onFormFinish`.
  *
  * Users will only see this if they are logged in.
  */
@@ -14,8 +14,6 @@ import MemberInfoForm from './member-info-form';
 import PaymentForm from './payment-form';
 import DuesSummary from '../../../payments/dues-summary';
 import '../login-signup.less';
-// utils
-import { duesInit, duesReducer, getMemberFees } from '../../../../utils/payments/member-dues'; // , setDonation
 import { TitleIcon } from '../../../elements/icon';
 // data
 import { MembersContext } from '../../../../contexts/members-context';
@@ -24,11 +22,13 @@ import { SIGNUP_FORMS } from '../../../../data/members/member-form-names';
 import { PAYMENT_FIELDS } from '../../../../data/payments/payment-fields';
 import { STRIPE_FIELDS } from '../../../../data/payments/stripe/stripe-fields';
 import { dbFields } from '../../../../data/members/airtable/airtable-fields';
+// utils
+import { duesInit, duesReducer, getMemberFees } from '../../../../utils/payments/member-dues'; // , setDonation
 import {
+  updateMember,
+  addPayment,
   getMemberStatus,
   getNextPaymentDate,
-} from '../../../../utils/members/airtable/members-db';
-import {
   getPlanFee,
   getPaymentPayload,
 } from '../../../../utils/members/airtable/members-db';
@@ -44,7 +44,16 @@ const Signup = ({
   setModalType,
   // setSignupType,
 }) => {
-  const { member, authUser, userPayments, memberPlans, updateMember, addPayment } = useContext(MembersContext);
+  const {
+    authUser,
+    member,
+    setMember,
+    userPayments,
+    setUserPayments,
+    getNewPaymentState,
+    memberPlans,
+    updateCustomer,
+  } = useContext(MembersContext);
   const memberInfoFormRef = useRef(null);
   const [certifyChoice, setCertifyChoice] = useState('');
   const [step, setStep] = useState(0);
@@ -283,31 +292,61 @@ const Signup = ({
     // console.log('onFormFinish formName:', formName, 'info:', info) // formName: string, info: { values, forms })
     if (formName === SIGNUP_FORMS.signupMemberInfo) {
       try {
+
+        // update member info
         setLoading(true);
         let fields = Object.assign({}, info.values);
         const _member = { id: member.id, fields };
-        const updatedMember = await updateMember(_member); // >> setMember(updatedMember)
+        const updatedMember = await updateMember(_member);
+
+        // if name change, update stripe name
+        // all users automatically get a stripe account
+        const firstName = dbFields.members.firstName;
+        const lastName = dbFields.members.lastName;
+        if (info.values[firstName] !== member.fields[firstName] ||
+          info.values[lastName] !== member.fields[lastName]
+        ) {
+          const customerId = member.fields[dbFields.members.stripeId];
+          const updateCusResult = await updateCustomer({
+            customerId,
+            name: `${info.values[firstName]} ${info.values[lastName]}`,
+          });
+        }
+
+        // create student account
         if (memberSignUpType === memberTypes.USER_STUDENT) {
           const paymentPayload = getPaymentPayload({
             userid: member.id,
             memberPlans,
             salary: 0, // student plan
           });
-          const payment = await addPayment(paymentPayload);
-          if (payment.error) {
-            console.log(payment);
+          const addedPayment = await addPayment(paymentPayload);
+          if (addedPayment.error) {
+            console.log(addedPayment.error);
             setIsServerError(true);
           } else {
+            const newStateItems = getNewPaymentState({
+              member: updatedMember.member,
+              payment: addedPayment.payment,
+            })
+            setUserPayments(newStateItems.payments);
+            setMember(newStateItems.member);
+
             setStep(step + 1);
             setIsConfirmation(true);
             setIsServerError(false);
           }
           setLoading(false);
+        } else {
+          setMember(updatedMember.member);
         }
+
+        // take attorneys to payment screen
         if (memberSignUpType === memberTypes.USER_ATTORNEY) {
           setLoading(false);
           setStep(step + 1);
         }
+
       } catch (error) {
         console.log(error);
         setLoading(false);

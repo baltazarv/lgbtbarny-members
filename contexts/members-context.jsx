@@ -14,24 +14,8 @@ const MembersProvider = ({ children }) => {
   const [defaultCard, setDefaultCard] = useState(null);
 
   /**
-   * Airtable member functions
+   * Airtable member functions - TODO: don't save state & move to utils
    *  */
-
-  // Update member info before signup - components/members/signup/signup
-  const updateMember = async (userToUpdate) => {
-    try {
-      const res = await fetch('/api/members/update-member', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userToUpdate),
-      });
-      const updatedUser = await res.json();
-      setMember(updatedUser);
-      return updatedUser;
-    } catch (error) {
-      console.log(error);
-    }
-  };
 
   /**
    * * Add new email address to account
@@ -94,34 +78,16 @@ const MembersProvider = ({ children }) => {
   }
 
   /**
-   * Create payment for user w/ particular plan
+   * Takes a payment created in airtable and the current member object:
+   * * Adds payment to member object.
+   * * And adds payment to userPayments object.
    *
-   * body = {
-    "userid": "recp6M29Wzkshf5sK",
-    "plan": "rec0HT7XyXLJQ84r7",
-    "type": "Website Payment",
-    "status": "Processed",
-    "total": 0
-   }
+   * ¡¡¡ But does not modify either state !!!
    */
-  const addPayment = async (newPayment) => {
-    try {
-      const res = await fetch('/api/members/create-payment', {
-        method: 'POST',
-        body: JSON.stringify(newPayment),
-        headers: { 'Content-Type': 'application/json' }
-      });
-      const payments = await res.json();
-      addPaymentContext(payments[0]);
-      return payments;
-    } catch (error) {
-      console.log(error);
-      // return error;
-    }
-  }
-
-  // takes only one payment object, not array of payments
-  const addPaymentContext = (payment) => {
+  const getNewPaymentState = ({
+    payment,
+    member,
+  }) => {
     // add payment id to member payments
     // console.log('add payment id', payment.id, 'to member payments', member);
     let _member = { id: member.id, fields: Object.assign({}, member.fields) };
@@ -135,16 +101,15 @@ const MembersProvider = ({ children }) => {
     memberPayments.push(payment);
     _member.fields.__payments = memberPayments;
 
-    // console.log('new member', _member);
-    setMember(_member);
-
-    // add payment to userPayments
+    // add payment for userPayments context
     // console.log('add payment', payment, 'to userPayments', userPayments);
     let _userPayments = [];
     if (userPayments) _userPayments = [...userPayments];
     _userPayments.push(payment);
-    // console.log('new payments', _userPayments);
-    setUserPayments(_userPayments)
+    return {
+      member: _member,
+      payments: _userPayments,
+    }
   };
 
   /** Other API calls from /pages/members/[page]
@@ -167,12 +132,12 @@ const MembersProvider = ({ children }) => {
         headers: { 'Content-Type': 'application/json' }
       });
       const _user = await res.json();
-      setMember(_user);
     } catch (error) {
-      console.log(error);
+      console.log({ error });
     }
   };
 
+  // TODO: do not set state!
   const addMember = async (user) => {
     try {
       const res = await fetch('/api/members/__create-member', {
@@ -289,7 +254,6 @@ const MembersProvider = ({ children }) => {
     }
   };
 
-
   return (<MembersContext.Provider value={{
     // Auth0
     authUser, setAuthUser,
@@ -300,12 +264,10 @@ const MembersProvider = ({ children }) => {
     userPayments, setUserPayments,
     memberPlans, setMemberPlans,
     // functions
-    updateMember,
     createEmail,
     updateEmails,
     deleteEmail,
 
-    addPayment,
     // functions not used
     refreshMember,
     addMember,
@@ -313,6 +275,7 @@ const MembersProvider = ({ children }) => {
     // Stripe payments
     subscriptions, setSubscriptions,
     // functions
+    getNewPaymentState,
     createSubscription,
     getSubscription,
     updateSubscription,

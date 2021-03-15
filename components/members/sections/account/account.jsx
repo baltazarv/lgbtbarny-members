@@ -21,8 +21,13 @@ import EmailPrefs from './forms/email-prefs';
 // styles
 import './account.less';
 // utils
-import { getStripePriceId, getMemberStatus } from '../../../../utils/members/airtable/members-db';
+import {
+  updateMember,
+  getStripePriceId,
+  getMemberStatus,
+} from '../../../../utils/members/airtable/members-db';
 import { getActiveSubscription } from '../../../../utils/payments/stripe-utils';
+import { getFullName } from '../../../../utils/members/airtable/members-db/members-table-utils';
 // data
 import { MembersContext } from '../../../../contexts/members-context';
 import { dbFields } from '../../../../data/members/airtable/airtable-fields';
@@ -50,7 +55,6 @@ const Account = ({
 
   const {
     member,
-    updateMember,
     userEmails,
     updateEmails,
     memberPlans,
@@ -96,6 +100,7 @@ const Account = ({
   // formName: string, info: { values, forms })
   const onFormFinish = async (formName, info) => {
     // console.log('onFormFinish formName', formName, 'info.values', info.values, 'info.forms', info.forms);
+
     let fields = Object.assign({}, info.values);
 
     // do not process billingname, done on UpdateCardForm okButton -> onFinish()
@@ -108,20 +113,31 @@ const Account = ({
     }
 
     const _member = { id: member.id, fields };
-    if (!member.sample) {
-      const updatedMember = await updateMember(_member); // >> setMember(updatedMember)
+    // if (!member.sample) {
+    const updatedMember = await updateMember(_member);
+    setMember(updatedMember.member);
 
-      // if salary change, update stripe subscription price
-      if (info.values[dbFields.members.salary]) {
-        if (info.values[dbFields.members.salary] !== member.fields[dbFields.members.salary]) {
-          const priceId = getStripePriceId(info.values[dbFields.members.salary], memberPlans);
-          const subscription = await updateSubscription({
-            subcriptionId: activeSubscription.id,
-            priceId,
-          }); //-> saveSubscription
-        }
+    // if salary change, update stripe subscription price
+    if (info.values[dbFields.members.salary]) {
+      if (info.values[dbFields.members.salary] !== member.fields[dbFields.members.salary]) {
+        const priceId = getStripePriceId(info.values[dbFields.members.salary], memberPlans);
+        const subscription = await updateSubscription({
+          subcriptionId: activeSubscription.id,
+          priceId,
+        }); //-> saveSubscription
       }
     }
+    // }
+
+    // update stripe customer
+    if (formName === ACCOUNT_FORMS.editProfile) {
+      const customerId = member.fields[dbFields.members.stripeId];
+      const name = getFullName(info.values[dbFields.members.firstName], info.values[dbFields.members.lastName]);
+      const updateCusResult = await updateCustomer({
+        customerId,
+        name,
+      });
+      }
   }
 
   /**
@@ -158,11 +174,11 @@ const Account = ({
 
   useEffect(() => {
     // if (emailTableDataSource) {
-      setEmailTableValues({
-        dataSource: emailTableDataSource,
-        selectedRowKeys: emailTableSelectedRowKeys,
-        setSelectedRowKeys: setEmailTableSelectedRowKeys,
-      })
+    setEmailTableValues({
+      dataSource: emailTableDataSource,
+      selectedRowKeys: emailTableSelectedRowKeys,
+      setSelectedRowKeys: setEmailTableSelectedRowKeys,
+    })
     // }
   }, [emailTableDataSource, emailTableSelectedRowKeys]);
 
@@ -171,7 +187,7 @@ const Account = ({
   }
 
   const changePrimaryEmail = async (newPrimaryEmail) => {
-    const emailUpdate = Object.assign({}, {...newPrimaryEmail});
+    const emailUpdate = Object.assign({}, { ...newPrimaryEmail });
     let emails = [
       { id: emailUpdate.key, fields: { primary: true } },
       { id: primaryEmails[0], fields: { primary: false } }

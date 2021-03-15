@@ -7,6 +7,28 @@ import {
 import * as memberTypes from '../../../../data/members/member-types';
 import { dbFields } from '../../../../data/members/airtable/airtable-fields';
 
+/** API calls */
+
+/**
+ * Update member info before signup.
+ * Does not update member state!
+ */
+ const updateMember = async (userToUpdate) => {
+  try {
+    const res = await fetch('/api/members/update-member', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(userToUpdate),
+    });
+    const updatedUser = await res.json();
+    // console.log('updatedUser', updatedUser);
+    // setMember(updatedUser);
+    return { member: updatedUser };
+  } catch (error) {
+    console.log({ error });
+  }
+};
+
 /**
  *
  * @param {*} member
@@ -83,8 +105,31 @@ const getAccountIsActive = ({
   return false; // 'expired', 'graduated'
 };
 
+const getFullName = (firstName, lastName) => {
+  let fullName = '';
+  if (firstName || lastName) {
+    if (firstName) fullName = fullName + firstName;
+    if (firstName && lastName) fullName = fullName + ' ';
+    if (lastName) fullName = fullName + lastName;
+  }
+  if (fullName === '') return null;
+  return fullName;
+}
+
+// full name needed for Stripe customer
+const getMemberFullName = (member) => {
+  const firstName = member.fields[dbFields.members.firstName];
+  const lastName = member.fields[dbFields.members.lastName];
+  return getFullName(firstName, lastName);
+}
+
 export {
+  // API calls
+  updateMember,
+
   getMemberType,
   getMemberStatus,
   getAccountIsActive,
+  getFullName,
+  getMemberFullName,
 };

@@ -1,7 +1,7 @@
 /**
  * Form processed by Signup component's Form.Provider onFormFinish
  */
-import { useEffect, useMemo, useContext } from 'react';
+import { useMemo, useContext } from 'react';
 import { Form, Button, Row, Col, Select } from 'antd';
 import MemberFields from './member-fields';
 import SalaryField from '../../../payments/salary-field';
