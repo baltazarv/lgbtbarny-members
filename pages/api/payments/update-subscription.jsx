@@ -3,6 +3,8 @@ import { STRIPE_FIELDS } from '../../../data/payments/stripe/stripe-fields';
 import { DAYS_UNTIL_DUE } from '../../../data/payments/stripe/stripe-values';
 
 export default async (req, res) => {
+  // console.log('/api/payments/update-subscription', req.body);
+
   const {
     subcriptionId,
     priceId, // plan update

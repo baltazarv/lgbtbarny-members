@@ -20,6 +20,11 @@ import PaymentInfo from './forms/payment-info';
 import EmailPrefs from './forms/email-prefs';
 // styles
 import './account.less';
+// data
+import { MembersContext } from '../../../../contexts/members-context';
+import { dbFields } from '../../../../data/members/airtable/airtable-fields';
+import * as memberTypes from '../../../../data/members/member-types';
+import { ACCOUNT_FORMS } from '../../../../data/members/member-form-names';
 // utils
 import {
   updateMember,
@@ -28,11 +33,7 @@ import {
 } from '../../../../utils/members/airtable/members-db';
 import { getActiveSubscription } from '../../../../utils/payments/stripe-utils';
 import { getFullName } from '../../../../utils/members/airtable/members-db/members-table-utils';
-// data
-import { MembersContext } from '../../../../contexts/members-context';
-import { dbFields } from '../../../../data/members/airtable/airtable-fields';
-import * as memberTypes from '../../../../data/members/member-types';
-import { ACCOUNT_FORMS } from '../../../../data/members/member-form-names';
+import { updateSubscription } from '../../../../utils/payments/stripe-utils';
 
 const MenuIcon = ({
   name,
@@ -55,12 +56,13 @@ const Account = ({
 
   const {
     member,
+    setMember,
     userEmails,
     updateEmails,
     memberPlans,
     userPayments,
     subscriptions,
-    updateSubscription,
+    saveNewSubscription,
     updateCustomer,
   } = useContext(MembersContext);
   const [loading, setLoading] = useState(false);
@@ -113,7 +115,6 @@ const Account = ({
     }
 
     const _member = { id: member.id, fields };
-    // if (!member.sample) {
     const updatedMember = await updateMember(_member);
     setMember(updatedMember.member);
 
@@ -121,13 +122,18 @@ const Account = ({
     if (info.values[dbFields.members.salary]) {
       if (info.values[dbFields.members.salary] !== member.fields[dbFields.members.salary]) {
         const priceId = getStripePriceId(info.values[dbFields.members.salary], memberPlans);
-        const subscription = await updateSubscription({
+        const updatedSubResult = await updateSubscription({
           subcriptionId: activeSubscription.id,
           priceId,
-        }); //-> saveSubscription
+        });
+        if (updatedSubResult.error) {
+          console.log(updatedSubResult.error.message);
+          // return;
+        } else {
+          saveNewSubscription(updatedSubResult.subscription);
+        }
       }
     }
-    // }
 
     // update stripe customer
     if (formName === ACCOUNT_FORMS.editProfile) {
@@ -137,7 +143,7 @@ const Account = ({
         customerId,
         name,
       });
-      }
+    }
   }
 
   /**

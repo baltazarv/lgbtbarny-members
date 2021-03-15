@@ -1,6 +1,29 @@
 // functions also used on back-end
 import moment from 'moment';
 
+
+/** API calls */
+
+/**
+ * Update for (1) collection method or (2) price
+ * @param {Object} fieldsToUpdate
+ */
+const updateSubscription = async (fieldsToUpdate) => {
+  try {
+    const { error, subscription } = await fetch('/api/payments/update-subscription', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(fieldsToUpdate),
+    }).then(r => r.json());
+    if (error) return { error };
+    // saveSubscription(subscription);
+    return { subscription };
+  } catch (error) {
+    console.log(error);
+    return { error }
+  }
+};
+
 const getActiveSubscription = (subscriptions) => {
   if (subscriptions && subscriptions.length > 0) {
     if (subscriptions.length > 1) {
@@ -57,6 +80,9 @@ const getPaymentMethodObject = (pm, source) => {
 }
 
 export {
+  // API calls
+  updateSubscription,
+
   getActiveSubscription,
   getPaymentMethodObject,
 };

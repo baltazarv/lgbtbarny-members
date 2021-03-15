@@ -21,7 +21,10 @@ import {
   getStripePriceId,
   getPaymentPayload,
 } from '../../../../utils/members/airtable/members-db';
-import { getPaymentMethodObject } from '../../../../utils/payments/stripe-utils';
+import {
+  getPaymentMethodObject,
+  updateSubscription,
+} from '../../../../utils/payments/stripe-utils';
 
 const PaymentForm = ({
   duesSummList,
@@ -47,8 +50,7 @@ const PaymentForm = ({
 
     // attorney stripe plan
     createSubscription,
-    updateSubscription,
-    saveSubscription,
+    saveNewSubscription,
     getSubscription,
     // save payment method info
     setDefaultCard,
@@ -127,7 +129,7 @@ const PaymentForm = ({
   // create payment >> add invoice id to payment
   const onSuccess = async (subscription) => {
     setPaymentSuccessful(true); // hide form
-    saveSubscription(subscription);
+    saveNewSubscription(subscription);
 
     // when expand subscription get latest_invoice object, including latest_invoice.id, otherwise, latest_invoice is id
     const stripeInvoiceId = subscription.latest_invoice.id || subscription.latest_invoice;
@@ -301,11 +303,13 @@ const PaymentForm = ({
       const updatedSubResult = await updateSubscription({
         subcriptionId: subscription.id,
         collectionMethod,
-      }); //-> saveSubscription
+      });
       if (updatedSubResult.error) {
         console.log(updatedSubResult.error.message);
         // setStripeError(`Collection method was not updated.`);
         return;
+      } else {
+        saveNewSubscription(updatedSubResult.subscription);
       }
       subscription = updatedSubResult.subscription;
     }

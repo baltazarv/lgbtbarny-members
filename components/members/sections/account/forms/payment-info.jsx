@@ -34,7 +34,10 @@ import {
   getNextPaymentDate,
   getMemberPlanFee,
 } from '../../../../../utils/members/airtable/members-db';
-import { getActiveSubscription } from '../../../../../utils/payments/stripe-utils';
+import {
+  getActiveSubscription,
+  updateSubscription,
+} from '../../../../../utils/payments/stripe-utils';
 
 const { Link } = Typography;
 
@@ -43,7 +46,14 @@ const PaymentInfo = ({
   setLoading,
   editing,
 }) => {
-  const { member, userPayments, memberPlans, updateSubscription, subscriptions, defaultCard } = useContext(MembersContext);
+  const {
+    member,
+    userPayments,
+    memberPlans,
+    subscriptions,
+    saveNewSubscription,
+    defaultCard,
+  } = useContext(MembersContext);
   // forms
   const [collectMethodForm] = Form.useForm();
 
@@ -116,6 +126,8 @@ const PaymentInfo = ({
     if (updatedSubResult.error) {
       console.log(updatedSubResult.error.message);
       return;
+    } else {
+      saveNewSubscription(updatedSubResult.subscription);
     }
     setLoading(false);
     setCollectMethodModalVisible(false);
@@ -166,6 +178,8 @@ const PaymentInfo = ({
       console.log(updatedSubResult.error.message);
       setLoading(false);
       return;
+    } else {
+      saveNewSubscription(updatedSubResult.subscription);
     }
     setLoading(false);
     setCancelModalVisible(false);

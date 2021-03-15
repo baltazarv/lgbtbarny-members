@@ -12,7 +12,11 @@ import { ACCOUNT_FORMS } from '../../../../../data/members/member-form-names';
 import { dbFields } from '../../../../../data/members/airtable/airtable-fields';
 import { PAYMENT_FIELDS } from '../../../../../data/payments/payment-fields';
 // utils
-import { getActiveSubscription, getPaymentMethodObject } from '../../../../../utils/payments/stripe-utils';
+import {
+  getActiveSubscription,
+  getPaymentMethodObject,
+  updateSubscription,
+} from '../../../../../utils/payments/stripe-utils';
 
 const UpdateCardForm = ({
   onDone,
@@ -29,7 +33,7 @@ const UpdateCardForm = ({
     updateCustomer,
     // update default card for subscription
     subscriptions,
-    updateSubscription,
+    saveNewSubscription,
     // update payment method
     setDefaultCard,
   } = useContext(MembersContext);
@@ -122,20 +126,18 @@ const UpdateCardForm = ({
 
     // also update subscription with attached default payment method
 
-    const subsUpdResp = await updateSubscription({
+    const updatedSubResult = await updateSubscription({
       subcriptionId: activeSubscription.id,
       defaultPaymentMethod: paymentMethod.id,
-    })
-
-    const subsUpdErr = subsUpdResp.error;
-    if (subsUpdErr) {
-      setStripeError(subsUpdErr);
+    });
+    if (updatedSubResult.error) {
+      setStripeError(updatedSubResult.error);
       setLoading(false);
       cardElement.update({ disabled: false });
       return;
     }
-
-    const { subscription } = subsUpdResp;
+    const { subscription } = updatedSubResult;
+    saveNewSubscription(subscription);
 
     setStripeSuccess('Your credit card has been updated.');
 

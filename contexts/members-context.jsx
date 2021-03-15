@@ -194,31 +194,10 @@ const MembersProvider = ({ children }) => {
   }
 
   /**
-   * Update for (1) collection method or (2) price
-   * @param {Object} fieldsToUpdate
+   * Given a new subscription, check that it's new &
+   * add to local state
    */
-  const updateSubscription = async (fieldsToUpdate) => {
-    try {
-      // get
-      const { error, subscription } = await fetch('/api/payments/update-subscription', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(fieldsToUpdate),
-      }).then(r => r.json());
-      if (error) return { error };
-      saveSubscription(subscription);
-      return { subscription };
-    } catch (error) {
-      console.log(error);
-      return { error }
-    }
-  };
-
-  /**
-   * save subscription to local var
-   * @param {object} subscription - stripe subscription object
-   */
-  const saveSubscription = (subscription) => {
+  const saveNewSubscription = (subscription) => {
     if (subscriptions && subscriptions.length && subscriptions.length > 0) {
       let subs = [];
       // in case subscription has already been added
@@ -233,8 +212,10 @@ const MembersProvider = ({ children }) => {
         subs.push(subscription);
       }
       setSubscriptions(subs);
+      return { subscriptions: subs };
     } else {
       setSubscriptions([subscription]);
+      return { subscriptions: [subscription] };
     }
   };
 
@@ -276,10 +257,9 @@ const MembersProvider = ({ children }) => {
     subscriptions, setSubscriptions,
     // functions
     getNewPaymentState,
+    saveNewSubscription,
     createSubscription,
     getSubscription,
-    updateSubscription,
-    saveSubscription,
 
     // Stripe customers
     updateCustomer,
