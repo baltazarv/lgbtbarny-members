@@ -17,6 +17,9 @@ import {
   getPaymentMethodObject,
   updateSubscription,
 } from '../../../../../utils/payments/stripe-utils';
+import {
+  getPrimaryEmail,
+} from '../../../../../utils/members/airtable/members-db';
 
 const UpdateCardForm = ({
   onDone,
@@ -46,12 +49,7 @@ const UpdateCardForm = ({
   }
 
   const primaryEmail = useMemo(() => {
-    let primary = '';
-    if (userEmails) {
-      const emailFound = userEmails.find((email) => email.fields[dbFields.emails.primary]);
-      if (emailFound) primary = emailFound.fields[dbFields.emails.address];
-    }
-    return primary;
+    return getPrimaryEmail(userEmails);
   }, [userEmails]);
 
   const customerId = useMemo(() => {

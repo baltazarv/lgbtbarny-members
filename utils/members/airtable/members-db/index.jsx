@@ -31,6 +31,11 @@ import {
   getPaymentIsDiscounted,
 } from './payments-table-utils';
 
+// emails
+import {
+  getPrimaryEmail,
+} from './emails-table-utils';
+
 export {
   // members
   updateMember,
@@ -52,4 +57,7 @@ export {
   getNextPaymentDate,
   getPaymentPayload,
   getPaymentIsDiscounted,
+
+  // emails
+  getPrimaryEmail,
 };

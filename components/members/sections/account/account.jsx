@@ -30,6 +30,7 @@ import {
   updateMember,
   getStripePriceId,
   getMemberStatus,
+  getPrimaryEmail,
 } from '../../../../utils/members/airtable/members-db';
 import { getActiveSubscription } from '../../../../utils/payments/stripe-utils';
 import { getFullName } from '../../../../utils/members/airtable/members-db/members-table-utils';
@@ -164,39 +165,39 @@ const Account = ({
     return null;
   }, [userEmails]);
 
-  const primaryEmails = useMemo(() => {
-    if (userEmails) {
-      return userEmails.reduce((acc, cur) => {
-        if (cur?.fields[dbFields.emails.primary]) acc.push(cur.id);
-        return acc;
-      }, []);
-    }
-    return null;
+  const primaryEmail = useMemo(() => {
+    return getPrimaryEmail(userEmails);
   }, [userEmails]);
 
-  useEffect(() => {
-    if (primaryEmails) setEmailTableSelectedRowKeys(primaryEmails);
-  }, [primaryEmails]);
+  /**
+   * Selected row keys = primary email
+   */
+
+  const selectedRowKeys = useMemo(() => {
+    return [primaryEmail];
+  }, [primaryEmail]);
 
   useEffect(() => {
-    // if (emailTableDataSource) {
+    if (selectedRowKeys) setEmailTableSelectedRowKeys(selectedRowKeys);
+  }, [selectedRowKeys]);
+
+  useEffect(() => {
     setEmailTableValues({
       dataSource: emailTableDataSource,
       selectedRowKeys: emailTableSelectedRowKeys,
       setSelectedRowKeys: setEmailTableSelectedRowKeys,
     })
-    // }
   }, [emailTableDataSource, emailTableSelectedRowKeys]);
 
   const resetEmailTableData = () => {
-    setEmailTableSelectedRowKeys(primaryEmails);
+    setEmailTableSelectedRowKeys(selectedRowKeys);
   }
 
   const changePrimaryEmail = async (newPrimaryEmail) => {
     const emailUpdate = Object.assign({}, { ...newPrimaryEmail });
     let emails = [
       { id: emailUpdate.key, fields: { primary: true } },
-      { id: primaryEmails[0], fields: { primary: false } }
+      { id: primaryEmail, fields: { primary: false } }
     ];
     // console.log('changePrimaryEmail', emails);
     const updatedEmails = await updateEmails(emails);
@@ -300,6 +301,7 @@ const Account = ({
           memberType={memberType}
           onLink={onLink}
           loading={loading}
+          setLoading={setLoading}
         />
       </div>
 

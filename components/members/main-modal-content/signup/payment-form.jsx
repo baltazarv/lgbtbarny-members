@@ -20,6 +20,7 @@ import {
   addPayment,
   getStripePriceId,
   getPaymentPayload,
+  getPrimaryEmail,
 } from '../../../../utils/members/airtable/members-db';
 import {
   getPaymentMethodObject,
@@ -114,16 +115,7 @@ const PaymentForm = ({
   }, [authUser]);
 
   const primaryEmail = useMemo(() => {
-    let primary = '';
-    if (userEmails) {
-      const emailFound = userEmails.find((email) => email.fields[dbFields.emails.primary]);
-      if (emailFound) {
-        primary = emailFound.fields[dbFields.emails.address];
-      } else {
-        primary = loggedInEmail;
-      }
-    }
-    return primary;
+    return getPrimaryEmail(userEmails);
   }, [userEmails]);
 
   // create payment >> add invoice id to payment

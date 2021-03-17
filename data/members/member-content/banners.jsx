@@ -27,7 +27,7 @@ const banners = (type, onLink) => {
   />;
   if (type === 'membership') return <Banner
     title="Become a member"
-    text={<span>If you are an attorney or law student <Button ghost size="small" style={{ color: '#9e1068', borderColor: '#9e1068' }} onClick={() => onLink('signup')}>become a member</Button> of the Association...</span>}
+    text={<span>If you are an attorney or law student <Button ghost size="small" style={{ color: '#9e1068', borderColor: '#9e1068' }} onClick={() => onLink('signup')}>become a member</Button> of the Association.</span>}
     colors={{ backgroundColor: '#f9f0ff', color: '#9e1068' }} // magenta
   />;
   if (type === 'lawnotes') return <Banner

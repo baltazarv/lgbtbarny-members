@@ -3,9 +3,6 @@ export const dbFields = {
   /** `members` base */
   // members base: members table
   members: {
-    emails: 'emails',
-    stripeId: 'stripe_id',
-
     // // calculating on this app instead
     // type: '_payment_last_type',
     // paymentLast: '_payment_last_date',
@@ -13,6 +10,7 @@ export const dbFields = {
 
     firstName: 'first_name',
     lastName: 'last_name',
+    emails: 'emails',
     certify: 'certify',
     salary: 'salary',
     employer: 'employer',
@@ -26,6 +24,7 @@ export const dbFields = {
     sexGender: 'sex_gender',
     specialAccom: 'special_accom',
     howFound: 'how_found',
+    stripeId: 'stripe_id',
     lastLoggedIn: '_last_logged_in',
     valueLists: {
       // salaries: [],

@@ -226,7 +226,7 @@ const Signup = ({
     return false;
   }, [memberSignUpType, certifyChoice]);
 
-  const showLawNotesOffer = useMemo(() => {
+  const showNewsletterSignup = useMemo(() => {
     if (certifyChoice === CERTIFY_OPTIONS.na.label) return true;
     return false;
   });
@@ -587,11 +587,11 @@ const Signup = ({
         {/* step content */}
         <div className="steps-content">{steps[step].content}</div>
 
-        {showLawNotesOffer && <>
-          <Divider>Law Notes&nbsp;&nbsp;<TitleIcon name="bookmark" ariaLabel="LGBT Law Notes" /></Divider>
-          <p>If you are not a legal professional, you can still sign up for access to our monthly publication, <strong>LGBT Law Notes</strong>:</p>
+        {showNewsletterSignup && <>
+          <Divider>Newsletter&nbsp;&nbsp;<TitleIcon name="email" ariaLabel="Newsletter Sign-up" /></Divider>
+          {/* <p>Sign up for the <strong>newsletter</strong>:</p> */}
           <div>
-            <Button type="primary" size="small" ghost onClick={() => setModalType('law-notes-subscribe')}>Subscribe to Law Notes</Button>
+            <Button type="primary" size="small" ghost onClick={() => setModalType('newsletter')}>Subscribe to the Newsletter</Button>
           </div>
         </>}
         {isServerError && <div className="text-danger">There was a server error. Please try again later.</div>}

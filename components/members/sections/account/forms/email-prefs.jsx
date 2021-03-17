@@ -1,11 +1,13 @@
-import { useState, useMemo, useContext } from 'react';
-import { Card, Typography, Switch, Row, Col, Button } from 'antd';
+import { useState, useMemo, useContext, useEffect } from 'react';
+import { Card, Typography, Switch, Row, Col, Button, message } from 'antd';
 // data
-import { dbFields } from '../../../../../data/members/airtable/airtable-fields';
-import { getAccountIsActive } from '../../../../../utils/members/airtable/members-db';
 import { MembersContext } from '../../../../../contexts/members-context';
 import * as memberTypes from '../../../../../data/members/member-types';
-import { useEffect } from 'react';
+import { sibLists, getAllSibListIndexes } from '../../../../../data/emails/sendinblue-fields';
+// utils
+import { getAccountIsActive } from '../../../../../utils/members/airtable/members-db';
+import { getPrimaryEmail } from '../../../../../utils/members/airtable/members-db';
+import { getMailListsSubscribed, updateContact } from '../../../../../utils/emails/sendinblue-utils';
 
 const { Link } = Typography;
 
@@ -14,12 +16,16 @@ const EmailPrefs = ({
   memberType,
   onLink,
   loading,
+  setLoading,
 }) => {
   const { member, userEmails, userPayments, memberPlans } = useContext(MembersContext);
 
-  const [newsletterChecked, setNewsletterChecked] = useState(true);
-  const [memberEmailChecked, setMemberEmailChecked] = useState(true);
-  const [lawNotesChecked, setLawNotesChecked] = useState(true);
+  // set default list states when load
+  const [mailListsSubscribed, setMailListsSubscribed] = useState(null);
+
+  const [newsletterChecked, setNewsletterChecked] = useState(false);
+  const [memberEmailChecked, setMemberEmailChecked] = useState(false);
+  const [lawNotesChecked, setLawNotesChecked] = useState(false);
 
   const accountIsActive = useMemo(() => {
     return getAccountIsActive({
@@ -29,20 +35,45 @@ const EmailPrefs = ({
     });
   }, [userPayments, memberPlans, member]);
 
-  // get email address confirmed for email comm
-  const newsletterEmail = useMemo(() => {
-    // prototype sample data
-    if (userEmails && userEmails.length > 0) {
-      let newsletterEmail = userEmails[0].fields[dbFields.emails.address];
-      userEmails.forEach(email => {
-        if (email.fields[dbFields.emails.primary]) newsletterEmail = email.fields[dbFields.emails.address];
-      });
-      return newsletterEmail;
-    }
-    return '';
-  }, [member, userEmails]);
+  const primaryEmail = useMemo(() => {
+    return getPrimaryEmail(userEmails);
+  }, [userEmails]);
 
-  // check/uncheck newsletter types
+  // get subscribed mailing lists from email svs provider
+  useEffect(() => {
+    (async () => {
+      const lists = await getMailListsSubscribed(primaryEmail);
+      // if list is [] getMailListsSubscribed returns null
+      if (lists) setMailListsSubscribed(lists);
+    })();
+  }, [primaryEmail]);
+
+  /**
+   * Toggle lists according to email svs provider settings.
+   *
+   * mailListsSubscribed changes when:
+   * * primary email changes.
+   * * TODO: user manually changes settings.
+   */
+  //
+  //
+  useEffect(() => {
+    if (mailListsSubscribed) {
+      mailListsSubscribed.forEach((listValue) => {
+        for (const key in sibLists) {
+          if (listValue === key) {
+            if (listValue === 'newsletter') setNewsletterChecked(true);
+            if (listValue === 'members') setMemberEmailChecked(true);
+            if (listValue === 'lawNotes') setLawNotesChecked(true);
+          }
+        }
+      });
+    }
+  }, [mailListsSubscribed]);
+
+  /**
+   * check/uncheck newsletter types
+   */
 
   // uncheck emails non-members not eligible for
   useEffect(() => {
@@ -56,17 +87,66 @@ const EmailPrefs = ({
     return (newsletterChecked && memberEmailChecked && lawNotesChecked);
   };
 
-  const toggleNewsletters = (bool) => {
+  const onToggleMailing = async (type, checked) => {
+    message.loading('Saving settings...', 3);
+    setLoading(true);
+    if (type === 'newsletter') setNewsletterChecked(checked);
+    if (type === 'members') setMemberEmailChecked(checked);
+    if (type === 'lawNotes') setLawNotesChecked(checked);
+
+    // change on emails svs provider
+    if (checked) {
+      // console.log('listIds =>', sibLists[type]);
+      await updateContact({
+        email: primaryEmail,
+        listIds: [ sibLists[type] ],
+      });
+      setLoading(false);
+      message.success('Mailing list settings updated.');
+    }
+    if (!checked) {
+      // console.log('unlinkListIds =>', sibLists[type]);
+      await updateContact({
+        email: primaryEmail,
+        unlinkListIds: [ sibLists[type] ],
+      });
+      setLoading(false);
+      message.success('Mailing list settings updated.');
+    }
+  }
+
+  const toggleMailings = async (bool) => {
+    message.loading('Saving settings...', 3);
+    setLoading(true);
     setNewsletterChecked(bool);
     setMemberEmailChecked(bool);
     setLawNotesChecked(bool);
+
+    if (bool) {
+      console.log('listIds =>', getAllSibListIndexes());
+      await updateContact({
+        email: primaryEmail,
+        listIds: getAllSibListIndexes(),
+      });
+      setLoading(false);
+      message.success('Mailing list settings updated.');
+    }
+    if (!bool) {
+      console.log('unlinkListIds =>', getAllSibListIndexes());
+      await updateContact({
+        email: primaryEmail,
+        unlinkListIds: getAllSibListIndexes(),
+      });
+      setLoading(false);
+      message.success('Mailing list settings updated.');
+    }
   };
 
   const checkLink = useMemo(() => {
     if (memberType !== memberTypes.USER_NON_MEMBER && accountIsActive) {
       return <span>{areAllChecked()
-        ? <Link onClick={() => toggleNewsletters(false)}>Uncheck all</Link>
-        : <Link onClick={() => toggleNewsletters(true)}>Check all</Link>
+        ? <Link onClick={() => toggleMailings(false)}>Uncheck all</Link>
+        : <Link onClick={() => toggleMailings(true)}>Check all</Link>
       }</span>;
     }
     return null;
@@ -80,21 +160,26 @@ const EmailPrefs = ({
     >
       <div>Choose the type of emails that you would like to receive:</div>
 
+      {/* Newsletter */}
       <div className="mt-2">
         <Switch
+          key="newsletter-switch"
           checked={newsletterChecked}
-          onChange={(checked) => setNewsletterChecked(checked)}
+          onChange={(checked) => onToggleMailing('newsletter', checked)}
+          loading={loading}
           size="small"
         />&nbsp;&nbsp;<strong>LGBT Bar Newsletter emails</strong>, including Pride and Advocacy emails
       </div>
 
+      {/* Members List */}
       <div className="mt-2">
         <Row justify="space-between">
           <Col>
             <Switch
               checked={memberEmailChecked}
-              onClick={(checked) => setMemberEmailChecked(checked)}
+              onClick={(checked) => onToggleMailing('members', checked)}
               disabled={(memberType === memberTypes.USER_NON_MEMBER || !accountIsActive) && true}
+              loading={loading}
               size="small"
             />&nbsp;&nbsp;<strong>Association Member emails</strong>
           </Col>
@@ -107,13 +192,15 @@ const EmailPrefs = ({
         </Row>
       </div>
 
+      {/* Law Notes */}
       <div className="mt-2">
         <Row justify="space-between">
           <Col>
             <Switch
               checked={lawNotesChecked}
-              onClick={(checked) => setLawNotesChecked(checked)}
+              onClick={(checked) => onToggleMailing('lawNotes', checked)}
               disabled={(memberType === memberTypes.USER_NON_MEMBER || !accountIsActive) && true}
+              loading={loading}
               size="small"
             />&nbsp;&nbsp;<strong>Law Notes emails:</strong> magazine &amp; podcast
           </Col>
@@ -136,8 +223,8 @@ const EmailPrefs = ({
         </ul>
       </div>
 
-      <div className="mt-4">{newsletterEmail
-        ? <span>We will email you at <strong>{newsletterEmail}</strong>. </span>
+      <div className="mt-4">{primaryEmail
+        ? <span>We will email you at <strong>{primaryEmail}</strong>. </span>
         : ''
       }To update <strong>email address</strong>, edit in <a href="#edit-emails">Email</a> section above.</div>
 

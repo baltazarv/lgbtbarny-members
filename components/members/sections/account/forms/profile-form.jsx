@@ -139,7 +139,7 @@ const ProfileForm = ({
         <div style={{ fontSize: 16 }}>{member?.fields[dbFields.members.firstName]} {member?.fields[dbFields.members.lastName]}</div>
       }
     </>
-  }, [editing, member.fields]);
+  }, [editing, member]);
 
   return <>
     {introMessage}

@@ -12,6 +12,7 @@ import LockPaths from '../../assets/svgs/lock-closed-svg-paths.jsx';
 import EmailPaths from '../../assets/svgs/email-svg-paths.jsx';
 import RibbonPaths from '../../assets/svgs/ribbon-svg-paths.jsx';
 import ModalWindowPaths from '../../assets/svgs/modal-window-svg-paths';
+import NewsletterPaths from '../../assets/svgs/newsletter-svg-paths';
 
 import DownloadPaths from '../../assets/svgs/download-svg-paths.jsx';
 import UserAdminPaths from '../../assets/svgs/user-admin-svg-paths.jsx';
@@ -70,6 +71,8 @@ const getPath = (name, props) => {
     // cle
     case 'ribbon':
       return <RibbonPaths {...props} />;
+    case 'newsletter':
+      return <NewsletterPaths {...props} />;
 
     // not used
     case 'border':

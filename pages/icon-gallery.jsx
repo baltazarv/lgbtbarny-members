@@ -23,6 +23,30 @@ s  >
     <div style={{}}>{name}</div>
   </div>;
 };
+const createNewsletter = (name) => {
+  const size = '2em';
+  return <div
+    style={{
+      width: '4em',
+      textAlign: 'center',
+      display: 'inline-block',
+      margin: '1em',
+    }}
+s  >
+    <div>
+      <span role="img" aria-label={name} className="anticon">
+        <SvgIcon
+          name={name}
+          width={size}
+          height={size}
+          fill="black"
+          viewBox="0 0 512 512"
+        />
+      </span>
+    </div>
+    <div style={{}}>{name}</div>
+  </div>;
+};
 
 const IconGallery = () => {
   return <>
@@ -48,6 +72,7 @@ const IconGallery = () => {
     {createIcon('delegate')}
     {createIcon('gift')}
     {createIcon('people-group')}
+    {createNewsletter('newsletter')}
   </>;
 };
 

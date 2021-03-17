@@ -1,7 +1,6 @@
 // functions also used on back-end
 import moment from 'moment';
 
-
 /** API calls */
 
 /**
