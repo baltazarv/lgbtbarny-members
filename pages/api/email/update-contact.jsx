@@ -38,6 +38,6 @@ export default async (req, res) => {
   } catch (error) {
     console.log('sendin blue error', error);
     const status = error.status || '400';
-    return res.status(error.status).send({ error: error.response.text });
+    return res.status(status).send({ error: error.response.body });
   }
 }

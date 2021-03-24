@@ -4,17 +4,46 @@ import { sibLists } from '../../data/emails/sendinblue-fields';
 
 const getContactInfo = async (email) => {
   try {
-    const res = await fetch('/api/email/get-contact-info', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(email),
-    });
-    const info = await res.json();
-    return { contact: info.contact };
+    if (email) {
+      const res = await fetch('/api/email/get-contact-info', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(email),
+      });
+      const { contact, error } = await res.json();
+      if (error) return { error };
+      return { contact };
+    } else {
+      const error = 'Email param is not defined.';
+      console.log({ error });
+      return { error };
+    }
   } catch (error) {
     console.log({ error });
+    return error;
   }
 }
+
+/**
+ *
+ * @param {object} payload | with attributes
+ * email - required
+ * listIds, firstname, lastname - optional
+ */
+const createContact = async (payload) => {
+  try {
+    const res = await fetch('/api/email/create-contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const resJson = await res.json();
+    return resJson; // { contact: { id } }
+  } catch (error) {
+    console.log(error);
+    return { error };
+  }
+};
 
 /**
  * Calls SendinBlue API endpoint
@@ -37,10 +66,10 @@ const updateContact = async (payload) => {
 
 const getMailListsSubscribed = async (primaryEmail) => {
   if (primaryEmail) {
-    const infoGot = await getContactInfo(primaryEmail);
-    if (infoGot.error) return null;
-    if (infoGot.contact) {
-      const lists = infoGot.contact.listIds;
+    const { contact, error } = await getContactInfo(primaryEmail);
+    if (error) return null;
+    if (contact) {
+      const lists = contact.listIds;
       if (lists.length > 0) {
         const mailLists = lists.map((list) => {
           for (const key in sibLists) {
@@ -62,6 +91,7 @@ const getMailListsSubscribed = async (primaryEmail) => {
 export {
   // API calls
   getContactInfo,
+  createContact,
   updateContact,
 
   getMailListsSubscribed,

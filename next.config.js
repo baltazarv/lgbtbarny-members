@@ -36,6 +36,9 @@ const plugins = [
           ...(typeof origExternals[0] === 'function' ? [] : origExternals),
         ];
 
+        // may be required to use sib-api-v3-sdk and avoid `Error Module not found`
+        // config.module.rules.push({ parser: { amd: false } });
+
         config.module.rules.unshift({
           test: antStyles,
           use: 'null-loader',

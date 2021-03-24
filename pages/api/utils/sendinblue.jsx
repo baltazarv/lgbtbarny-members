@@ -8,13 +8,17 @@ apiKey.apiKey = process.env.SIB_API_KEY;
 
 // apiInstance
 const sibContactsApi = SibApiV3Sdk.ContactsApi;
-// updateContact
+// create contact
+const sibCreateContact = SibApiV3Sdk.CreateContact;
+// update contact
 const sibUpdateContact = SibApiV3Sdk.UpdateContact;
 
 // API must create a new instance of the following
 export {
   // get-contact-info, update-contact
   sibContactsApi,
-  // update-contact
+  // create contact
+  sibCreateContact,
+  // update contact
   sibUpdateContact,
 }

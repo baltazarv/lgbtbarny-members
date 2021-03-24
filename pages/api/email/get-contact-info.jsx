@@ -10,6 +10,9 @@ export default async (req, res) => {
     const contact = await contactApi.getContactInfo(email);
     return res.status('200').send({ contact });
   } catch (error) {
-    return res.status('402').send({ error: { message: error.message } });
+    const status = error.status || '400';
+    const errorBody = { error: error.response.body };
+    console.log('get-contact-info err', errorBody)
+    return res.status(status).send(errorBody);
   }
 }

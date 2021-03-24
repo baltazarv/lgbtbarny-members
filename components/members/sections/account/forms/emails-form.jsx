@@ -1,4 +1,4 @@
-// TODO: rename emails-table
+// TODO: rename emails-table or email-addresses
 /**
  * Intermediary `AccountItem` with render props between this component and `Accounts` component.
  *
@@ -122,13 +122,22 @@ const EmailsForm = ({
     return null;
   }, [editing, values]);
 
-  const verifiedEmailColRender = (text) => text ? <Tooltip title="You have logged into your account using this email address.">
-    <Tag style={{
-      backgroundColor: 'white',
-      borderStyle: 'dashed',
-      // borderColor: '#389e0d',
-    }} className="text-success">Verified</Tag>
-  </Tooltip> : '';
+  const verifiedEmailColRender = (text) => {
+    // if text empty not verified
+    let tag = null;
+    if (text) {
+      tag = <Tag style={{
+        backgroundColor: 'white',
+        borderStyle: 'dashed',
+        // borderColor: '#389e0d',
+      }} className="text-success">Verified</Tag>
+    } else {
+      tag = <Tag style={{ borderStyle: 'dashed' }}>Not Verified</Tag>
+    }
+    return <Tooltip title="You have logged into your account using this email address.">
+      {tag}
+    </Tooltip>;
+  }
 
   const deleteButton = (text, record, index) => {
     if (record.primary || record.email === loggedInEmail) return '';
@@ -190,6 +199,7 @@ const EmailsForm = ({
         render: verifiedEmailColRender,
         defaultSortOrder: 'ascend',
         width: 100,
+        align: 'center',
         sorter: (a, b) => {
           if (a.verified && !b.verified) return -1;
           if (!a.verified && b.verified) return 1;
@@ -228,7 +238,7 @@ const EmailsForm = ({
     <Form
       form={form}
       scrollToFirstError
-      >
+    >
       <Form.Item
         name={dbFields.emails.address}
         label={null}
