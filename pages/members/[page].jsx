@@ -507,7 +507,11 @@ const Members = ({
 
   const openModal = (type) => {
     let _type = type;
-    if (!member || !authUser) _type = 'login';
+    if ((!member || !authUser) &&
+      type !== 'newsletter'
+    ) {
+      _type = 'login';
+    }
     setModalType(_type);
     setModalVisible(true);
   }

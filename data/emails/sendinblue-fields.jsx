@@ -2,6 +2,7 @@ const sibFields = {
   contacts: {
     listIds: "listIds",
     unlinkListIds: "unlinkListIds",
+    emailBlacklisted: "emailBlacklisted",
     attributes: {
       name: 'name',
       firstname: 'firstname',

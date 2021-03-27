@@ -1,30 +1,43 @@
-// TODO: move to components/newsletter-form
 import { useMemo, useState, useContext, useEffect } from 'react';
-import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { Card, Form, Input, Button, List, Divider } from 'antd';
 import { Container } from 'react-bootstrap';
 import { UserOutlined, MailOutlined } from '@ant-design/icons';
-import { TitleIcon } from '../../elements/icon';
+import { TitleIcon } from './elements/icon';
 // data
-import { MembersContext } from '../../../contexts/members-context';
-import { dbFields } from '../../../data/members/airtable/airtable-fields';
-import { sibLists } from '../../../data/emails/sendinblue-fields';
+import { MembersContext } from '../contexts/members-context';
+import { dbFields } from '../data/members/airtable/airtable-fields';
+import { sibFields, sibLists } from '../data/emails/sendinblue-fields';
 // utils
-import { getPrimaryEmail } from '../../../utils/members/airtable/members-db';
-import { getSession, getLoggedInEmail } from '../../../utils/auth';
-import { getContactInfo, createContact } from '../../../utils/emails/sendinblue-utils';
-import './login-signup.less';
+import { getPrimaryEmail } from '../utils/members/airtable/members-db';
+import { getSession, getLoggedInEmail } from '../utils/auth';
+import { getContactInfo, createContact, updateContact } from '../utils/emails/sendinblue-utils';
+import './members/main-modal-content/login-signup.less';
 
 const NewsletterForm = ({
   // loading,
 }) => {
-  const router = useRouter();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const { member, userEmails, authUser, setAuthUser } = useContext(MembersContext);
-  const [emailExists, setEmailExists] = useState(null);
-  const [error, setError] = useState(false);
+  // SendinBlue contact info
+  const [sibContact, setSibContact] = useState(null);
+  // error types
+  const [submitError, setSubmitError] = useState('');
+  // confirmation message after submission
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const ERR_EMAIL_EXISTS = 'emailExists';
+
+  const ERR_NOT_ON_LIST = 'emailNotOnList';
+
+  const ERR_EMAIL_UNSUBSCRIBED = 'emailUnsubscribed';
+
+  const ERROR_MESSAGES = {
+    emailExists: <>The email you entered is already subscribed to the Newsletter. <Link href="/api/auth/login">Login</Link> to update your email preferences.</>,
+    emailNotOnList: <>The email you entered is in the system, but is not subscribed to the newsletter.</>,
+    emailUnsubscribed: <>The email <strong>{form.getFieldValue(dbFields.emails.address) && form.getFieldValue(dbFields.emails.address)}</strong> has been unsubscribed from all mailings. Re-subscribe to the newsletter?</>,
+  }
 
   useEffect(() => {
     (async function fetchSession() {
@@ -48,22 +61,44 @@ const NewsletterForm = ({
   }, [userEmails])
 
   const onValuesChange = (changedValues, allValues) => {
-    console.log('address', changedValues['address'], 'v', emailExists);
-    if (changedValues['address'] === emailExists) {
-      setError(false);
-    } else {
-      setError(true);
+    setLoading(false);
+    if (sibContact) {
+      if (changedValues['address'] === sibContact.email) {
+        setSubmitError('');
+      } else {
+        setSubmitError(ERR_EMAIL_EXISTS);
+      }
     }
   }
 
   const onFinish = async (values) => {
+    // after error change submit func to `updateSubscription`
+    if (submitError) {
+      return;
+    }
+
+    // if no previous error
+
     setLoading(true);
     const email = form.getFieldValue(dbFields.emails.address);
     const { contact, error } = await getContactInfo(email);
+
+    console.log('CONTACT INFO', contact);
+    const newsletterListId = sibLists.newsletter;
     if (contact) {
-      setEmailExists(email);
-      setError(true);
-      console.log('contact', contact);
+      setSibContact(contact);
+
+      const subscribedToNewsletter = contact.listIds?.find((id) => id === newsletterListId);
+      console.log('newsletterListId', newsletterListId, 'contact.listIds', contact.listIds, 'subscribedToNewsletter', subscribedToNewsletter);
+
+      if (contact[sibFields.contacts.emailBlacklisted]) {
+        setSubmitError(ERR_EMAIL_UNSUBSCRIBED);
+      } else if (!subscribedToNewsletter) {
+        setSubmitError(ERR_NOT_ON_LIST);
+      } else {
+        setSubmitError(ERR_EMAIL_EXISTS);
+      }
+      // console.log('contact', contact);
     } else {
       const firstname = form.getFieldValue(dbFields.members.firstName);
       const lastname = form.getFieldValue(dbFields.members.lastName);
@@ -75,12 +110,29 @@ const NewsletterForm = ({
         firstname,
         lastname,
       }
-      console.log('PAYLOAD', payload)
       const { contact, error } = await createContact(payload);
       console.log('new contact', contact);
+      setIsSubmitted(true);
     }
     setLoading(false);
   };
+
+  const updateSubscription = async () => {
+    setLoading(true);
+    const newsletterListId = sibLists.newsletter;
+    const firstname = form.getFieldValue(dbFields.members.firstName);
+    const lastname = form.getFieldValue(dbFields.members.lastName);
+    const payload = {
+      email: sibContact.email,
+      [sibFields.contacts.emailBlacklisted]: false,
+      [sibFields.contacts.listIds]: [newsletterListId],
+      firstname,
+      lastname,
+    };
+    const { status, error } = await updateContact(payload);
+    setIsSubmitted(true);
+    setLoading(false);
+  }
 
   const title = useMemo(() => {
     let _title = 'Subscribe to the Newsletter';
@@ -90,8 +142,30 @@ const NewsletterForm = ({
     </div>
   }, []);
 
+  /** submit button with SendinBlue update function */
+
+  const getSubmitButton = () => {
+    let label = 'Subscribe to the Newsletter';
+    let submitFn = null;
+    if (submitError) {
+      submitFn = updateSubscription;
+      if (submitError === ERR_EMAIL_UNSUBSCRIBED) {
+        label = 'Re-subscribe to Newsletter';
+      }
+    }
+    return <Button
+      style={{ width: '100%' }}
+      type="primary"
+      htmlType="submit"
+      disabled={loading}
+      onClick={submitFn}
+    >
+      {label}
+    </Button>
+  }
+
   const newsletterForm = useMemo(() => {
-    if (!authUser) return <>
+    if (!authUser && !isSubmitted) return <>
       <Form
         labelCol={{
           xs: { span: 24 },
@@ -166,13 +240,15 @@ const NewsletterForm = ({
             prefix={<MailOutlined />}
             placeholder="Email Address"
             disabled={loading}
-            onChange={() => setError(false)}
+            onChange={() => setSubmitError('')}
           />
         </Form.Item>
 
-        {error && <div className="mt-3 ml-5">
+        {/* form error message */}
+
+        {submitError && <div className="mt-3 ml-5 pl-5">
           <p className="text-danger">
-            The email you entered is already subscribed to the Newsletter. <Link href="/api/auth/login">Login</Link> to update your email preferences.
+            {ERROR_MESSAGES[submitError]}
           </p>
         </div>
         }
@@ -190,17 +266,15 @@ const NewsletterForm = ({
             },
           }}
         >
-          <Button
-            style={{ width: '100%' }}
-            type="primary"
-            htmlType="submit"
-            disabled={loading}
-          >
-            Subscribe to the Newsletter
-            </Button>
+          {getSubmitButton()}
         </Form.Item>
       </Form>
+    </>;
+    return null;
+  }, [authUser, loading, isSubmitted, submitError]);
 
+  const memberLinks = useMemo(() => {
+    if (!authUser) return <>
       <Divider className="mb-0">Members</Divider>
 
       <div className="mb-2"><TitleIcon name="demographic" ariaLabel="Participate" />&nbsp;<TitleIcon name="bookmark" ariaLabel="LGBT Law Notes" />&nbsp;<TitleIcon name="government" ariaLabel="CLE Center" />&nbsp;<TitleIcon name="star" ariaLabel="Discounts" /></div>
@@ -211,12 +285,12 @@ const NewsletterForm = ({
         </p>
         <div>
           If you are a member <a href="/api/auth/login">login</a> to check out the new <strong>Members&nbsp;Dashboard</strong>.<br />
-          Email validation is the only requirement to login.
+          <span className="text-secondary">Email validation is the only requirement to login.</span>
         </div>
       </p>
     </>;
     return null;
-  }, [authUser, error, loading]);
+  }, [authUser, submitError, loading, isSubmitted]);
 
   const loggedInContent = useMemo(() => {
     if (loggedInEmail) return <>
@@ -249,6 +323,15 @@ const NewsletterForm = ({
     return null;
   }, [loggedInEmail]);
 
+  const submitMessage = useMemo(() => {
+    if (isSubmitted) return <div className="px-5">
+      <p className="text-success">
+        The email address <strong>{form.getFieldValue(dbFields.emails.address)}</strong> was added to the LGBT&nbsp;Bar&nbsp;of&nbsp;NY&nbsp;newsletter.
+    </p>
+    </div>
+  }, [isSubmitted]);
+
+
   return <>
     <Container
       className="login-signup"
@@ -256,11 +339,12 @@ const NewsletterForm = ({
     >
       <Card
         className="mt-3 mb-2 login-signup-card"
-        // style={style}
         title={title}
       >
-        {newsletterForm}
         {loggedInContent}
+        {submitMessage}
+        {newsletterForm}
+        {memberLinks}
       </Card>
     </Container>
   </>;

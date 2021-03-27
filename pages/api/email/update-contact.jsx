@@ -7,6 +7,7 @@ export default async (req, res) => {
     email,
     listIds,
     unlinkListIds,
+    emailBlacklisted,
     // attributes
     newEmail,
     firstname,
@@ -18,12 +19,13 @@ export default async (req, res) => {
     const updateContact = new sibUpdateContact();
     let attributes = {};
 
-    if (listIds) updateContact.listIds = listIds;
-    if (unlinkListIds) updateContact.unlinkListIds = unlinkListIds;
     if (newEmail) {
       attributes.email = newEmail;
       updateContact.attributes = attributes;
     }
+    if (listIds) updateContact.listIds = listIds;
+    if (unlinkListIds) updateContact.unlinkListIds = unlinkListIds;
+    if (emailBlacklisted !== null && emailBlacklisted !== undefined) updateContact.emailBlacklisted = emailBlacklisted;
     if (firstname) {
       attributes.firstname = firstname;
       updateContact.attributes = attributes;
@@ -34,7 +36,7 @@ export default async (req, res) => {
     }
 
     await contactsApi.updateContact(email, updateContact); // nothing returned
-    return res.status('200').send({ success: 'ok' });
+    return res.status('200').send({ status: 'success' });
   } catch (error) {
     console.log('sendin blue error', error);
     const status = error.status || '400';

@@ -57,8 +57,8 @@ const updateContact = async (payload) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
-    await res.json(); // nothing returned
-    // return { contact: info.contact };
+    const status = await res.json(); // status: 'ok'
+    return status;
   } catch (error) {
     console.log({ error });
   }

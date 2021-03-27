@@ -5,7 +5,7 @@ import LoginPwdLess from '../main-modal-content/login/login-pwdless';
 // deprecated for passwordless-login
 import LoginPassword from '../main-modal-content/login/login-password';
 import LawNotesSubscribe from '../main-modal-content/law-notes-subscribe';
-import NewsletterSignup from '../main-modal-content/newsletter-signup';
+import NewsletterSignup from '../../newsletter-form';
 
 const MemberModal = ({
   modalType,

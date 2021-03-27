@@ -1,6 +1,6 @@
 import { Layout } from 'antd';
 import MainLayout from '../components/layout/main-layout';
-import NewsletterSignup from '../components/members/main-modal-content/newsletter-signup';
+import NewsletterSignup from '../components/newsletter-form';
 
 const { Content } = Layout;
 
