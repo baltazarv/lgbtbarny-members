@@ -1,46 +1,49 @@
-import { useMemo, useContext } from 'react';
+import { useMemo, useContext, useEffect } from 'react';
 import moment from 'moment';
 import PdfTable from '../../../elements/pdf/pdf-table';
+import Spinner from '../../../elements/spinner';
 // data
 import { dbFields } from '../../../../data/members/airtable/airtable-fields';
 import { MembersContext } from '../../../../contexts/members-context';
+import { useCleCerts } from '../../../../utils/cles/cles-utils';
 
 const fakeCertUrl = '/pdfs/cle-certs/cle-generic-certificate.pdf';
 
-const CleCerts = ({
-  cles,
-}) => {
+const CleCerts = () => {
   const { member } = useContext(MembersContext);
+  const { certs, isLoading, isError } = useCleCerts();
 
   const clesAttended = useMemo(() => {
-    if (cles && member) {
-      return cles.reduce((acc, cur) => {
-        if (cur.fields[dbFields.cles.attended]) {
-          const attendedFound = cur.fields[dbFields.cles.attended].find(item => item === member.id);
-          if (attendedFound) acc.push(cur);
+    if (certs && member) {
+      return certs.reduce((acc, cur) => {
+        if (cur.fields.user[0] === member.id) {
+          acc.push(cur);
         }
         return acc;
       }, []);
     }
     return null;
-  }, [cles, member]);
+  }, [certs, member]);
 
   const dataTransformed = useMemo(() => {
     if (clesAttended) {
-      const trans = [...clesAttended].map((cle) => {
+      console.log('clesAttended', clesAttended);
+
+      const trans = [...clesAttended].map((cert) => {
         const cleItem = {
-          key: cle.id,
-          date: moment(cle.fields[dbFields.cles.date]).format('M/D/YYYY'),
-          title: cle.fields[dbFields.cles.title],
-          credits: cle.fields[dbFields.cles.creditsTotal],
-          url: fakeCertUrl,
+          key: cert.id,
+          date: moment(cert.fields[dbFields.cle_certs.date]).format('M/D/YYYY'),
+          title: cert.fields[dbFields.cle_certs.title],
+          credits: cert.fields[dbFields.cle_certs.creditsTotal],
+          url: cert.fields[dbFields.cle_certs.cert][0].url,
         };
         return cleItem;
       });
       return trans;
+
     }
     return null;
-  }, [cles, member]);
+  }, [certs, member]);
 
   const columns = useMemo(() => {
     return [
@@ -62,6 +65,8 @@ const CleCerts = ({
       },
     ];
   }, []);
+
+  isLoading && <Spinner loading={isLoading} />;
 
   return <>
     <p>View and download CLE course certificates, for which you have registered and attended.</p>

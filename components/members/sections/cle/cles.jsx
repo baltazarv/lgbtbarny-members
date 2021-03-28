@@ -1,5 +1,4 @@
-// could be CleMain
-import { Spin } from 'antd';
+import Spinner from '../../../elements/spinner';
 // utils
 import { useCles } from '../../../../utils/cles/cles-utils';
 
@@ -14,15 +13,7 @@ const Cles = ({
 
   const { cles, isLoading, isError } = useCles();
 
-  // Spinner while data is loading
-  isLoading && <div style={{
-    margin: '20px 0',
-    marginBottom: '20px',
-    marginLeft: '78px',
-    padding: '30px 50px',
-  }}>
-    <Spin size="large" />
-  </div>;
+  isLoading && <Spinner loading={isLoading} />;
 
   return <>
     {render({

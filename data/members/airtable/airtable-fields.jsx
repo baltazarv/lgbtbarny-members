@@ -109,6 +109,13 @@ export const dbFields = {
     creditsTotal: 'credits_total',
     attended: 'attended',
   },
+  // members base: cle_certs table
+  cle_certs: {
+    title: 'title',
+    date: 'date',
+    cert: 'cert',
+    creditsTotal: 'credits_total',
+  },
 
   /** `law notes` base */
   lawNotes: {

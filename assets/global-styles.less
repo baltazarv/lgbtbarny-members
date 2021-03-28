@@ -88,6 +88,11 @@ body {
   .tooltip-underline {
     border-bottom: 1px dotted;
   }
+
+  .footnote {
+    font-size: 0.9em;
+    line-height: 1 !important;
+  }
 } // @END body
 
 /**********************
@@ -117,11 +122,11 @@ body .jumbotron {
   }
 }
 
-// override link reboot
+// override link reboot // !important needed to override
 a,
 a:not([href]):not([tabindex]) {
-  text-decoration: underline;
-  color: @link-blue;
+  text-decoration: underline !important;
+  color: @link-blue !important;
 }
 
 label {

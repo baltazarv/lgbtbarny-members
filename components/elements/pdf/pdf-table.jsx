@@ -3,10 +3,7 @@
  * * wintitle - date/issue + title
  * * url - PDF URL, may be url to sample
  *
- * optional params:
- * * linked - type of col
  * * locked - cle non-sample titles
- * * excerpt - '[Excerpt]' added to end of title (not excerpt if registered or attended)
  */
 import { useState, useMemo } from 'react';
 import { Table, Button, Space, Tooltip, Typography } from 'antd';
@@ -77,7 +74,6 @@ const PdfTable = ({
         render: col.render ? col.render : (text, record) => {
           let _text = text;
           let activeStyle = col.style && { ...col.style } || {};
-          if (!record.excerpt) activeStyle.fontWeight = 'bold';
           if (searchedColumn === col.key) _text = highlightText(text);
           if (col.linkToPDF && !record.locked) {
             return <>
@@ -87,7 +83,7 @@ const PdfTable = ({
                 >
                   <span style={activeStyle}>{_text}</span>
                 </Link>
-              </Tooltip> {record.excerpt && ` [Excerpt]`}{record.sample && ' [Sample]'}
+              </Tooltip> {record.sample && ' [Sample]'}
             </>;
           }
           return <span style={activeStyle}>{_text}</span>;
@@ -100,7 +96,7 @@ const PdfTable = ({
       key: 'open',
       className: 'col-icon',
       render: (text, record) => {
-        if (record.locked) {
+        if (record.locked && !record.attended && !record.registered) {
           return <LockIcon />;
         } else {
           return <Space size="small">

@@ -1,4 +1,4 @@
-import { membersCleTable, minifyRecords } from '../utils/Airtable';
+import { membersCleTable, minifyRecords } from '../../utils/Airtable';
 
 export default async (req, res) => {
   try {

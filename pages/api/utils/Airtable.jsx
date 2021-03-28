@@ -9,6 +9,7 @@ let emailsTable = null;
 let paymentsTable = null;
 let plansTable = null;
 let membersCleTable = null;
+let membersCleCertsTable = null;
 
 // law notes table
 let lawNotesIssuesTable = null;
@@ -25,6 +26,7 @@ if (process.env.AIRTABLE_API_KEY) {
   paymentsTable = membersBase('payments');
   plansTable = membersBase('plans');
   membersCleTable = membersBase('cles');
+  membersCleCertsTable = membersBase('cle_certs');
 
   // const clesTable = cleBase('cles');
   // const creditsTable = cleBase('credits');
@@ -50,6 +52,7 @@ export {
   paymentsTable,
   plansTable,
   membersCleTable,
+  membersCleCertsTable,
 
   // cle db
   // clesTable,

@@ -65,7 +65,7 @@ const CleArchive = ({
           if (cle.fields.sample) {
             cleItem.sample = cle.fields.sample;
           } else {
-            cleItem.locked = true;
+            if (!cleItem.attended && !cleItem.registered) cleItem.locked = true;
           }
         }
 
@@ -94,12 +94,12 @@ const CleArchive = ({
     let text = null;
 
     const whatYouGetTxt = <>
-      See the below course materials exerpts, which include topics, agenda, speaker bios, and course credits for all courses. The <Link onClick={() => openSample()}>sample <em>Year in Review</em></Link> edition is available. Or see an excerpt of the materials for the <Link onClick={() => openCurrentCLE()}>latest CLE</Link> being offered.
+      See the list of all CLE courses &amp; course descriptions below. The <Link onClick={() => openSample()}><em>Year in Review</em></Link> edition is available as a free sample.
     </>;
 
-    const certTxt = <p>Courses with <CertIcon /> icon are ones which you have attended. Click the icon to view and download your certificate. Or view all <Link onClick={() => onLink('clecerts')}>certificates</Link> attained.</p>;
-
     const registeredText = <>You have registered for courses with the <ScheduleOutlined style={{ width: '1.6em', fontSize: '20px' }} /> icon.</>;
+
+    const certTxt = <p className="footnote">Courses with <CertIcon /> icon are ones which you have attended. Click the icon to view and download your certificate. Or view all <Link onClick={() => onLink('clecerts')}>certificates</Link> attained.</p>;
 
     if (memberType === memberTypes.USER_ANON) {
       if (previewUser === memberTypes.USER_NON_MEMBER) {
@@ -120,11 +120,17 @@ const CleArchive = ({
           <p>{whatYouGetTxt}</p>
         </>;
       }
-    } else if (memberType === memberTypes.USER_NON_MEMBER) {
+    } else if (memberType === memberTypes.USER_NON_MEMBER ||
+      memberStatus === 'expired' ||
+      memberStatus === 'graduated'
+    ) {
+      let buttonLabel = 'Become a member';
+      if (memberStatus === 'expired') buttonLabel = 'Renew your membership';
+      if (memberStatus === 'graduated') buttonLabel = 'Become an attorney member';
       text = <>
-        <p><Button type="primary" size="small" onClick={() => onLink('signup')}>Become a member</Button> to get access to all CLE materials, current materials as well as the archives.</p>
         <p>{whatYouGetTxt}</p>
-        <p>{registeredText} You can view the entire content for the materials or all courses that you have signed up for.</p>
+        <p><Button type="primary" size="small" onClick={() => onLink('signup')}>{buttonLabel}</Button> to get access to all CLE materials, including current materials as well as the archives.</p>
+        <p className="footnote">{registeredText} You can view the entire content for the materials or all courses that you have signed up for.</p>
         {certTxt}
       </>;
     } else {

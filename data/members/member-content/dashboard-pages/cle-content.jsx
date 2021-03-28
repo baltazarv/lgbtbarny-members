@@ -240,9 +240,7 @@ const cleCerts = ({
     route: 'cle-certs',
     label: 'My Certificates',
     title: <span><CleCertIcon /> My CLE Certifications</span>,
-    content: <Cles
-      render={(args) => <CleCerts {...args} />}
-    />,
+    content: <CleCerts />, // data pulled from cle_certs table
     links,
   };
 };
