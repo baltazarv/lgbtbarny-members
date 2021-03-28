@@ -1,6 +1,6 @@
-@import '../../assets/global-styles.less';
+@import "../../assets/global-styles.less";
 
-@header-blue-bg: #30B9F9;
+@header-blue-bg: #30b9f9;
 @special-btn-bg: #b2e6fc;
 
 // to fit comfortable on a Galazy S II and S5 (360px), but not on an iPhone 5/SE (320px) - no problem with later iPhones
@@ -13,7 +13,6 @@
   background-color: @header-blue-bg;
 
   &.navbar-dark {
-
     .logo-img {
       height: 86px;
       width: auto;
@@ -33,7 +32,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      box-shadow: 0px 1px 4px 0px rgba(0,0,0,0.6);
+      box-shadow: 0px 1px 4px 0px rgba(0, 0, 0, 0.6);
       color: @purple-bg;
 
       &.legalhelpinfo {
@@ -62,14 +61,14 @@
       }
 
       // when buttons hit the logo show items inside collapse
-      &.legalhelpinfo, &.donate {
+      &.legalhelpinfo,
+      &.donate {
         &:hover {
           background-color: @special-btn-bg;
           color: white;
           opacity: 1;
         }
       }
-
     } // @END .special-btns a
 
     .navbar-toggler {
@@ -81,7 +80,7 @@
       }
 
       @media @width-hide-special-btns {
-        align-self: flex-start!important; // flex-end!important;
+        align-self: flex-start !important; // flex-end!important;
       }
     }
 
@@ -120,9 +119,10 @@
 
         .nav-link {
           font-size: 1.2em;
-          padding: 0.55rem 0.9rem; // 0.25rem 1.5rem
+          padding: 0.55rem 0.9rem;
           color: fadeout(white, 35%);
-          border-radius: .25rem;
+          border-radius: 0.25rem;
+          text-decoration: none;
 
           &:hover {
             background: 0;
@@ -131,7 +131,7 @@
 
           @media @md-up {
             font-size: 0.8em;
-            padding: 0.25rem 0.9rem; // 0.25rem 1.5rem
+            padding: 0.25rem 0.9rem;
           }
         }
 
@@ -159,8 +159,6 @@
           margin-top: 2px;
         }
 
-
-
         .dropdown-item {
           color: fadeout(white, 35%);
 
@@ -179,18 +177,20 @@
         }
       }
 
-      .nav-link, .dropdown-item {
+      .nav-link,
+      .dropdown-item {
         font-weight: 600;
 
         @media @md-up {
-          padding: 0.25rem 0.9rem; // 0.25rem 1.5rem
+          padding: 0.25rem 0.9rem;
         }
 
         &:hover {
           background: 0;
         }
 
-        &.legalhelpinfo, &.donate {
+        &.legalhelpinfo,
+        &.donate {
           display: none;
 
           // when buttons hit the logo show items inside collapse
@@ -216,9 +216,7 @@
           color: white;
           background-color: @purple-bg;
         }
-
       } // @END .nav-link, .dropdown-item
-
     } // @END .navbar-nav
 
     .navbar-toggler-icon {

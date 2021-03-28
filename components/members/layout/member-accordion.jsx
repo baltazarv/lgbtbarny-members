@@ -21,11 +21,13 @@ const genExtra = () => (
 );
 
 const MemberAccordion = ({
-    activeKey,
-    setActiveKey,
-    data,
-    logout
-  }) => {
+  activeKey,
+  setActiveKey,
+  data,
+  title,
+  setTitle,
+  logout
+}) => {
 
   const [panels, setPanels] = useState(null);
 
@@ -38,6 +40,8 @@ const MemberAccordion = ({
       <MemberContent
         key={item.key}
         data={data}
+        title={title}
+        setTitle={setTitle}
         dataKey={activeKey}
         onLinkClick={setActiveKey}
       />
@@ -46,7 +50,7 @@ const MemberAccordion = ({
     const items = [];
     for (const key in data) {
       if (key !== 'options' && key !== 'logout') {
-        const newObject = Object.assign({}, data[key], {key});
+        const newObject = Object.assign({}, data[key], { key });
         items.push(newObject);
       }
     }
@@ -72,7 +76,7 @@ const MemberAccordion = ({
         />);
         let subitems = [];
         for (const key in item.children) {
-          const newObject = Object.assign({}, item.children[key], {key});
+          const newObject = Object.assign({}, item.children[key], { key });
           subitems.push(newObject);
         }
         subitems.map(subitem => {
@@ -116,7 +120,7 @@ const MemberAccordion = ({
             logout
           </span>
         </div>
-      :
+        :
         null
       }
       {panels}

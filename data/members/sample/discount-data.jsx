@@ -117,9 +117,7 @@ export const DISCOUNTS = {
     imageOptions: {
       backgroundPosition: `center`,
       backgroundSize: '40%',
-      borderRight: '1px solid rgb(0, 0, 0, 0.2)',
-      borderBottom: '1px solid rgb(0, 0, 0, 0.2)',
-      borderLeft: '1px solid rgb(0, 0, 0, 0.2)',
+      border: '1px solid rgb(0, 0, 0, 0.2)',
     },
     colors: ['#5e3987', 'white'],
 
@@ -166,9 +164,7 @@ export const DISCOUNTS = {
     imageOptions: {
       backgroundPosition: `center`,
       backgroundSize: '40%',
-      borderRight: '1px solid rgb(0, 0, 0, 0.2)',
-      borderBottom: '1px solid rgb(0, 0, 0, 0.2)',
-      borderLeft: '1px solid rgb(0, 0, 0, 0.2)',
+      border: '1px solid rgb(0, 0, 0, 0.2)',
     },
     colors: ['rgb(176, 17, 22)', 'white'],
     title: 'The Popcorn Factory',

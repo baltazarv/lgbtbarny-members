@@ -544,6 +544,8 @@ const Members = ({
           <Breakpoint xs only>
             <MemberAccordion
               data={data}
+              title={contentTitle}
+              setTitle={setContentTitle}
               logout={logOut}
               activeKey={selectedKey}
               setActiveKey={selectItem}
