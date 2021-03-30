@@ -1,9 +1,9 @@
 /**
  * Form.Provider with forms:
- * * MemberInfoForm
+ * * <MemberInfoForm />
  * * PaymentForm
  *
- * Submitting `onFormFinish`.
+ * Submission handled on onFormFinish()
  *
  * Users will only see this if they are logged in.
  */
@@ -72,13 +72,6 @@ const Signup = ({
       value,
     });
   };
-
-  // not sure if this or onFinishFailed can be used
-  // useEffect(() => {
-  //   if (memberInfoFormRef.current) {
-  //     memberInfoFormRef.current.onFinishFailed = onFinishFailed;
-  //   }
-  // }, [memberInfoFormRef]);
 
   /** used to figure out signupType & memberSignUpType */
 
@@ -235,10 +228,7 @@ const Signup = ({
     if ((signupType === memberTypes.SIGNUP_LOGGED_IN && certifyType === memberTypes.USER_ATTORNEY) ||
       signupType === memberTypes.SIGNUP_STUDENT_UPGRADE) return true;
     return false;
-  }, [memberSignUpType]); // lastPlan
-
-  // review - maybe need for prototype users
-  const [user, setUser] = useState({});
+  }, [signupType, memberSignUpType]);
 
   const duesSummary = useMemo(() => {
     return <DuesSummary
@@ -451,10 +441,17 @@ const Signup = ({
       content: <>
         <div className="mb-2">{certifyLabel}</div>
         <MemberInfoForm
-          formRef={memberInfoFormRef}
           signupType={signupType}
           memberSignUpType={memberSignUpType}
           hideFormElements={hideFormElements}
+
+          // choose student or attorney membership
+          certifyChoice={certifyChoice}
+          setCertifyChoice={setCertifyChoice}
+
+          formRef={memberInfoFormRef}
+          duesSummary={(memberSignUpType === memberTypes.USER_ATTORNEY && !hideFormElements) ? duesSummary : null}
+          loading={loading}
           initialValues={{
             [dbFields.members.certify]: member?.fields[dbFields.members.certify],
             [dbFields.members.firstName]: member?.fields[dbFields.members.firstName],
@@ -465,12 +462,6 @@ const Signup = ({
             [dbFields.members.lawSchool]: member?.fields[dbFields.members.lawSchool],
             [dbFields.members.gradYear]: member?.fields[dbFields.members.gradYear],
           }}
-          // choose student or attorney membership
-          certifyChoice={certifyChoice}
-          setCertifyChoice={setCertifyChoice}
-          duesSummary={(memberSignUpType === memberTypes.USER_ATTORNEY && !hideFormElements) ? duesSummary : null}
-          loading={loading}
-          onFinishFailed={onFinishFailed}
         />
       </>,
     }
@@ -484,7 +475,7 @@ const Signup = ({
 
   const memberPaymentStepContent = useMemo(() => {
     return {
-      title: "Member Dues",
+      title: "Member dues",
       content: <>
         {paymentSuccessful ?
           <>
@@ -502,7 +493,7 @@ const Signup = ({
                   onClick={() => setStep(0)}
                 >
                   Edit Info
-            </Button>
+                </Button>
               </Col>
             </Row>
             {/* TODO: remove when payment submitted b/c `Warning: Can't perform a React state update on an unmounted component. This is a no-op, but it indicates a memory leak in your application. To fix, cancel all subscriptions and asynchronous tasks in a useEffect cleanup function.` */}
@@ -519,14 +510,13 @@ const Signup = ({
               setLoading={setLoading}
               paymentSuccessful={paymentSuccessful}
               setPaymentSuccessful={setPaymentSuccessful}
-            // user={user}
             />
           </>
         }
 
       </>,
     };
-  }, [duesSummary, dues, total, user, loading])
+  }, [duesSummary, dues, total, loading])
 
   const steps = useMemo(() => {
     let _steps = [memberInfoStepContent];

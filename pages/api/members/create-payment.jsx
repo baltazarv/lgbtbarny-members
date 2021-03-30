@@ -43,11 +43,10 @@ export default auth0.requireAuthentication(async function createPayment(req, res
       { fields }
     ]);
     const minifiedRecords = minifyRecords(createdRecords);
-    res.statusCode = 200;
-    res.json(minifiedRecords); // array of one record
-  } catch (err) {
-    console.log(err);
+    res.status(200).json(minifiedRecords); // array of one record
+  } catch (error) {
+    console.log(error);
     res.statusCode = 500;
-    res.json(err);
+    res.status(500).json(error);
   }
 });

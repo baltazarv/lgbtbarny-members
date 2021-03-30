@@ -1,7 +1,6 @@
-import { emailsTable } from '../utils/Airtable';
+import { emailsTable } from '../../utils/Airtable';
 
 export default async (req, res) => {
-  // takes id string
   const id = req.body;
   try {
     const deletedRecords = await emailsTable.destroy([id]);

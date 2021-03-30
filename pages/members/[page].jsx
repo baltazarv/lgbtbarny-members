@@ -32,14 +32,19 @@ import './members.less';
 // data
 import { getDashboard } from '../../data/members/member-content/dashboards';
 import * as memberTypes from '../../data/members/member-types';
-import sampleMembers from '../../data/members/sample/members-sample';
 // utils
-import { getMemberType, getMemberStatus } from '../../utils/members/airtable/members-db';
+import {
+  getMemberType,
+  getMemberStatus,
+  getPlans,
+  getUserPayments,
+} from '../../utils/members/airtable/members-db';
 import { getMemberPageParentKey } from '../../utils/members/dashboard-utils';
 // server-side function to populate loggedInMember => member
 import { processUser } from '../api/init/processes';
 // contexts
 import { MembersContext } from '../../contexts/members-context';
+import { dbFields } from '../../data/members/airtable/airtable-fields';
 
 const { Sider } = Layout;
 
@@ -202,44 +207,38 @@ const Members = ({
    */
   useEffect(() => {
     if (authUser && !userPayments) {
-      const getUserPayments = async () => {
+      (async function fetchUserPayments() {
         const user = member || loggedInMember;
-        const result = await fetch('/api/init/get-user-payments', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user })
-        });
-        const { payments, error } = await result.json();
-        if (error) {
-          console.log('error', error);
-          return;
+        if (user?.fields[dbFields.members.payments]) {
+          const paymentIds = user.fields[dbFields.members.payments];
+          if (paymentIds) {
+            const { payments, error } = await getUserPayments(paymentIds);
+            if (error) {
+              console.log('error', error);
+              return;
+            }
+            if (payments) {
+              setUserPayments(payments);
+            }
+          }
         }
-        if (payments) setUserPayments(payments);
-        // console.log('userPayments', payments);
-      }
-      getUserPayments();
+      })();
     }
-  }, [authUser]);
+  }, [authUser, userPayments]);
 
   /** PLANS */
   useEffect(() => {
     if (!memberPlans) {
-      const getPlans = async () => {
-        const result = await fetch('/api/init/get-plans', {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-        })
-        const { plans, error } = await result.json();
+      (async function fetchPlans() {
+        const { plans, error } = await getPlans();
         if (error) {
           console.log('error', error);
           return;
         }
         if (plans) setMemberPlans(plans);
-        // console.log('memberPlans', plans);
-      }
-      getPlans();
+      })();
     }
-  }, []);
+  }, [memberPlans]);
 
   /**
    *** STRIPE CUSTOMER ***
@@ -296,22 +295,22 @@ const Members = ({
       }
 
       // FOR PROTOTYPE: set user based on router.query.type
-      if (router.query.type) { // && !loggedInUser
-        let _member = '';
-        if (router.query.type === 'attorney') {
-          _member = sampleMembers.attorney;
-        } else if (router.query.type === 'student') {
-          _member = sampleMembers.student;
-        } else if (router.query.type === 'non-member') {
-          _member = sampleMembers.nonMember;
-        }
-        setMember(_member);
+      // if (router.query.type) { // && !loggedInUser
+      //   let _member = '';
+      //   if (router.query.type === 'attorney') {
+      //     _member = sampleMembers.attorney;
+      //   } else if (router.query.type === 'student') {
+      //     _member = sampleMembers.student;
+      //   } else if (router.query.type === 'non-member') {
+      //     _member = sampleMembers.nonMember;
+      //   }
+      //   setMember(_member);
 
-        // set sample data for prototypes
-        if (_member.sample) {
-          setUserEmails(_member.fields.emails)
-        }
-      }
+      //   // set sample data for prototypes
+      //   if (_member.sample) {
+      //     setUserEmails(_member.fields.emails)
+      //   }
+      // }
     }
   }, [router.query, member, authUser]); // , member, authUser
 
@@ -608,7 +607,7 @@ const Members = ({
               type="primary"
               onClick={() => logIn(queryKey ? queryKey : '')}
             >
-              Validate email &amp; log in
+              Validate email to log in
             </Button>}
         />
 
@@ -641,76 +640,12 @@ export async function getServerSideProps(context) {
 
       // TODO: maybe move following requests to client-side
       if (emailAddress) {// already checking for session!
-        /******************
-         * Airtable Notes
-         *******************
-         * * eachPage alt for select().firstPage (100 record limit to page):
-         *   select.eachPage((records, fetchNextPage) => {}, (err) => {})
-         * * Params for select.firstPage(((err, records)) => {})
-         * * Beside `select`, can also use: find(recId, (err, records) => {})
-         */
-
         /*** user ***/
         let userResult = await processUser(emailAddress);
         let isNewUser = null;
         if (userResult.user) loggedInMember = userResult.user;
         if (userResult.isNewUser !== null) isNewUser = userResult.isNewUser;
         // console.log('loggedInMember', loggedInMember, 'isNewUser', isNewUser);
-
-        // moved to useEffect functions
-
-        /**
-        *** membership plans ***
-        * runs in parallel with processUser() below
-        */
-        // (() => {
-        //   return new Promise(async (resolve, reject) => {
-        //     const { plans, error } = await getPlans();
-        //     if (plans) return resolve({ plans });
-        //     return reject({ error });
-        //   });
-        // })().then((result) => {
-        //   if (result.plans) plans = result.plans;
-        // });
-
-        /** stripe customer associated to user */
-        // (() => {
-        //   return new Promise(async (resolve, reject) => {
-        //     const { user, subscriptions, defaultCard, error } = await processStripeCust({ user: loggedInMember, emailAddress });
-        //     if (error) return reject({ error });
-        //     return resolve({ user, subscriptions, defaultCard });
-        //   });
-        // })().then((result) => {
-        //   if (result.user) loggedInMember = result.user;
-        //   if (result.subscriptions) userSubscriptions = result.subscriptions;
-        //   if (result.defaultCard) userDefaultCard = result.defaultCard;
-        // });
-
-        /** user emails */
-        // (() => {
-        //   return new Promise(async (resolve, reject) => {
-        //     const { email, emails, error } = await processUserEmails({ emailAddress, user: loggedInMember }); // , isNewUser
-        //     if (error) return reject({ error });
-        //     return resolve({ email, emails });
-        //   });
-        // })().then((result) => {
-        //   if (result.emails) {
-        //     loggedInMemberEmails = result.emails;
-        //     loggedInMember.fields.__emails = loggedInMemberEmails;
-        //   }
-        // });
-
-        /** user payments */
-        // (() => {
-        //   return new Promise(async (resolve, reject) => {
-        //     const { payments, error } = await getUserPayments(loggedInMember)
-        //     if (error) return reject({ error });
-        //     return resolve({ payments });
-        //   });
-        // })().then((result) => {
-        //   if (result.payments) loggedInUserPayments = result.payments;
-        //   loggedInMember.fields.__payments = loggedInUserPayments;
-        // });
       }
     } catch (error) {
       console.log(error);

@@ -1,4 +1,3 @@
-/** functions that take airtable MemberContext objects */
 import moment from 'moment';
 import {
   getLastPlan,
@@ -8,6 +7,35 @@ import * as memberTypes from '../../../../data/members/member-types';
 import { dbFields } from '../../../../data/members/airtable/airtable-fields';
 
 /** API calls */
+
+const createMember = async (fields) => {
+  try {
+    const res = await fetch('/api/members/create-member', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(fields),
+    });
+    const { member, error } = await res.json();
+    if (member) return { member };
+  } catch (error) {
+    console.log(error);
+    return error;
+  }
+}
+
+const getMemberByEmail = async (email) => {
+  try {
+    const res = await fetch('/api/members/get-member-by-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(email),
+    });
+    const resJson = await res.json(); // { error, member }
+    return resJson;
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 /**
  * Update member info before signup.
@@ -125,6 +153,8 @@ const getMemberFullName = (member) => {
 
 export {
   // API calls
+  createMember,
+  getMemberByEmail,
   updateMember,
 
   getMemberType,

@@ -7,7 +7,7 @@ import { dbFields } from '../../data/members/airtable/airtable-fields';
 import { getSalaryOptions } from '../../utils/members/airtable/airtable-select-options';
 
 const SalaryField = ({
-  hasDiscount=false,
+  hasDiscount = false,
   loading
 }) => {
   const { memberPlans } = useContext(MembersContext);

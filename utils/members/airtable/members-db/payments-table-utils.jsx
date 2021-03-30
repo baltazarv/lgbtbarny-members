@@ -7,9 +7,28 @@ import {
 import {
   getCurrentPlans,
 } from './plans-table-utils';
+import {
+  getMemberStatus,
+  getAccountIsActive,
+} from './members-table-utils';
 import { dbFields } from '../../../../data/members/airtable/airtable-fields';
 
 /** API calls */
+
+/**
+ * Given an array of payment Ids
+ * Get full payment records from payment table
+ */
+const getUserPayments = async (paymentIds) => {
+  const result = await fetch('/api/members/get-user-payments', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ paymentIds })
+  });
+  const { payments, error } = await result.json();
+  if (error) return({ error });
+  if (payments) return ({ payments });
+}
 
 /**
  * Create payment for user w/ particular plan
@@ -140,10 +159,16 @@ const getPaymentIsDiscounted = (userPayments, memberPlans) => {
 
 export {
   // API calls
+  getUserPayments,
   addPayment,
 
   getLastPayment,
   getNextPaymentDate,
   getPaymentPayload,
   getPaymentIsDiscounted,
+
+  // from members file
+  // status based on payments
+  getMemberStatus,
+  getAccountIsActive,
 };

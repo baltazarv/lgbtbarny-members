@@ -12,7 +12,7 @@ const DuesSummary = ({
   showDiscount,
   showDonation,
   showTotal = false,
-  formItemLayout = {},
+  colLayout = {},
 }) => {
 
   const duesSummary = useMemo(() => {
@@ -54,7 +54,7 @@ const DuesSummary = ({
       total
     ) {
     _duesList = <Row>
-        <Col {...formItemLayout}>
+        <Col {...colLayout}>
           <List
             size="small"
             className="calcList"

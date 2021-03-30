@@ -18,29 +18,11 @@ const MembersProvider = ({ children }) => {
    *  */
 
   /**
-   * * Add new email address to account
-   *    - components/members/account/forms/emails-form
-   */
-  const createEmail = async (body) => {
-    try {
-      const res = await fetch('/api/members/create-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body), // { userid, email }
-      })
-      const newEmails = await res.json();
-      setUserEmails(userEmails.concat(newEmails));
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  /**
    * Used to switch primary emails.
    */
   const updateEmails = async (body) => {
     try {
-      const res = await fetch('/api/members/update-emails', {
+      const res = await fetch('/api/members/emails/update-emails', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -59,7 +41,7 @@ const MembersProvider = ({ children }) => {
 
   const deleteEmail = async (id) => {
     try {
-      const res = await fetch('/api/members/delete-email', {
+      const res = await fetch('/api/members/emails/delete-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(id),
@@ -244,8 +226,11 @@ const MembersProvider = ({ children }) => {
     userEmails, setUserEmails,
     userPayments, setUserPayments,
     memberPlans, setMemberPlans,
+
     // functions
-    createEmail,
+    // TODO: move functions to /utils/
+
+    // createEmail,
     updateEmails,
     deleteEmail,
 

@@ -7,6 +7,22 @@ import {
 } from './payments-table-utils';
 import { dbFields } from '../../../../data/members/airtable/airtable-fields';
 
+/** API calls */
+
+const getPlans = async () => {
+  try {
+    const result = await fetch('/api/members/get-plans', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const { plans, error } = await result.json();
+    if (plans) return { plans };
+    if (error) return { error };
+  } catch (error) {
+    return { error };
+  }
+}
+
 // Find user's last payment and match on plans table
 // * use to get member type: getLastPlan.fields.type
 // * `getMemberStatus` uses to get status
@@ -105,6 +121,9 @@ const getStripePriceId = (salary, memberPlans) => {
 };
 
 export {
+  // API calls
+  getPlans,
+
   getLastPlan,
   getCurrentPlans,
   getSalaries,

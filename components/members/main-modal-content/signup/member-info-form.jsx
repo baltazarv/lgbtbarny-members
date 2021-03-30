@@ -1,61 +1,47 @@
+// TODO: move out of /main-modal-content since now used by /members/renew
 /**
  * Form processed by Signup component's Form.Provider onFormFinish
  */
 import { useMemo, useContext } from 'react';
-import { Form, Button, Row, Col, Select } from 'antd';
+import { Form, Button, Input, Row, Col, Select } from 'antd';
+import { MailOutlined } from '@ant-design/icons';
 import MemberFields from './member-fields';
 import SalaryField from '../../../payments/salary-field';
 // data
-import { MembersContext } from '../../../../contexts/members-context';
 import { SIGNUP_FORMS } from '../../../../data/members/member-form-names';
 import { dbFields } from '../../../../data/members/airtable/airtable-fields';
 import * as memberTypes from '../../../../data/members/member-types';
-// import users from '../../../data/members/sample/members-sample';
-import { certifyOptions, certifyOptionsNoStudent } from '../../../../data/members/airtable/airtable-values';
+import { certifyOptions, certifyOptionsNoStudent, certifyOptionsAttorneysOnly } from '../../../../data/members/airtable/airtable-values';
 
 const MemberInfoForm = ({
-  formRef,
-  signupType, // active, upgrade, renew
-  memberSignUpType, // 'attorney', `student`
+  // if student 'upgrade' or attornehy 'renew' will not show student 'certify' options
+  signupType,
+
+  // 'attorney', `student` for fields that show
+  memberSignUpType,
+
+  /** Hide fields when:
+   *  * when memberSignUpType is `member` and haven't chosen type of membership
+   *  * anytime user chooses certify n/a
+   */
+  hideFormElements = false,
   // choose student or attorney membership
-  certifyChoice,
-  setCertifyChoice,
-  hideFormElements,
-  initialValues,
+  certifyChoice = null,
+  setCertifyChoice = null,
+
+  // shows "50% discount"
   hasDiscount,
+
+  // if member not logged in, add email address
+  // and show attorney certify select options w/out "n/a"
+  createAccount = false,
+
+  formRef,
   duesSummary,
   loading,
-  // onFinishFailed,
+  initialValues,
 }) => {
-  const { member } = useContext(MembersContext);
   const [form] = Form.useForm();
-
-  // populate test user: choose 'bar' for attorney or 'student'
-  // when switch between account types, save values
-
-  // useEffect(() => {
-  //   const populateUser = (userType) => {
-  //     const userData = users[userType];
-  //     if (userData) {
-  //       for (const field in userData) {
-  //         form.setFieldsValue({ [field]: userData[field] });
-  //       }
-  //       form.setFieldsValue({ confirmpwd: userData.password });
-  //     }
-  //   };
-  //   if (memberSignUpType === memberTypes.USER_ATTORNEY) {
-  //     form.setFieldsValue({ [dbFields.members.certify]: 'bar' });
-  //     populateUser('attorney');
-  //   } else if (memberSignUpType === memberTypes.USER_STUDENT) {
-  //     form.setFieldsValue({ [dbFields.members.certify]: 'student' });
-  //     form.setFieldsValue({ [dbFields.members.salary]: null });
-  //     populateUser('student');
-  //   } else if (memberSignUpType === memberTypes.USER_MEMBER || memberSignUpType === memberTypes.USER_LAW_NOTES) {
-  //     form.setFieldsValue({ [dbFields.members.certify]: null });
-  //     form.setFieldsValue({ [dbFields.members.salary]: null });
-  //     populateUser('nonMember');
-  //   };
-  // }, [memberSignUpType]);
 
   const onFieldsChange = (changedFields, allFields) => {
     // console.log('onFieldsChange', changedFields, allFields);
@@ -65,10 +51,10 @@ const MemberInfoForm = ({
     // console.log('onValuesChange', changedFields, allFields);
   };
 
-  /** Hide fields when:
-   *  * when memberSignUpType is `member` and haven't chosen type of membership
-   *  * anytime user chooses certify n/a
-   */
+  const onCertifySelectChange = (value) => {
+    if (setCertifyChoice) setCertifyChoice(value);
+  }
+
   const memberFields = useMemo(() => {
     if (hideFormElements) return null;
     return <MemberFields
@@ -76,6 +62,13 @@ const MemberInfoForm = ({
       loading={loading}
     />;
   }, [memberSignUpType, certifyChoice, loading]);
+
+  const certifySelectOptions = useMemo(() => {
+    if (createAccount) return certifyOptionsAttorneysOnly();
+    if (signupType === memberTypes.SIGNUP_STUDENT_UPGRADE ||
+      signupType === memberTypes.SIGNUP_ATTORNEY_RENEW) return certifyOptionsNoStudent();
+    return certifyOptions();
+  }, []);
 
   return <>
     <Form
@@ -88,8 +81,38 @@ const MemberInfoForm = ({
       scrollToFirstError
       onFieldsChange={onFieldsChange}
       onValuesChange={onValuesChange}
-    // onFinishFailed={onFinishFailed}
     >
+      {/* optional email address */}
+      {createAccount &&
+        <>
+          <Form.Item
+            name="confirm_email"
+            label="Confirm email"
+            dependencies={['email']}
+            rules={[
+              {
+                type: 'email',
+                required: true,
+                message: 'Confirm email address.'
+              },
+              () => ({
+                validator(_, value) {
+                  if (!value || initialValues.email === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(new Error(`Confirm email address above or edit.`));
+                },
+              }),
+            ]}
+          >
+            <Input
+              prefix={<MailOutlined />}
+              placeholder="user@domain.com"
+              disabled={loading}
+            />
+          </Form.Item>
+        </>
+      }
 
       {/* certify */}
       <Form.Item
@@ -107,11 +130,11 @@ const MemberInfoForm = ({
         <Select
           style={{ width: '100%' }}
           placeholder="Choose one..."
-          onChange={(value) => setCertifyChoice(value)}
+          onChange={(value) => onCertifySelectChange(value)}
           autoFocus
           disabled={loading}
         >
-          {(signupType === memberTypes.SIGNUP_STUDENT_UPGRADE || signupType === memberTypes.SIGNUP_ATTORNEY_RENEW) ? certifyOptionsNoStudent() : certifyOptions()}
+          {certifySelectOptions}
         </Select>
       </Form.Item>
 
@@ -146,7 +169,7 @@ const MemberInfoForm = ({
             loading={loading}
           >
             {memberSignUpType === memberTypes.USER_STUDENT ? 'Create Membership' : 'Submit Info'}
-        </Button>
+          </Button>
         </Form.Item>
       }
     </Form>

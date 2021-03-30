@@ -31,9 +31,23 @@ const certifyOptionsMinusStudent = () => {
   return options;
 };
 
+// excludes student membershin and non-member option
+// for /members/renew page
+const certifyOptionsAttorney = () => {
+  let options = {};
+  for (const option in CERTIFY_OPTIONS) {
+    if (option !== 'student' && option !== 'na') options[option] = CERTIFY_OPTIONS[option];
+  }
+  return options;
+}
+
 const certifyOptionsNoStudent = () => {
   return selectOptionsFromObject(certifyOptionsMinusStudent());
 };
+
+const certifyOptionsAttorneysOnly = () => {
+  return selectOptionsFromObject(certifyOptionsAttorney());
+}
 
 const practiceSettingOptions = () => {
   return selectOptionsFromArray(dbFields.members.valueLists.practiceSettings);
@@ -70,6 +84,7 @@ export {
   certifyOptions,
   certifyOptionsMinusStudent,
   certifyOptionsNoStudent,
+  certifyOptionsAttorneysOnly,
   // practice setting
   practiceSettingOptions,
   // age

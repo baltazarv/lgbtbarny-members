@@ -1,14 +1,17 @@
 /**
- * Processes for initialization
+ * Back-end processes for initialization
  *
  * Dependencies:
  * * processUser (may create new email & member records)
  * *   |_ processUserEmails (may update logged-in email; get all user emails)
  * *   |_ processStripeCust
- * *   |_ getUserPayments
+ *
+ * Other init processes not on this file:
+ * *   |_ /api/members/get-plans
+ * *   |_ /api/members/get-user-payments
  * * getPlans
  */
-import { membersTable, emailsTable, paymentsTable, plansTable, minifyRecords, getMinifiedRecord } from '../utils/Airtable';
+import { membersTable, emailsTable, minifyRecords, getMinifiedRecord } from '../utils/Airtable';
 import { stripe, getActiveSubscription, getPaymentMethodObject } from '../utils/stripe';
 import { dbFields } from '../../../data/members/airtable/airtable-fields';
 import { getMemberFullName } from '../../../utils/members/airtable/members-db/members-table-utils';
@@ -38,6 +41,8 @@ const processUser = async (emailAddress) => {
 
       // create user with email address
       const newMember = await membersTable.create([{ fields: { emails: [minEmailRecords[0].id] } }]);
+
+      // getMinifiedRecord
       user = {
         id: newMember[0].id,
         fields: newMember[0].fields,
@@ -57,20 +62,6 @@ const processUser = async (emailAddress) => {
     user = getMinifiedRecord(updatedUser[0]);
 
     return { user, emailAddress, isNewUser }; // may not need to return isNewUser
-  } catch (error) {
-    console.log(error);
-    return { error };
-  }
-}
-
-/** get membership plans */
-// TODO: get more than 100 plans?
-const getPlans = async () => {
-  try {
-    let plans = null;
-    const planRecords = await plansTable.select().firstPage();
-    plans = minifyRecords(planRecords);
-    return { plans };
   } catch (error) {
     console.log(error);
     return { error };
@@ -180,30 +171,8 @@ const processStripeCust = async ({ user, emailAddress }) => {
   }
 }
 
-/** get user's payments */
-const getUserPayments = async (user) => {
-  try {
-    let payments = null;
-    if (user?.fields[dbFields.members.payments]) {
-      let paymentRecords = [];
-      const paymentIds = user.fields[dbFields.members.payments].join(',');
-      paymentRecords = await paymentsTable.select({
-        filterByFormula: `SEARCH(RECORD_ID(), "${paymentIds}")`
-      }).firstPage();
-      payments = minifyRecords(paymentRecords);
-      return { user, payments }; // user never changed
-    }
-    return { payments };
-  } catch (error) {
-    console.log(error);
-    return { error };
-  }
-}
-
 export {
   processUser,
-  getPlans,
   processUserEmails,
   processStripeCust,
-  getUserPayments,
 }

@@ -1,7 +1,7 @@
 /**
    * Used to switch primary emails
  */
-import { emailsTable, minifyRecords } from '../utils/Airtable';
+import { emailsTable, minifyRecords } from '../../utils/Airtable';
 
 export default async (req, res) => {
   console.log('/api/members/update-emails', req.body);

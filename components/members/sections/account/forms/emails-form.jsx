@@ -10,12 +10,14 @@
  *
  * Saving a new email handled within this component by `saveEmail`. The form surrounding the `Search` input is the only form on this component.
  */
-import { useState, useMemo, useContext } from 'react';
+import { useState, useMemo, useContext, useEffect } from 'react';
 import { Table, Form, Input, Tag, Tooltip, Typography, Popconfirm } from 'antd';
 import { MailOutlined } from '@ant-design/icons';
 // data
 import { MembersContext } from '../../../../../contexts/members-context';
 import { dbFields } from '../../../../../data/members/airtable/airtable-fields';
+// utils
+import { createEmail } from '../../../../../utils/members/airtable/members-db';
 
 const { Link } = Typography;
 const { Search } = Input;
@@ -31,7 +33,7 @@ const EmailsForm = ({
   // delete email
   onCancel,
 }) => {
-  const { userEmails, createEmail, deleteEmail, member, authUser } = useContext(MembersContext);
+  const { userEmails, setUserEmails, deleteEmail, member, authUser } = useContext(MembersContext);
   const [form] = Form.useForm(); // save email form
   const [addEmailLoading, setAddEmailLoading] = useState(false);
 
@@ -64,10 +66,11 @@ const EmailsForm = ({
           }]);
         } else {
           const userid = member.id;
-          const newEmail = await createEmail({
+          const { email, error } = await createEmail({
             emailAddress,
             userid,
-          });// > setUserEmails
+          });
+          if (email) setUserEmails([...userEmails].concat([ email ]));
           form.resetFields();
         }
         setAddEmailLoading(false);

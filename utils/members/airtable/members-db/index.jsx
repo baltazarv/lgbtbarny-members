@@ -4,16 +4,28 @@
  * Define generic airtable utils.
  * */
 
- // members
- import {
+/******************
+ * Airtable Notes
+ *******************
+ * Instead of using select().firstPage (100 record limit to page),
+ * Use select.eachPage((records, fetchNextPage) => {}, (err) => {})
+ *
+ * * Beside `select`, can also use: find(recId, (err, records) => {})
+ */
+
+// members
+import {
+  createMember,
+  getMemberByEmail,
   updateMember,
   getMemberType,
   getMemberStatus,
   getAccountIsActive,
 } from './members-table-utils';
 
- // plans
+// plans
 import {
+  getPlans,
   getLastPlan,
   getCurrentPlans,
   getSalaries,
@@ -24,6 +36,7 @@ import {
 
 // payments
 import {
+  getUserPayments,
   addPayment,
   getLastPayment,
   getNextPaymentDate,
@@ -33,17 +46,21 @@ import {
 
 // emails
 import {
+  createEmail,
   getPrimaryEmail,
 } from './emails-table-utils';
 
 export {
   // members
+  createMember, // api call
+  getMemberByEmail,
   updateMember,
   getMemberType,
   getMemberStatus,
   getAccountIsActive,
 
   // plans
+  getPlans, // api call
   getLastPlan,
   getCurrentPlans,
   getSalaries,
@@ -52,12 +69,14 @@ export {
   getStripePriceId,
 
   // payments
-  addPayment,
+  getUserPayments, // api call
+  addPayment, // api call
   getLastPayment,
   getNextPaymentDate,
   getPaymentPayload,
   getPaymentIsDiscounted,
 
   // emails
+  createEmail, // api call
   getPrimaryEmail,
 };

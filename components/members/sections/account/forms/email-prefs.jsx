@@ -5,8 +5,7 @@ import { MembersContext } from '../../../../../contexts/members-context';
 import * as memberTypes from '../../../../../data/members/member-types';
 import { sibLists, getAllSibListIndexes } from '../../../../../data/emails/sendinblue-fields';
 // utils
-import { getAccountIsActive } from '../../../../../utils/members/airtable/members-db';
-import { getPrimaryEmail } from '../../../../../utils/members/airtable/members-db';
+import { getAccountIsActive, getPrimaryEmail } from '../../../../../utils/members/airtable/members-db';
 import { getMailListsSubscribed, updateContact } from '../../../../../utils/emails/sendinblue-utils';
 
 const { Link } = Typography;

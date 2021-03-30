@@ -1,8 +1,7 @@
-// TODO: move to /member/utils
 import { PAYMENT_FIELDS } from '../../data/payments/payment-fields';
 
 export const duesInit = {
-  memberFee: 0,
+  // memberFee: 0,
   discount: 0,
   donation: 0,
   lawNotesAmt: 0,
