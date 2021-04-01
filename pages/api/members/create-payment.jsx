@@ -1,5 +1,9 @@
-import { paymentsTable, minifyRecords } from '../utils/Airtable';
-import auth0 from '../utils/auth0';
+/**
+ * MembersPage > Signup > PaymentForm
+ * RenewFormPage > PaymentForm (anonymous)
+ *  */
+import { paymentsTable, getMinifiedRecord } from '../utils/Airtable';
+// import auth0 from '../utils/auth0';
 import { dbFields } from '../../../data/members/airtable/airtable-fields';
 
 /**
@@ -10,8 +14,12 @@ import { dbFields } from '../../../data/members/airtable/airtable-fields';
  *
  * date will be today's date
  *  */
-export default auth0.requireAuthentication(async function createPayment(req, res) {
-  // console.log('/api/members/create-payment', req.body)
+
+// can be called from ananomously...
+// export default auth0.requireAuthentication(async function createPayment(req, res) {
+
+const createPayment = async (req, res) => {
+  console.log('/api/members/create-payment', req.body);
 
   const {
     userid,
@@ -42,11 +50,12 @@ export default auth0.requireAuthentication(async function createPayment(req, res
     const createdRecords = await paymentsTable.create([
       { fields }
     ]);
-    const minifiedRecords = minifyRecords(createdRecords);
-    res.status(200).json(minifiedRecords); // array of one record
+    const payment = getMinifiedRecord(createdRecords[0]);
+    res.status(200).json({ payment }); // array of one record
   } catch (error) {
     console.log(error);
-    res.statusCode = 500;
     res.status(500).json(error);
   }
-});
+};
+
+export default createPayment;

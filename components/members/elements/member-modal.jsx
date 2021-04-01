@@ -41,6 +41,7 @@ const MemberModal = ({
         setModalType={setModalType}
         signupType={signupType}
         setSignupType={setSignupType}
+        closeModal={() => setModalVisible(false)}
       />;
     } else if (modalType === 'law-notes-subscribe') {
       return <LawNotesSubscribe

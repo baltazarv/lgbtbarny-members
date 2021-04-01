@@ -1,5 +1,7 @@
+// TODO: move outside of /main-modal-content since /members/renew page now using
 /**
- * When form submitted, onFinish() -> onSuccess()
+ * Used by Signup and RenewFormPage
+ * When form submitted, onFinish() -> onSuccess() & calls parent's onPaymentSuccessful()
  */
 import { useMemo, useState, useContext } from 'react';
 import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
@@ -20,7 +22,6 @@ import {
   addPayment,
   getStripePriceId,
   getPaymentPayload,
-  getPrimaryEmail,
 } from '../../../../utils/members/airtable/members-db';
 import {
   getPaymentMethodObject,
@@ -29,25 +30,26 @@ import {
 
 const PaymentForm = ({
   duesSummList,
+  emailAddress,
   initialValues,
   total,
   hasDiscount,
   loading,
   setLoading,
-  setPaymentSuccessful, // show confirmation vs. form
+
+  onPaymentSuccessful,
 }) => {
   const [form] = Form.useForm();
 
   // context
   const {
-    authUser,
     member,
     setMember,
-    userEmails,
     memberPlans,
 
     setUserPayments,
-    getNewPaymentState,
+    // update local state
+    setPaymentState,
 
     // attorney stripe plan
     createSubscription,
@@ -110,17 +112,8 @@ const PaymentForm = ({
     if (changedFields.hasOwnProperty(STRIPE_FIELDS.subscription.collectionMethod)) setCollectionMethod(changedFields[STRIPE_FIELDS.subscription.collectionMethod]);
   };
 
-  const loggedInEmail = useMemo(() => {
-    return authUser.name;
-  }, [authUser]);
-
-  const primaryEmail = useMemo(() => {
-    return getPrimaryEmail(userEmails);
-  }, [userEmails]);
-
   // create payment >> add invoice id to payment
   const onSuccess = async (subscription) => {
-    setPaymentSuccessful(true); // hide form
     saveNewSubscription(subscription);
 
     // when expand subscription get latest_invoice object, including latest_invoice.id, otherwise, latest_invoice is id
@@ -142,7 +135,7 @@ const PaymentForm = ({
     if (addedPayment.error) {
       console.log(addedPayment.error);
     } else {
-      const newStateItems = getNewPaymentState({
+      const newStateItems = setPaymentState({
         member,
         payment: addedPayment.payment,
       })
@@ -153,7 +146,7 @@ const PaymentForm = ({
     }
 
     setLoading(false);
-
+    onPaymentSuccessful();
     // return <Redirect to={{pathname: '/account'}} />
   };
 
@@ -180,7 +173,7 @@ const PaymentForm = ({
       type: 'card',
       card: cardElement,
       billing_details: {
-        email: primaryEmail,
+        email: emailAddress,
         name: `${member.fields[dbFields.members.firstName]} ${member.fields[dbFields.members.lastName]}`,
       },
     }); //-> returns result.error or result.paymentMethod
@@ -343,7 +336,9 @@ const PaymentForm = ({
 
       <Divider className="mt-4 mb-2 "><strong>Credit Card Payment</strong></Divider>
 
-      <div className="mt-0 mb-2">Charge <strong>${total.toFixed(2)}</strong> to the credit card below.</div>
+      {total &&
+        <div className="mt-0 mb-2">Charge <strong>${total.toFixed(2)}</strong> to the credit card below.</div>
+      }
 
       <Card>
 
@@ -393,10 +388,6 @@ const PaymentForm = ({
             Pay Member Dues
           </Button>
         </Form.Item>
-
-        {primaryEmail &&
-          <div className="text-left mt-3" style={{ fontSize: '0.9em', lineHeight: 1.5 }}>You will get an email confirmation to <strong>{primaryEmail}</strong>. Change your primary email address in <em>My Account &gt; Email addresses</em>.</div>
-        }
       </Card>
     </Form>
   </>

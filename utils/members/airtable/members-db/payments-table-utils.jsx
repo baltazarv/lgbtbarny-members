@@ -48,12 +48,11 @@ const addPayment = async (newPayment) => {
       body: JSON.stringify(newPayment),
       headers: { 'Content-Type': 'application/json' }
     });
-    const payments = await res.json();
-    // addPaymentContext(payments[0]);
-    return { payment: payments[0] };
+    const { payment } = await res.json();
+    return { payment };
   } catch (error) {
     console.log({ error });
-    // return error;
+    return { error };
   }
 }
 

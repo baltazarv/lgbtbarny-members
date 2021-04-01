@@ -30,8 +30,8 @@ const getMemberByEmail = async (email) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(email),
     });
-    const resJson = await res.json(); // { error, member }
-    return resJson;
+    const { member, error } = await res.json();
+    return { member };
   } catch (error) {
     console.log(error);
   }

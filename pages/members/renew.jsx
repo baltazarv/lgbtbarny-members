@@ -8,21 +8,25 @@
 import { useState, useMemo, useContext, useEffect, useReducer, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
 import { Layout, Card, Steps, Form, Input, Button, Divider, Row, Col, Typography } from 'antd';
 import { MailOutlined } from '@ant-design/icons';
 import { Container } from 'react-bootstrap';
 import MainLayout from '../../components/layout/main-layout';
 import MemberInfoForm from '../../components/members/main-modal-content/signup/member-info-form';
+import PaymentForm from '../../components/members/main-modal-content/signup/payment-form'
 import DuesSummary from '../../components/payments/dues-summary';
 import { TitleIcon } from '../../components/elements/icon';
-// import { getSession } from '../../utils/auth';
-import auth0 from '../../pages/api/utils/auth0';
 // data
-import { SIGNUP_FORMS } from '../../data/members/member-form-names';
 import { MembersContext } from '../../contexts/members-context';
+import { SIGNUP_FORMS } from '../../data/members/member-form-names';
 import { dbFields } from '../../data/members/airtable/airtable-fields';
+import { PAYMENT_FIELDS } from '../../data/payments/payment-fields';
+import { STRIPE_FIELDS } from '../../data/payments/stripe/stripe-fields';
 import * as memberTypes from '../../data/members/member-types';
 // utils
+import auth0 from '../../pages/api/utils/auth0'; // for getServerSideProps
 import {
   getMemberByEmail,
   getPlanFee,
@@ -33,7 +37,11 @@ import {
   createMember,
   createEmail,
 } from '../../utils/members/airtable/members-db';
-import { duesInit, duesReducer, getMemberFees } from '../../utils/payments/member-dues';
+import {
+  duesInit,
+  duesReducer,
+  getMemberFees,
+} from '../../utils/payments/member-dues';
 import { createContact } from '../../utils/payments/stripe-utils';
 // import '../../components/members/main-modal-content/login-signup.less';
 
@@ -44,13 +52,21 @@ const { Step } = Steps;
 const AntLink = Typography.Link;
 
 const RenewFormPage = () => {
-  const { member, setMember, setMemberPlans, memberPlans, userPayments, setUserPayments } = useContext(MembersContext);
+  const {
+    member,
+    setMember,
+    memberPlans,
+    setMemberPlans,
+    userPayments,
+    setUserPayments,
+  } = useContext(MembersContext);
 
   // forms
   const memberInfoFormRef = useRef(null);
   const [confirmEmailForm] = Form.useForm();
 
   const [step, setStep] = useState(0);
+  const [emailAddress, setEmailAddress] = useState(null);
   // if member has no payments will have discount
   // member updated salary without making payment: `renew` => `pay`
   const [hasDiscount, setHasDiscount] = useState(false);
@@ -58,6 +74,8 @@ const RenewFormPage = () => {
   // const [submitError, setSubmitError] = useState('');
 
   const router = useRouter();
+
+  const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 
   // const ERR_EMAIL_NOT_EXIST = 'emailDoesNotExist';
 
@@ -72,7 +90,6 @@ const RenewFormPage = () => {
       value,
     });
   };
-
 
   // get plans
   useEffect(() => {
@@ -121,7 +138,7 @@ const RenewFormPage = () => {
     }
   }, [member]);
 
-  // reset user payments
+  // reset member & user payments in step 0
   useEffect(() => {
     if (step === 0) {
       setMember(null);
@@ -135,24 +152,21 @@ const RenewFormPage = () => {
       discount={dues.discount}
       showSalary={true}
       showDiscount={dues.discount && true}
-      colLayout={{
-        xs: { span: 24 },
-        sm: { offset: 8, span: 16 },
-      }}
     />
     return null;
   }, [member, dues, step]);
 
   const accountIsActive = useMemo(() => {
     if (userPayments && memberPlans && member) {
-      return getAccountIsActive({
+      const isActive = getAccountIsActive({
         userPayments,
         memberPlans,
         member,
       });
+      return isActive;
     }
     return null;
-  }, [userPayments, memberPlans, member]);
+  }, [userPayments, memberPlans, member, emailAddress]);
 
   const nextPaymentDate = useMemo(() => {
     if (userPayments && memberPlans) return getNextPaymentDate({
@@ -175,17 +189,15 @@ const RenewFormPage = () => {
     if (formName === SIGNUP_FORMS.renewMembership.confirmEmail) {
       setLoading(true);
       const email = info.values.email;
-      const { member, error } = await getMemberByEmail(email);
+      setEmailAddress(email);
+      const memberResp = await getMemberByEmail(email);
       let _member = null;
-      // if (error) {
-      //   setSubmitError(ERR_EMAIL_NOT_EXIST);
-      // }
-      if (member) {
-        _member = member;
+      if (memberResp.member) {
+        _member = memberResp.member;
+        setMember(_member);
       }
-      setMember(_member);
-      setLoading(false);
       setStep(1);
+      setLoading(false);
     }
 
     // TODO: add success messages
@@ -193,7 +205,6 @@ const RenewFormPage = () => {
       setLoading(true);
 
       let fields = Object.assign({}, info.values);
-      const emailAddress = fields.confirm_email;
       delete fields.confirm_email;
       const firstName = dbFields.members.firstName;
       const lastName = dbFields.members.lastName;
@@ -214,6 +225,7 @@ const RenewFormPage = () => {
       if (memberResp.error) console.log('member error', memberResp.error);
       let userid = null;
       if (memberResp.member) {
+        setMember(memberResp.member);
         userid = memberResp.member.id;
       }
 
@@ -226,6 +238,12 @@ const RenewFormPage = () => {
       setLoading(false);
       setStep(2);
     }
+  }
+
+  const onPaymentSuccessful = () => {
+    // when account is active will not show step 2
+    // need to navigate to step 1 first before hiding step 2
+    setStep(1);
   }
 
   const getSubmitButton = (label, func) => {
@@ -258,8 +276,15 @@ const RenewFormPage = () => {
         return <>
           <div className="mb-2 text-right">See your calculated dues below.
           </div>
-          {duesSummary}
-          {getSubmitButton('Pay dues', () => setStep(2))}
+          <Row>
+            <Col
+              xs={{ span: 24 }}
+              sm={{ offset: 8, span: 16 }}
+            >
+              {duesSummary}
+            </Col>
+          </Row>
+          { getSubmitButton('Pay dues', () => setStep(2))}
         </>
       } else {
         return <>
@@ -268,7 +293,7 @@ const RenewFormPage = () => {
       }
     }
     return null;
-  }, [member, duesSummary]);
+  }, [member, accountIsActive, duesSummary, loading]);
 
   /** step one */
 
@@ -337,7 +362,8 @@ const RenewFormPage = () => {
   const step2Content = useMemo(() => {
     // const email = confirmEmailForm.getFieldValue('email');
     return <>
-      {/* email entered */}
+
+      {/* email & edit (go to prev step) */}
 
       {member &&
         <Row
@@ -363,7 +389,7 @@ const RenewFormPage = () => {
         </Row>
       }
 
-      {/* form error message */}
+      {/* enter new email & member record */}
 
       {!member &&
         <div className="mx-1">
@@ -431,95 +457,131 @@ const RenewFormPage = () => {
 
       {memberFoundContent}
     </>;
-  }, [member, loading, duesSummary]); // , submitError
+  }, [member, accountIsActive, loading, duesSummary]);
 
   /** step three: payment */
 
   const paymentStepContent = useMemo(() => {
-    return <>
-      pay up...
-    </>
-  }, []);
+    if (member) {
+      return <>
+        <PaymentForm
+          duesSummList={duesSummary}
+          emailAddress={emailAddress}
+          initialValues={{
+            [PAYMENT_FIELDS.billingname]: `${member?.fields[dbFields.members.firstName]} ${member?.fields[dbFields.members.lastName]}`,
+            [STRIPE_FIELDS.subscription.collectionMethod]: STRIPE_FIELDS.subscription.collectionMethodValues.chargeAutomatically,
+          }}
+          // total...
+          hasDiscount={hasDiscount}
+          loading={loading}
+          setLoading={setLoading}
+          onPaymentSuccessful={onPaymentSuccessful}
+        // setPaymentSuccessful={setPaymentSuccessful}
+        />
+
+        {emailAddress &&
+          <div className="text-left mt-3" style={{ fontSize: '0.9em', lineHeight: 1.5 }}>You will get an email confirmation to <strong>{emailAddress}</strong>.</div>
+        }
+
+      </>
+    }
+    return null;
+  }, [duesSummary, member, loading]);
 
   const steps = useMemo(() => {
+    // title
     let step2Title = 'Review dues';
     if (!member &&
       (step === 1 || step === 2)) step2Title = 'Create Account';
-    return [{
+    if (accountIsActive) {
+      step2Title = 'Membership active';
+    };
+
+    let content = [{
       title: "Check account",
       content: confirmEmailStepContent,
     },
     {
       title: step2Title,
       content: step2Content,
-    },
-    {
-      title: "Payment",
-      content: paymentStepContent,
     }];
-  }, [member, step, loading]); // , submitError
+
+    // additional payments step if account not active
+    // must navigate to step 1 before hiding step 2
+    if (step === 0 ||
+      (!accountIsActive && step === 1) ||
+      step === 2) {
+      content.push({
+        title: "Payment",
+        content: paymentStepContent,
+      })
+    };
+    return content;
+  }, [member, accountIsActive, step, loading]); // , submitError
 
   return <div>
-    <MainLayout>
-      <Content>
-        <div
-          className="med-blue-bg-color"
-          style={{
-            padding: '48px',
-            textAlign: 'center',
-          }}>
-          <Container
-            // className="login-signup"
-            style={{ maxWidth: 550 }}
-          >
-            <Card
-              className="mt-3 mb-2 login-signup-card"
-              title={<>
-                <strong>{title}</strong>
-                <div>
-                  <TitleIcon name="demographic" ariaLabel="Participate" />&nbsp;&nbsp;<TitleIcon name="bookmark" ariaLabel="LGBT Law Notes" />&nbsp;&nbsp;<TitleIcon name="government" ariaLabel="CLE Center" />&nbsp;&nbsp;<TitleIcon name="star" ariaLabel="Discounts" />
-                </div>
-              </>}
+    <Elements stripe={stripePromise}>
+      <MainLayout>
+        <Content>
+          <div
+            className="med-blue-bg-color"
+            style={{
+              padding: '48px',
+              textAlign: 'center',
+            }}>
+            <Container
+              // className="login-signup"
+              style={{ maxWidth: 550 }}
             >
-
-              {/* signup intro text */}
-
-              <p>Renew your membership below without having to log in.</p>
-
               <Card
-                className="p-0 mb-4"
-                size="small"
+                className="mt-3 mb-2 login-signup-card"
+                title={<>
+                  <strong>{title}</strong>
+                  <div>
+                    <TitleIcon name="demographic" ariaLabel="Participate" />&nbsp;&nbsp;<TitleIcon name="bookmark" ariaLabel="LGBT Law Notes" />&nbsp;&nbsp;<TitleIcon name="government" ariaLabel="CLE Center" />&nbsp;&nbsp;<TitleIcon name="star" ariaLabel="Discounts" />
+                  </div>
+                </>}
               >
-                <div className="footnote" style={{ lineHeight: 1.6 }}>Or <Link href="/members/home?signup">
-                  <a>Login</a>
-                </Link> to review your membership status and to check out the new <strong>Membership&nbsp;Dashboard</strong>. <em>Logging in is easy. Just verify your email address.</em></div>
+
+                {/* signup intro text */}
+
+                <p>Renew your membership below without having to log in.</p>
+
+                <Card
+                  className="p-0 mb-4"
+                  size="small"
+                >
+                  <div className="footnote" style={{ lineHeight: 1.6 }}>Or <Link href="/members/home?signup">
+                    <a>Login</a>
+                  </Link> to review your membership status and to check out the new <strong>Membership&nbsp;Dashboard</strong>. <em>Logging in is easy. Just verify your email address.</em></div>
+                </Card>
+
+                <Form.Provider
+                  onFormFinish={onFormFinish}
+                  onFormChange={onFormChange}
+                >
+                  {/* step markers */}
+
+                  <div className="mb-4">
+                    <Steps size="small" current={step}>
+                      {/* status={stepsStatus} */}
+                      {steps.map(item => (
+                        <Step key={item.title} title={item.title} />
+                      ))}
+                    </Steps>
+                  </div>
+
+                  {/* step content */}
+
+                  <div>{steps[step].content}</div>
+                </Form.Provider>
+
               </Card>
-
-              <Form.Provider
-                onFormFinish={onFormFinish}
-                onFormChange={onFormChange}
-              >
-                {/* step markers */}
-
-                <div className="mb-4">
-                  <Steps size="small" current={step}>
-                    {/* status={stepsStatus} */}
-                    {steps.map(item => (
-                      <Step key={item.title} title={item.title} />
-                    ))}
-                  </Steps>
-                </div>
-
-                {/* step content */}
-
-                <div>{steps[step].content}</div>
-              </Form.Provider>
-
-            </Card>
-          </Container>
-        </div>
-      </Content>
-    </MainLayout>
+            </Container>
+          </div>
+        </Content>
+      </MainLayout>
+    </Elements>
   </div>
 }
 

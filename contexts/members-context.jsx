@@ -66,7 +66,7 @@ const MembersProvider = ({ children }) => {
    *
    * ¡¡¡ But does not modify either state !!!
    */
-  const getNewPaymentState = ({
+  const setPaymentState = ({
     payment,
     member,
   }) => {
@@ -241,7 +241,7 @@ const MembersProvider = ({ children }) => {
     // Stripe payments
     subscriptions, setSubscriptions,
     // functions
-    getNewPaymentState,
+    setPaymentState,
     saveNewSubscription,
     createSubscription,
     getSubscription,

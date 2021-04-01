@@ -12,7 +12,7 @@ const DuesSummary = ({
   showDiscount,
   showDonation,
   showTotal = false,
-  colLayout = {},
+  colLayout = { xs: { span: 24 } },
 }) => {
 
   const duesSummary = useMemo(() => {
@@ -53,7 +53,7 @@ const DuesSummary = ({
       showTotal ||
       total
     ) {
-    _duesList = <Row>
+      _duesList = <Row>
         <Col {...colLayout}>
           <List
             size="small"

@@ -26,6 +26,7 @@ import { dbFields } from '../../../../data/members/airtable/airtable-fields';
 import * as memberTypes from '../../../../data/members/member-types';
 import { ACCOUNT_FORMS } from '../../../../data/members/member-form-names';
 // utils
+import auth0 from '../../../../pages/api/utils/auth0'; // for backend getServerSideProps
 import {
   updateMember,
   getStripePriceId,
@@ -310,3 +311,16 @@ const Account = ({
 }
 
 export default Account;
+
+export async function getServerSideProps(context) {
+  const session = await auth0.getSession(context.req);
+  if (session) {
+    return {
+      redirect: {
+        destination: '/members/home?signup',
+        permanent: false,
+      },
+    }
+  }
+  return { props: {} }
+};

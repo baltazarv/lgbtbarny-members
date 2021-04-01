@@ -3,11 +3,14 @@
  * * <MemberInfoForm />
  * * PaymentForm
  *
- * Submission handled on onFormFinish()
+ * MemberInfoForm submission handled on onFormFinish() of this component
+ * PaymentForm submission handled on its own onFinish() > onSuccess()
+ *   & calls Signup's onPaymentSuccessful()
  *
  * Users will only see this if they are logged in.
  */
 import { useState, useMemo, useContext, useReducer, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { Card, Steps, Form, Divider, Button, Row, Col } from 'antd';
 import { Container } from 'react-bootstrap';
 import MemberInfoForm from './member-info-form';
@@ -23,7 +26,12 @@ import { PAYMENT_FIELDS } from '../../../../data/payments/payment-fields';
 import { STRIPE_FIELDS } from '../../../../data/payments/stripe/stripe-fields';
 import { dbFields } from '../../../../data/members/airtable/airtable-fields';
 // utils
-import { duesInit, duesReducer, getMemberFees } from '../../../../utils/payments/member-dues'; // , setDonation
+import {
+  duesInit,
+  duesReducer,
+  getMemberFees,
+  getTotal,
+} from '../../../../utils/payments/member-dues'; // , setDonation
 import {
   updateMember,
   addPayment,
@@ -31,6 +39,7 @@ import {
   getNextPaymentDate,
   getPlanFee,
   getPaymentPayload,
+  getPrimaryEmail, // email for stripe payments
 } from '../../../../utils/members/airtable/members-db';
 import { getCertifyType, CERTIFY_OPTIONS } from '../../../../data/members/airtable/airtable-values';
 import { LAW_NOTES_PRICE } from '../../../../data/payments/law-notes-values';
@@ -43,6 +52,7 @@ const { Step } = Steps;
 const Signup = ({
   setModalType,
   // setSignupType,
+  closeModal,
 }) => {
   const {
     authUser,
@@ -50,9 +60,10 @@ const Signup = ({
     setMember,
     userPayments,
     setUserPayments,
-    getNewPaymentState,
+    setPaymentState,
     memberPlans,
     updateCustomer,
+    userEmails, // get email for stripe payments
   } = useContext(MembersContext);
   const memberInfoFormRef = useRef(null);
   const [certifyChoice, setCertifyChoice] = useState('');
@@ -209,7 +220,8 @@ const Signup = ({
   };
 
   const total = useMemo(() => {
-    return (dues.fee ? dues.fee : 0) - (dues.discount ? dues.discount : 0) + (dues.lawNotesAmt ? dues.lawNotesAmt : 0) + (dues.donation ? dues.donation : 0);
+    if (dues) return getTotal(dues);
+    return null;
   }, [dues]);
 
   // when user is not eligible
@@ -245,6 +257,12 @@ const Signup = ({
       showTotal={memberSignUpType === memberTypes.USER_ATTORNEY}
     />;
   }, [dues, memberSignUpType, hasDiscount]);
+
+  // email for stripe payment
+  const primaryEmail = useMemo(() => {
+    const email = getPrimaryEmail(userEmails);
+    return email;
+  }, [userEmails]);
 
   // handle change of values on forms
   const onFormChange = (formName, info) => {
@@ -315,7 +333,7 @@ const Signup = ({
             console.log(addedPayment.error);
             setIsServerError(true);
           } else {
-            const newStateItems = getNewPaymentState({
+            const newStateItems = setPaymentState({
               member: updatedMember.member,
               payment: addedPayment.payment,
             })
@@ -342,11 +360,16 @@ const Signup = ({
         setLoading(false);
       }
     }
-    if (formName === SIGNUP_FORMS.payment) {
+
+    // if (formName === SIGNUP_FORMS.payment) {
       // payment processing from PaymentForm onFinish() > onSuccess()
-    }
+    // }
   };
 
+  const onPaymentSuccessful = () =>
+{
+  setPaymentSuccessful(true);
+}
   /** content */
 
   // Not-logged-in content in LoginPwdless component
@@ -499,8 +522,9 @@ const Signup = ({
             {/* TODO: remove when payment submitted b/c `Warning: Can't perform a React state update on an unmounted component. This is a no-op, but it indicates a memory leak in your application. To fix, cancel all subscriptions and asynchronous tasks in a useEffect cleanup function.` */}
             <PaymentForm
               duesSummList={duesSummary}
+              emailAddress={primaryEmail}
               initialValues={{
-                [PAYMENT_FIELDS.billingname]: `${member && member.fields[dbFields.members.firstName]} ${member && member.fields[dbFields.members.lastName]}`,
+                [PAYMENT_FIELDS.billingname]: `${member?.fields[dbFields.members.firstName]} ${member?.fields[dbFields.members.lastName]}`,
                 // [PAYMENT_FIELDS.renewDonation]: true,
                 [STRIPE_FIELDS.subscription.collectionMethod]: STRIPE_FIELDS.subscription.collectionMethodValues.chargeAutomatically,
               }}
@@ -508,9 +532,13 @@ const Signup = ({
               hasDiscount={hasDiscount} // appy as subscription coupon
               loading={loading}
               setLoading={setLoading}
-              paymentSuccessful={paymentSuccessful}
-              setPaymentSuccessful={setPaymentSuccessful}
+
+              onPaymentSuccessful={onPaymentSuccessful}
             />
+
+            {primaryEmail &&
+              <div className="text-left mt-3" style={{ fontSize: '0.9em', lineHeight: 1.5 }}>You will get an email confirmation to <strong>{primaryEmail}</strong>. Change your primary email address in <em><Link href="/members/accounts"><a onClick={closeModal}>My Account</a></Link> &gt; Email addresses</em>.</div>
+            }
           </>
         }
 

@@ -53,7 +53,7 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
 const menuKeys = ['profile', 'perks', 'account'];
 const notifThemeColor = '#BC1552';
 
-const Members = ({
+const MembersPage = ({
   // set server-side
   loggedInUser,
   loggedInMember,
@@ -617,7 +617,7 @@ const Members = ({
   );
 };
 
-export default Members;
+export default MembersPage;
 
 export async function getServerSideProps(context) {
   // req not available with getStaticProps

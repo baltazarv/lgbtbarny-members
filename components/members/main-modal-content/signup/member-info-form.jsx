@@ -2,7 +2,7 @@
 /**
  * Form processed by Signup component's Form.Provider onFormFinish
  */
-import { useMemo, useContext } from 'react';
+import { useMemo } from 'react';
 import { Form, Button, Input, Row, Col, Select } from 'antd';
 import { MailOutlined } from '@ant-design/icons';
 import MemberFields from './member-fields';
@@ -100,7 +100,7 @@ const MemberInfoForm = ({
                   if (!value || initialValues.email === value) {
                     return Promise.resolve();
                   }
-                  return Promise.reject(new Error(`Confirm email address above or edit.`));
+                  return Promise.reject(new Error(`Confirm email or enter a different one.`));
                 },
               }),
             ]}
