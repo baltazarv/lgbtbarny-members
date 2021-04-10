@@ -19,6 +19,7 @@ import {
   getMemberByEmail,
   updateMember,
   getMemberType,
+  getGraduationDate,
   getMemberStatus,
   getAccountIsActive,
 } from './members-table-utils';
@@ -42,6 +43,7 @@ import {
   getNextPaymentDate,
   getPaymentPayload,
   getPaymentIsDiscounted,
+  getPaymentPlanType,
 } from './payments-table-utils';
 
 // emails
@@ -51,11 +53,13 @@ import {
 } from './emails-table-utils';
 
 export {
+
   // members
   createMember, // api call
   getMemberByEmail,
   updateMember,
   getMemberType,
+  getGraduationDate,
   getMemberStatus,
   getAccountIsActive,
 
@@ -75,6 +79,7 @@ export {
   getNextPaymentDate,
   getPaymentPayload,
   getPaymentIsDiscounted,
+  getPaymentPlanType,
 
   // emails
   createEmail, // api call

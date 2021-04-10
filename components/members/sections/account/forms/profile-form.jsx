@@ -6,7 +6,11 @@ import { UserOutlined } from '@ant-design/icons';
 import { dbFields } from '../../../../../data/members/airtable/airtable-fields';
 import { MembersContext } from '../../../../../contexts/members-context';
 import * as memberTypes from '../../../../../data/members/member-types';
-import { getMemberStatus, getNextPaymentDate } from '../../../../../utils/members/airtable/members-db';
+import {
+  getMemberStatus,
+  getNextPaymentDate,
+  getGraduationDate,
+} from '../../../../../utils/members/airtable/members-db';
 
 const { Link } = Typography;
 
@@ -25,10 +29,23 @@ const ProfileForm = ({
   // no payment date for plans with no term limits, eg, Volunteer
   const nextPaymentDate = useMemo(() => {
     if (userPayments && memberPlans) {
-      return getNextPaymentDate({ userPayments, memberPlans, format: 'MMMM Do, YYYY' });
+      return getNextPaymentDate({
+        userPayments,
+        memberPlans,
+        format: 'MMMM Do, YYYY',
+      });
     }
     return null;
   }, [userPayments, memberPlans]);
+
+  const graduationDate = useMemo(() => {
+    return getGraduationDate({
+      member,
+      userPayments,
+      memberPlans,
+      format: 'MMMM Do, YYYY',
+     });
+  }, [member, userPayments, memberPlans]);
 
   /**
    * Results:
@@ -61,7 +78,7 @@ const ProfileForm = ({
     // graduated student
     if (memberStatus === 'graduated') return <>
       <p className="text-danger text-center">
-        It looks like you've graduated. Congratulations! You can now join the LGBT Bar Association as an attorney member.
+        It looks like you have graduated. Congratulations! You can now join the LGBT Bar Association as an attorney member.
         </p>
       <p className="text-center">
         <Button type="primary" onClick={() => onLink('signup')}>Upgrade membership</Button>
@@ -73,6 +90,14 @@ const ProfileForm = ({
       return <ul>
         <li>Your account is <strong className="text-success">active</strong>.</li>
         {nextPaymentDate && <li>Your next membership payment is due on <strong>{nextPaymentDate}</strong>. To update <strong>payment info</strong>, edit in <Link href="#edit-payment-info">Payment info</Link> section below.</li>}
+      </ul>;
+    }
+
+    // active student
+    if (memberStatus === memberTypes.USER_STUDENT) {
+      return <ul>
+        <li>Your student membership is <strong className="text-success">active</strong>.</li>
+        {graduationDate && <li>You will be able to upgrade to an attorney membership by <strong className="text-nowrap">{graduationDate}</strong>.</li>}
       </ul>;
     }
 

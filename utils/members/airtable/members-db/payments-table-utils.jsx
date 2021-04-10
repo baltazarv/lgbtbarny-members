@@ -5,12 +5,13 @@ import {
   PAYMENT_STATUS_PROCESSED,
 } from '../../../../data/members/airtable/airtable-values';
 import {
-  getCurrentPlans,
-} from './plans-table-utils';
-import {
+  // members
   getMemberStatus,
   getAccountIsActive,
-} from './members-table-utils';
+  //plans
+  getLastPlan,
+  getCurrentPlans,
+} from './index';
 import { dbFields } from '../../../../data/members/airtable/airtable-fields';
 
 /** API calls */
@@ -26,7 +27,7 @@ const getUserPayments = async (paymentIds) => {
     body: JSON.stringify({ paymentIds })
   });
   const { payments, error } = await result.json();
-  if (error) return({ error });
+  if (error) return ({ error });
   if (payments) return ({ payments });
 }
 
@@ -56,6 +57,10 @@ const addPayment = async (newPayment) => {
   }
 }
 
+/**
+ * functions that take state objects
+ * */
+
 // given userPayments object, returns the last payment record
 const getLastPayment = (userPayments) => {
   if (!userPayments) return null;
@@ -65,26 +70,27 @@ const getLastPayment = (userPayments) => {
   });
 };
 
-// returns due date, normally one year after last pay date, unless archived 2 year plan
-// pass moment format to get formatted string, otherwise return moment object
+/**
+ * Returns due date, normally one year after last pay date, unless archived 2-year plan.
+ * If student, will return the wrong date. Use `getGraduationDate` instead.
+ * Pass moment format to get formatted string, otherwise return moment object.
+ *
+ * @param {object} payload
+ * @returns moment object, formatted string, or null
+ */
 const getNextPaymentDate = ({
   userPayments,
   memberPlans, // 1 yr unless '2-Year Sustaining' plan
-  format,
+  format, // moment format
 }) => {
   if (userPayments && memberPlans) {
     const lastPayment = getLastPayment(userPayments);
-    if (lastPayment) {
-      // pay date
+    const lastPlan = getLastPlan({ userPayments, memberPlans });
+    if (lastPayment && lastPlan) {
       const lastPayDate = moment(new Date(lastPayment.fields.date));
-      // plan term
-      const lastPlanId = lastPayment.fields[dbFields.payments.plans][0];
-      const lastPlan = memberPlans.find((plans) => plans.id === lastPlanId);
-      let termInYears = lastPlan.fields[dbFields.plans.termYears];
-      if (termInYears) {
-        if (format) return lastPayDate.add(termInYears, 'y').format(format); // 'MMMM Do, YYYY'
-        return lastPayDate.add(termInYears, 'y');
-      } // if no term limit, return null
+      const termInYears = lastPlan.fields[dbFields.plans.termYears] || 1;
+      if (format) return lastPayDate.add(termInYears, 'y').format(format); // 'MMMM Do, YYYY'
+      return lastPayDate.add(termInYears, 'y');
     }
   }
   return null;
@@ -156,6 +162,30 @@ const getPaymentIsDiscounted = (userPayments, memberPlans) => {
   return false;
 };
 
+/**
+ * Given one payment, will return type, eg, "attorney", "student", "law-notes"
+ * @param {object} payload
+ * @returns string or null
+ */
+const getPaymentPlanType = ({
+  payment,
+  memberPlans,
+}) => {
+  if (payment && memberPlans) {
+    if (payment?.fields[dbFields.payments.plans]) {
+      // there should only be one payment type
+      const planId = payment.fields[dbFields.payments.plans][0];
+      const paymentPlan = memberPlans.find((plan) => plan.id === planId);
+      let planType = null;
+      if (paymentPlan) planType = paymentPlan.fields[dbFields.plans.type]
+      return planType;
+    } else {
+      console.log('Warning: payment', payment, 'has no plans!')
+    }
+  }
+  return null;
+}
+
 export {
   // API calls
   getUserPayments,
@@ -165,9 +195,9 @@ export {
   getNextPaymentDate,
   getPaymentPayload,
   getPaymentIsDiscounted,
+  getPaymentPlanType,
 
-  // from members file
-  // status based on payments
+  // members-table-utils
   getMemberStatus,
   getAccountIsActive,
 };

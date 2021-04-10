@@ -15,7 +15,11 @@ const CollectionMethodForm = ({
   form,
   loading,
 }) => {
-  const { userPayments, memberPlans, subscriptions } = useContext(MembersContext);
+  const {
+    userPayments,
+    memberPlans,
+    subscriptions,
+  } = useContext(MembersContext);
 
   const collectionMethod = useMemo(() => {
     if (subscriptions) {

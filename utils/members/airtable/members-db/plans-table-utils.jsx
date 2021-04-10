@@ -3,7 +3,9 @@
  * Import & export functions that take plans table data.
  */
 import {
+  // payments
   getLastPayment,
+  getPaymentPlanType,
 } from './payments-table-utils';
 import { dbFields } from '../../../../data/members/airtable/airtable-fields';
 
@@ -130,4 +132,7 @@ export {
   getPlanFee,
   getMemberPlanFee,
   getStripePriceId,
+
+  // payments-table-utils
+  getPaymentPlanType,
 };

@@ -1,7 +1,10 @@
 import moment from 'moment';
 import {
+  // plans
   getLastPlan,
-  getLastPayment,
+  // payments
+  getNextPaymentDate,
+  getPaymentPlanType,
 } from '../../../../utils/members/airtable/members-db';
 import * as memberTypes from '../../../../data/members/member-types';
 import { dbFields } from '../../../../data/members/airtable/airtable-fields';
@@ -41,7 +44,7 @@ const getMemberByEmail = async (email) => {
  * Update member info before signup.
  * Does not update member state!
  */
- const updateMember = async (userToUpdate) => {
+const updateMember = async (userToUpdate) => {
   try {
     const res = await fetch('/api/members/update-member', {
       method: 'PUT',
@@ -58,6 +61,7 @@ const getMemberByEmail = async (email) => {
 };
 
 /**
+ * Get member type by last member plan
  *
  * @param {*} member
  * @param {*} userPayments
@@ -78,12 +82,58 @@ const getMemberType = ({ member, userPayments, memberPlans }) => {
 };
 
 /**
+ * Student memberships expire:
+ * * Either on 5/31 of the year that they graduate,
+ * * But not over 4 years after 5/31 of the year they joined, regardless of grad year.
+ *
+ * Return null if no student membership "payment"
+ *
+ * @param {object} payload
+ * @returns
+ */
+const getGraduationDate = ({
+  member,
+  userPayments,
+  memberPlans,
+  format,
+}) => {
+  if (member && memberPlans && userPayments && userPayments?.length > 0) {
+    const studentPayment = userPayments.find((payment) => {
+      const paymentPlanType = getPaymentPlanType({ payment, memberPlans });
+      return paymentPlanType === memberTypes.USER_STUDENT;
+    });
+    if (studentPayment) {
+      const paymentDate = studentPayment.fields[dbFields.payments.date];
+      const gradYear = member.fields[dbFields.members.gradYear];
+
+      // after 4 years after 5/31 of the year they started membership?
+      const paymentYearPlus4 = moment(paymentDate).year() + 4;
+      const dateExpiresAfterPayment = moment(`5/31/${paymentYearPlus4}`, 'M/D/YYYY');
+
+      // after 5/31 of the year they write for their graduation year?
+      const dateExpiresAfterGradYear = moment(`5/31/${gradYear}`, 'M/D/YYYY')
+      if (dateExpiresAfterPayment.isBefore(dateExpiresAfterGradYear)) {
+        if (format) return dateExpiresAfterPayment.format(format);
+        return dateExpiresAfterPayment;
+      } else {
+        if (format) return dateExpiresAfterGradYear.format(format);
+        return dateExpiresAfterGradYear;
+      }
+    };
+  }
+  // if not student or no student payment, return null
+  return null;
+}
+
+/**
  * Return values:
  * * `pending`
  * * `attorney` (active)
  * * `student` (active)
  * * `expired (attorney)`
  * * `graduated (student)`
+ * * `subscribed (law-notes)`
+ * * `not-subscribed (law-notes)`
  *
  * If no userPayments, 'pending'
  * Match on memberPlans for type, 'attorney' or 'member'
@@ -98,22 +148,38 @@ const getMemberStatus = ({
   memberPlans,
   member, // for student grad year
 }) => {
-  if (!userPayments) return 'pending';
-  if (member && memberPlans) {
-    const lastPlanType = getMemberType({ member, userPayments, memberPlans });
-    if (lastPlanType) {
+  // console.log('getMemberStatus userPayments', userPayments, 'memberPlans', memberPlans, 'member', member)
+
+  if (!userPayments) {
+    // console.log('STATUS: PENDING')
+    return 'pending';
+  } else {
+    if (member && memberPlans) {
+      const lastPlan = getLastPlan({ userPayments, memberPlans });
+      const lastPlanType = lastPlan.fields[dbFields.plans.type];
+
       // if attorney, 'attorney' or 'expired'
       if (lastPlanType === memberTypes.USER_ATTORNEY) {
-        const lastPayDate = getLastPayment(userPayments).fields.date;
-        const nextDueDate = moment(lastPayDate).add(1, 'years');
+        const nextDueDate = getNextPaymentDate({ userPayments, memberPlans });
         const isPastDue = moment().isAfter(nextDueDate);
-        if (isPastDue) return 'expired';
+
+        if (isPastDue) {
+          // console.log('STATUS: EXPIRED')
+          return 'expired';
+        }
+        // console.log('STATUS:', memberTypes.USER_ATTORNEY)
         return memberTypes.USER_ATTORNEY;
       }
+
       // if student, 'student' or 'graduated'
       else if (lastPlanType === memberTypes.USER_STUDENT) {
-        // TODO: review if there should be a limit on years after last student "payment", maybe 4 or 5 years after, in spite of what user writes for their grad year
-        if (member?.fields[dbFields.members.gradYear] < new Date().getFullYear()) return 'graduated';
+        // graduation date
+        const graduationDate = getGraduationDate({ member, userPayments, memberPlans });
+
+        // if graduation date after today
+        if (graduationDate && moment().isAfter(graduationDate)) return 'graduated';
+
+        // if not graduated
         return memberTypes.USER_STUDENT;
       }
     }
@@ -158,6 +224,7 @@ export {
   updateMember,
 
   getMemberType,
+  getGraduationDate,
   getMemberStatus,
   getAccountIsActive,
   getFullName,
