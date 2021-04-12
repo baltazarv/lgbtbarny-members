@@ -284,7 +284,7 @@ const PaymentInfo = ({
     <Modal
       title="Payment History"
       visible={billingModalVisible}
-      onDone={() => setBillingModalVisible(false)}
+      onCancel={() => setBillingModalVisible(false)}
       footer={[
         <Button
           key="custom-ok"
@@ -328,6 +328,7 @@ const PaymentInfo = ({
       // modal with buttons in body
       bodyStyle={{ padding: 0 }}
       footer={null}
+      onCancel={() => setCardModalVisible(false)}
     >
       <UpdateCardForm
         loading={loading}
