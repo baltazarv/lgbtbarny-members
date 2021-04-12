@@ -161,7 +161,6 @@ const MembersPage = ({
   // track when auth session changes
   // if not logged in, redirect from pages for logged-in users
   useEffect(() => {
-    console.log('authUser', authUser);
     if (!authUser) {
       if (router.asPath === '/members/account') router.replace(`/members/[page]`, `/members/participate`, { shallow: true });
     }
@@ -292,25 +291,10 @@ const MembersPage = ({
       } else if (router.query.hasOwnProperty('login-password')) {
         // deprecated for login (password-less)
         openModal('login-password')
+      } else if (router.asPath.split('?')[0]) {
+        // close modal if no query string, eg, '?signup'
+        setModalVisible(false);
       }
-
-      // FOR PROTOTYPE: set user based on router.query.type
-      // if (router.query.type) { // && !loggedInUser
-      //   let _member = '';
-      //   if (router.query.type === 'attorney') {
-      //     _member = sampleMembers.attorney;
-      //   } else if (router.query.type === 'student') {
-      //     _member = sampleMembers.student;
-      //   } else if (router.query.type === 'non-member') {
-      //     _member = sampleMembers.nonMember;
-      //   }
-      //   setMember(_member);
-
-      //   // set sample data for prototypes
-      //   if (_member.sample) {
-      //     setUserEmails(_member.fields.emails)
-      //   }
-      // }
     }
   }, [router.query, member, authUser]); // , member, authUser
 
@@ -328,6 +312,7 @@ const MembersPage = ({
     }
 
     // add query string to url, useEffect will open modal
+    // '?renew' & '?upgrade' may never be linked to
     else if (key === 'signup' ||
       key === 'law-notes-subscribe' ||
       key === 'renew' ||
@@ -457,6 +442,7 @@ const MembersPage = ({
   const changeRoute = (key) => {
     for (const objKey in routes) {
       if (key === routes[objKey]) {
+        // TODO: remove prototype query 'type'
         const query = router.query.type ? `?type=${router.query.type}` : '';
         router.push(`/members/[page]${query}`, `/members/${objKey}${query}`, { shallow: true, scroll: true }).then(() => window.scrollTo(0, 0)); // force scroll to to b/c scroll: true not working
       }
@@ -503,6 +489,13 @@ const MembersPage = ({
       }
     }
   };
+
+  const closeModal = () => {
+    // when close modal with query string, eg, '?signup', will remove that query string
+    // useEffect(..., [router.query]) will close modal
+    const urlWithoutQuery = router.asPath.split('?')[0];
+    router.replace(`${router.pathname}`, `${urlWithoutQuery}`, { shallow: true });
+  }
 
   const openModal = (type) => {
     let _type = type;
@@ -596,7 +589,8 @@ const MembersPage = ({
           modalType={modalType}
           setModalType={setModalType}
           modalVisible={modalVisible}
-          setModalVisible={setModalVisible}
+          closeModal={closeModal}
+
           // for signup modal only
           signupType={signupType}
           setSignupType={setSignupType}

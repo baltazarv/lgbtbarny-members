@@ -225,7 +225,7 @@ const EmailPrefs = ({
       <div className="mt-4">{primaryEmail
         ? <span>We will email you at <strong>{primaryEmail}</strong>. </span>
         : ''
-      }To update <strong>email address</strong>, edit in <a href="#edit-emails">Email</a> section above.</div>
+      }To update <strong>email address</strong>, edit in <a href="#emails">Email</a> section above.</div>
 
     </Card>
   </>;

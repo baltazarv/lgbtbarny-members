@@ -89,7 +89,7 @@ const ProfileForm = ({
     if (memberStatus === memberTypes.USER_ATTORNEY) {
       return <ul>
         <li>Your account is <strong className="text-success">active</strong>.</li>
-        {nextPaymentDate && <li>Your next membership payment is due on <strong>{nextPaymentDate}</strong>. To update <strong>payment info</strong>, edit in <Link href="#edit-payment-info">Payment info</Link> section below.</li>}
+        {nextPaymentDate && <li>Your next membership payment is due on <strong>{nextPaymentDate}</strong>. To update <strong>payment info</strong>, edit in <Link href="#payment-info">Payment info</Link> section below.</li>}
       </ul>;
     }
 

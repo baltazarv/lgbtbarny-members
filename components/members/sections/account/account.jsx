@@ -217,6 +217,9 @@ const Account = ({
       onFormFinish={onFormFinish}
       onFormChange={onFormChange}
     >
+
+      {/* Profile */}
+
       <div className="mb-3">
         <AccountsForm
           name={ACCOUNT_FORMS.editProfile}
@@ -231,7 +234,9 @@ const Account = ({
         />
       </div>
 
-      <div id="edit-emails" className="mb-3">
+      {/* Email addresses */}
+
+      <div id="emails" className="mb-3">
         <AccountsItem
           // name={ACCOUNT_FORMS.editEmails}
           title="Email addresses"
@@ -242,6 +247,8 @@ const Account = ({
           render={(args) => <EmailsForm {...args} />}
         />
       </div>
+
+      {/* Membership info/qualification */}
 
       {(
         memberType !== memberTypes.USER_ANON
@@ -283,8 +290,10 @@ const Account = ({
         />
       </div>
 
+      {/* Additional info */}
+
       {memberType === memberTypes.USER_ATTORNEY
-        && <div className="mb-3" id="edit-payment-info">
+        && <div className="mb-3" id="payment-info">
           <AccountsForm
             name={ACCOUNT_FORMS.editPayment}
             title="Payment information"
@@ -296,7 +305,9 @@ const Account = ({
         </div>
       }
 
-      <div className="mb-3">
+      {/* Email preferences */}
+
+      <div className="mb-3" id="email-prefs">
         <EmailPrefs
           title="Email preferences"
           memberType={memberType}

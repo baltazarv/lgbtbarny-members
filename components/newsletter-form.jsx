@@ -304,12 +304,12 @@ const NewsletterForm = ({
           bordered
           dataSource={[
             <span><Link
-              href="/members/account#edit-emails"
+              href="/members/account#emails"
               scroll={false}
               shallow={true}
             ><a>Account Settings</a></Link> &gt; <strong><em>Email addresses</em></strong></span>,
             <span><Link
-              href="/members/account"
+              href="/members/account#email-prefs"
               shallow={true}
               scroll={false}
             >

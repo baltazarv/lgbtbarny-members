@@ -1,17 +1,29 @@
+/**
+ * Modal types
+ *************
+ * * login (passwordless): when logged in...
+ * * signup
+ * * newsletter
+ *
+ * Not currently being used:
+ * * login-password
+ * * law-notes-subscribe
+ */
 import { useMemo } from 'react';
 import { Modal, Button } from 'antd';
-import Signup from '../main-modal-content/signup/signup';
 import LoginPwdLess from '../main-modal-content/login/login-pwdless';
-// deprecated for passwordless-login
+// LoginPassword deprecated for LoginPwdLess
 import LoginPassword from '../main-modal-content/login/login-password';
+import Signup from '../main-modal-content/signup/signup';
 import LawNotesSubscribe from '../main-modal-content/law-notes-subscribe';
-import NewsletterSignup from '../../newsletter-form';
+import NewsletterForm from '../../newsletter-form';
 
 const MemberModal = ({
   modalType,
   setModalType,
   modalVisible,
-  setModalVisible,
+  closeModal,
+
   // for signup modal type only
   signupType,
   setSignupType,
@@ -22,8 +34,8 @@ const MemberModal = ({
     if (modalType === 'login') {
       return <LoginPwdLess
         key="login"
-        // setModalType={setModalType}
-        // setSignupType={setSignupType}
+      // setModalType={setModalType}
+      // setSignupType={setSignupType}
       />;
     } else if (modalType === 'login-password') {
       // deprecated for passwordless-login
@@ -41,7 +53,7 @@ const MemberModal = ({
         setModalType={setModalType}
         signupType={signupType}
         setSignupType={setSignupType}
-        closeModal={() => setModalVisible(false)}
+        closeModal={closeModal}
       />;
     } else if (modalType === 'law-notes-subscribe') {
       return <LawNotesSubscribe
@@ -50,8 +62,9 @@ const MemberModal = ({
       />;
     } else if (modalType === 'newsletter') {
       // TODO: come back to
-      return <NewsletterSignup
+      return <NewsletterForm
         key="newsletter"
+        closeModal={closeModal}
       />;
     }
   }, [modalType, signupType]);
@@ -61,7 +74,7 @@ const MemberModal = ({
     if (okButton) footer.push(okButton);
     footer.push(<Button
       key="custom-cancel"
-      onClick={() => setModalVisible(false)}
+      onClick={closeModal}
       type="danger"
       ghost
     >
@@ -74,7 +87,7 @@ const MemberModal = ({
     key="member-modal"
     title={null}
     visible={modalVisible}
-    onCancel={() => setModalVisible(false)}
+    onCancel={closeModal}
     // centered={true} // vertically
     // destroyOnClose={true}
     // maskClosable={false}
