@@ -69,7 +69,7 @@ const CleCerts = () => {
   isLoading && <Spinner loading={isLoading} />;
 
   return <>
-    <p>View and download CLE course certificates, for which you have registered and attended.</p>
+    <p>View and download CLE course certificates, for which you have registered and attended. If you do not find your certificate below, please contact <a href="mailto:support@le-gal.org" target="_blank" className="text-nowrap">support@le-gal.org</a></p>
 
     <PdfTable
       data={dataTransformed}
