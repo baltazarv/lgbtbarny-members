@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Breadcrumb, Button, Tabs } from 'antd';
 import { Container, Row, Col, Card } from 'react-bootstrap';
 import './member-content.less';

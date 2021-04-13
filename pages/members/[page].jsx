@@ -475,6 +475,7 @@ const MembersPage = ({
   };
 
   const logOut = () => {
+    setContentTitle('Loading...');
     window.location = '/api/auth/logout';
   };
 
@@ -621,11 +622,6 @@ export async function getServerSideProps(context) {
   let emailAddress = null,
     loggedInUser = null,
     loggedInMember = null;
-  // plans = null,
-  // userSubscriptions = null,
-  // userDefaultCard = null;
-  // loggedInMemberEmails = null,
-  // loggedInUserPayments = null,
 
   if (session) {
     try {
