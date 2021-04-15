@@ -40,6 +40,7 @@ const NewsletterForm = ({
   }
 
   useEffect(() => {
+    // IIFE
     (async function fetchSession() {
       const { session, error } = await getSession();
       if (session) setAuthUser(session.user);

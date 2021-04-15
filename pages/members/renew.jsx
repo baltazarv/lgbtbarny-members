@@ -94,6 +94,7 @@ const RenewFormPage = () => {
   // get plans
   useEffect(() => {
     if (!memberPlans) {
+      // IIFE
       (async function fetchPlans() {
         const { plans, error } = await getPlans();
         if (error) console.log('error', error);

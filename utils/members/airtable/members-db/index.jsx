@@ -22,6 +22,8 @@ import {
   getGraduationDate,
   getMemberStatus,
   getAccountIsActive,
+  getFullName,
+  getMemberFullName,
 } from './members-table-utils';
 
 // plans
@@ -62,6 +64,8 @@ export {
   getGraduationDate,
   getMemberStatus,
   getAccountIsActive,
+  getFullName,
+  getMemberFullName,
 
   // plans
   getPlans, // api call

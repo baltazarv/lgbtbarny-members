@@ -70,7 +70,11 @@ const MembersPage = ({
   // const { subscriptions, setSubscriptions } = useContext(PaymentsContext);
   const {
     // members
-    member, setMember, authUser, setAuthUser, userEmails, setUserEmails, userPayments, setUserPayments, memberPlans, setMemberPlans,
+    member, setMember,
+    authUser, setAuthUser,
+    userEmails, setUserEmails,
+    userPayments, setUserPayments,
+    memberPlans, setMemberPlans,
     // payments
     setSubscriptions, setDefaultCard
   } = useContext(MembersContext);
@@ -206,6 +210,7 @@ const MembersPage = ({
    */
   useEffect(() => {
     if (authUser && !userPayments) {
+      // IIFE
       (async function fetchUserPayments() {
         const user = member || loggedInMember;
         if (user?.fields[dbFields.members.payments]) {
@@ -366,6 +371,7 @@ const MembersPage = ({
       changeRoute(key);
     }
   }
+
   /**
    *** DASHBOARD ***
    * set data, ie, dashboard, when user info is established
@@ -466,6 +472,7 @@ const MembersPage = ({
   };
 
   const logIn = (query) => {
+    setContentTitle('Loading...');
     let page = router.query.page;
     if (page === 'law-notes-sample') page = 'law-notes-latest';
     if (page === 'cle-sample') page = 'cle-latest';

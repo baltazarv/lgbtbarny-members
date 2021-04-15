@@ -52,8 +52,6 @@ const updateMember = async (userToUpdate) => {
       body: JSON.stringify(userToUpdate),
     });
     const updatedUser = await res.json();
-    // console.log('updatedUser', updatedUser);
-    // setMember(updatedUser);
     return { member: updatedUser };
   } catch (error) {
     console.log({ error });

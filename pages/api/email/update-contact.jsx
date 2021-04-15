@@ -1,3 +1,7 @@
+/**
+ * email is required
+ * TODO: change payload signature to (email, { listIds... })
+ */
 import { sibContactsApi, sibUpdateContact } from '../utils/sendinblue';
 
 export default async (req, res) => {

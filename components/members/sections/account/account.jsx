@@ -25,17 +25,21 @@ import { MembersContext } from '../../../../contexts/members-context';
 import { dbFields } from '../../../../data/members/airtable/airtable-fields';
 import * as memberTypes from '../../../../data/members/member-types';
 import { ACCOUNT_FORMS } from '../../../../data/members/member-form-names';
+import { sibFields } from '../../../../data/emails/sendinblue-fields';
 // utils
 import auth0 from '../../../../pages/api/utils/auth0'; // for backend getServerSideProps
 import {
+  // members
   updateMember,
-  getStripePriceId,
   getMemberStatus,
+  getFullName,
+  // plans
+  getStripePriceId,
+  // emails
   getPrimaryEmail,
 } from '../../../../utils/members/airtable/members-db';
-import { getActiveSubscription } from '../../../../utils/payments/stripe-utils';
-import { getFullName } from '../../../../utils/members/airtable/members-db/members-table-utils';
-import { updateSubscription } from '../../../../utils/payments/stripe-utils';
+import { updateSubscription, getActiveSubscription } from '../../../../utils/payments/stripe-utils';
+import { updateContact } from '../../../../utils/emails/sendinblue-utils';
 
 const MenuIcon = ({
   name,
@@ -141,9 +145,16 @@ const Account = ({
     if (formName === ACCOUNT_FORMS.editProfile) {
       const customerId = member.fields[dbFields.members.stripeId];
       const name = getFullName(info.values[dbFields.members.firstName], info.values[dbFields.members.lastName]);
-      const updateCusResult = await updateCustomer({
+
+      // await not needed & don't need to save to any vars
+      updateCustomer({
         customerId,
         name,
+      });
+      updateContact({
+        email: primaryEmail,
+        [sibFields.contacts.attributes.firstname]: info.values[dbFields.members.firstName],
+        [sibFields.contacts.attributes.lastname]: info.values[dbFields.members.lastName],
       });
     }
   }
