@@ -160,7 +160,7 @@ const Account = ({
   }
 
   /**
-   * AccountItem switch primary email
+   * AccountsItem switch primary email
    */
 
   const emailTableDataSource = useMemo(() => {

@@ -4,7 +4,7 @@
 import { plansTable, minifyRecords } from '../utils/Airtable';
 
 export default async (req, res) => {
-  console.log('/api/members/get-plans');
+  // console.log('/api/members/get-plans');
 
   try {
     let plans = null;

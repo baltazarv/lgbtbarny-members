@@ -42,7 +42,7 @@ import {
   duesReducer,
   getMemberFees,
 } from '../../utils/payments/member-dues';
-import { createContact } from '../../utils/payments/stripe-utils';
+import { createCustomer } from '../../utils/payments/stripe-utils';
 // import '../../components/members/main-modal-content/login-signup.less';
 
 const { Content } = Layout;
@@ -212,7 +212,7 @@ const RenewFormPage = () => {
 
       // (1) create Stripe contact with email and name
       // TODO: check that there isn't already a customer with the same email address?
-      const stripeResp = await createContact({
+      const stripeResp = await createCustomer({
         email: emailAddress,
         name: `${info.values[firstName]} ${info.values[lastName]}`,
       })

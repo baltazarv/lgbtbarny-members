@@ -19,7 +19,7 @@ import { dbFields } from '../../../data/members/airtable/airtable-fields';
 // export default auth0.requireAuthentication(async function createPayment(req, res) {
 
 const createPayment = async (req, res) => {
-  console.log('/api/members/create-payment', req.body);
+  // console.log('/api/members/create-payment', req.body);
 
   const {
     userid,

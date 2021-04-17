@@ -74,6 +74,7 @@ export const dbFields = {
     address: 'address',
     verified: 'verified',
     primary: 'primary',
+    blocked: 'blocked',
   },
   // members base: payments table
   payments: {

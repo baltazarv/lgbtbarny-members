@@ -1,6 +1,6 @@
 // TODO: rename emails-table or email-addresses
 /**
- * Intermediary `AccountItem` with render props between this component and `Accounts` component.
+ * Intermediary `AccountsItem` component with render props between this component and `Accounts` component.
  *
  * Primary email switch handled by grand-parent component Account.
  * * `dataSource`, `selectedRowKeys`, and `setSelectedRowKeysprop` inside `value` prop sent by Account.
@@ -70,7 +70,7 @@ const EmailsForm = ({
             emailAddress,
             userid,
           });
-          if (email) setUserEmails([...userEmails].concat([ email ]));
+          if (email) setUserEmails([...userEmails].concat([email]));
           form.resetFields();
         }
         setAddEmailLoading(false);
@@ -232,8 +232,12 @@ const EmailsForm = ({
       className="mb-2"
       title={() => <>
         <p>The <strong className="text-primary">primary</strong> email address is the one that receives emails from the LGBT Bar of NY. Only verified addresses qualify.</p>
+
         <p><strong className="text-success">Verified</strong> email addresses are those which you have used to log into your account. Any verified email address can be used to log into your account.</p>
-        {editing && <p>You may not <strong className="text-danger">delete</strong> the primary email address or the one you used to log you into the current session.</p>}
+
+        <p>A <strong className="text-danger">blocked</strong> email address could be an email that was unsubscribed from email communications. Blocked addresses will not be able to receive emails.</p>
+
+        {editing && <p className="footnote">You may not <strong className="text-danger">delete</strong> the primary email address or the one you used to log you into the current session.</p>}
       </>}
     />
 

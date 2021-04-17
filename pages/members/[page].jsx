@@ -32,6 +32,9 @@ import './members.less';
 // data
 import { getDashboard } from '../../data/members/member-content/dashboards';
 import * as memberTypes from '../../data/members/member-types';
+import { dbFields } from '../../data/members/airtable/airtable-fields';
+// contexts
+import { MembersContext } from '../../contexts/members-context';
 // utils
 import {
   getMemberType,
@@ -40,11 +43,9 @@ import {
   getUserPayments,
 } from '../../utils/members/airtable/members-db';
 import { getMemberPageParentKey } from '../../utils/members/dashboard-utils';
+import { getMemberEmailListIds } from '../../utils/emails/sendinblue-utils';
 // server-side function to populate loggedInMember => member
 import { processUser } from '../api/init/processes';
-// contexts
-import { MembersContext } from '../../contexts/members-context';
-import { dbFields } from '../../data/members/airtable/airtable-fields';
 
 const { Sider } = Layout;
 

@@ -11,9 +11,14 @@
  * *   |_ /api/members/get-user-payments
  * * getPlans
  */
+// data
+import { dbFields } from '../../../data/members/airtable/airtable-fields';
+import { sibFields, sibLists } from '../../../data/emails/sendinblue-fields';
+// back end utils
+import { sibContactsApi, sibCreateContact } from '../utils/sendinblue';
 import { membersTable, emailsTable, minifyRecords, getMinifiedRecord } from '../utils/Airtable';
 import { stripe, getActiveSubscription, getPaymentMethodObject } from '../utils/stripe';
-import { dbFields } from '../../../data/members/airtable/airtable-fields';
+// front end utils
 import { getMemberFullName } from '../../../utils/members/airtable/members-db/members-table-utils';
 
 /**
@@ -71,16 +76,21 @@ const processUser = async (emailAddress) => {
 /**
  * When log in get all user emails.
  * Mark logged-in email verified.
- * Mark logged-in email primary if user doesn't have one.
+ * Mark logged-in email primary if user doesn't have one and if it's not blacklisted.
+ * When no SendinBlue contact for logged-in email, create contact.
+ * * Add newsletter as default list (lists modified on [page] useEffect)
+ * Mark blacklisted emails as blocked.
+ *
+ * There is always a logged-in email created before this process is run
  */
 const processUserEmails = async ({
   emailAddress,
   user,
-  isNewUser = false, // not used
 }) => {
   try {
-    let email = null;
     let emails = null;
+
+    // Get emails from Airtable
     const getUserEmails = async () => {
       const memberEmailIds = user?.fields.emails.join(',');
       const emailRecords = await emailsTable.select({
@@ -91,30 +101,87 @@ const processUserEmails = async ({
     emails = await getUserEmails();
 
     // Mark logged-in email as verified
-    let fieldsToUpdate = { verified: true };
+    // And mark all blacklisted verified emails as blocked
+    const contactsApi = new sibContactsApi();
 
-    // If no other primary emails, mark this one as primary
-    const primaryFound = emails.find((email) => email.fields.primary);
-    if (!primaryFound) fieldsToUpdate.primary = true;
+    let recordsToUpdate = [],
+      loggedInEmailId = null;
 
-    let emailRecords = [];
-    emailRecords = await emailsTable.select({
-      filterByFormula: `FIND("${emailAddress}", address)`,
-    }).firstPage();
-    if (emailRecords.length > 0) {
-      // email if not modified
-      email = minifyRecords(emailRecords)[0];
-      const id = emailRecords[0].id;
-      const updatedEmail = await emailsTable.update([
-        { id, fields: fieldsToUpdate }
-      ]);
-      // updated email
-      email = minifyRecords(updatedEmail)[0];
-      emails = await getUserEmails();
+    for (let i = 0; i < emails.length; i++) {
+      let fields = {};
+      const _email = emails[i];
+
+      if (_email.fields.verified || _email.fields.address === emailAddress) {
+        // Mark logged-in email verified
+        if (_email.fields.address === emailAddress) {
+          fields = { verified: true };
+          loggedInEmailId = _email.id;
+        }
+
+        try {
+          // if blacklisted on SendinBlue, mark blocked
+          const contactInfo = await contactsApi.getContactInfo(_email.fields.address);
+          if (contactInfo) {
+            const emailBlacklisted = contactInfo[sibFields.contacts.emailBlacklisted];
+            if (emailBlacklisted) {
+              fields[dbFields.emails.blocked] = true;
+
+              // if blacklisted, should not be primary email
+              if (_email.fields.primary) {
+                fields.primary = false;
+              }
+            } else {
+              fields[dbFields.emails.blocked] = false;
+            }
+          }
+        } catch (error) {
+          // if error status 404 'Error: Not Found', create verified email on SendinBlue
+          if (error.status === 404) {
+            const createContact = new sibCreateContact();
+            createContact.email = _email.fields.address;
+            // default list
+            createContact.listIds = [sibLists.newsletter];
+            createContact.firstname = user.fields[dbFields.members.firstName];
+            createContact.lastname = user.fields[dbFields.members.lastName];
+            try {
+              await contactsApi.createContact(createContact);
+              recordsToUpdate = [...recordsToUpdate].map((rec) => {
+                if (rec.id === _email.id) {
+                  rec.fields.emailBlacklisted = false;
+                }
+                return rec;
+              })
+            } catch (error) {
+              console.log('createContact ERROR', error)
+            }
+          }
+        }
+      }
+
+      // add all records to update so response can be all emails
+      recordsToUpdate.push({ id: _email.id, fields });
     }
-    // return unchanged email or updated email record
-    // user never changed
-    return { email, emails };
+
+    // If no other primary emails, mark logged-in one as primary (if not blacklisted)
+    const primaryFound = emails.find((email) => email.fields.primary);
+    if (!primaryFound) {
+      recordsToUpdate.map((e) => {
+        if (e.id === loggedInEmailId && !e.fields.emailBlacklisted) {
+          e.fields.primary = true;
+        } else {
+          e.fields.primary = false;
+        }
+      });
+    }
+
+    // console.log('recordsToUpdate', recordsToUpdate);
+
+    const updatedEmails = await emailsTable.update(recordsToUpdate);
+    // updated email
+    emails = minifyRecords(updatedEmails);
+
+    // console.log('updatedEmails', emails);
+    return { emails };
   } catch (error) {
     console.log(error);
     return { error };

@@ -3,7 +3,7 @@ import moment from 'moment';
 
 /** API calls */
 
-const createContact = async (fields) => {
+const createCustomer = async (fields) => {
   try {
     const { customer, error } = await fetch('/api/payments/create-customer', {
       method: "POST",
@@ -97,7 +97,7 @@ const getPaymentMethodObject = (pm, source) => {
 
 export {
   // API calls
-  createContact,
+  createCustomer,
   updateSubscription,
 
   getActiveSubscription,
