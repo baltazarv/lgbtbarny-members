@@ -1,3 +1,11 @@
+/*****************************
+ * Newsletter signup appears
+ *****************************
+ * * Stand-alone /newsletter form.
+ * * Modal window ?newsletter.
+ *
+ * Form only shows up to anonymous user. When logged-in, will show links to updating email and mailing list settings on Accounts page.
+ */
 import { useMemo, useState, useContext, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, Form, Input, Button, List, Divider } from 'antd';
@@ -9,7 +17,6 @@ import { MembersContext } from '../contexts/members-context';
 import { dbFields } from '../data/members/airtable/airtable-fields';
 import { sibFields, sibLists } from '../data/emails/sendinblue-fields';
 // utils
-import { getPrimaryEmail } from '../utils/members/airtable/members-db';
 import { getSession, getLoggedInEmail } from '../utils/auth';
 import { getContactInfo, createContact, updateContact } from '../utils/emails/sendinblue-utils';
 import './members/main-modal-content/login-signup.less';
@@ -19,7 +26,7 @@ const NewsletterForm = ({
 }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const { member, userEmails, authUser, setAuthUser } = useContext(MembersContext);
+  const { authUser, setAuthUser } = useContext(MembersContext);
   // SendinBlue contact info
   const [sibContact, setSibContact] = useState(null);
   // error types
@@ -34,7 +41,7 @@ const NewsletterForm = ({
   const ERR_EMAIL_UNSUBSCRIBED = 'emailUnsubscribed';
 
   const ERROR_MESSAGES = {
-    emailExists: <>The email you entered is already subscribed to the Newsletter. <Link href="/api/auth/login">Login</Link> to update your email preferences.</>,
+    emailExists: <>The email you entered is already subscribed to the Newsletter. <Link href="/api/auth/login">Log in</Link> to update your email preferences.</>,
     emailNotOnList: <>The email you entered is in the system, but is not subscribed to the newsletter.</>,
     emailUnsubscribed: <>The email <strong>{form.getFieldValue(dbFields.emails.address) && form.getFieldValue(dbFields.emails.address)}</strong> has been unsubscribed from all mailings. Re-subscribe to the newsletter?</>,
   }
@@ -52,14 +59,6 @@ const NewsletterForm = ({
       return getLoggedInEmail(authUser)
     }
   }, [authUser])
-
-  const primaryEmail = useMemo(() => {
-    if (userEmails) {
-      const email = getPrimaryEmail(userEmails)
-      return email;
-    }
-    return null;
-  }, [userEmails])
 
   const onValuesChange = (changedValues, allValues) => {
     setLoading(false);
@@ -82,15 +81,14 @@ const NewsletterForm = ({
 
     setLoading(true);
     const email = form.getFieldValue(dbFields.emails.address);
+    // user not logged in, cannot rely on state
     const { contact, error } = await getContactInfo(email);
 
-    console.log('CONTACT INFO', contact);
-    const newsletterListId = sibLists.newsletter;
+    {const newsletterListId = sibLists.newsletter.id;
     if (contact) {
       setSibContact(contact);
 
       const subscribedToNewsletter = contact.listIds?.find((id) => id === newsletterListId);
-      console.log('newsletterListId', newsletterListId, 'contact.listIds', contact.listIds, 'subscribedToNewsletter', subscribedToNewsletter);
 
       if (contact[sibFields.contacts.emailBlacklisted]) {
         setSubmitError(ERR_EMAIL_UNSUBSCRIBED);
@@ -99,12 +97,11 @@ const NewsletterForm = ({
       } else {
         setSubmitError(ERR_EMAIL_EXISTS);
       }
-      // console.log('contact', contact);
-    } else {
+    } else { // error message "Contact does not exist"
       const firstname = form.getFieldValue(dbFields.members.firstName);
       const lastname = form.getFieldValue(dbFields.members.lastName);
       let listIds = [];
-      listIds.push(sibLists.newsletter);
+      listIds.push(sibLists.newsletter.id);
       const payload = {
         email,
         listIds,
@@ -114,13 +111,13 @@ const NewsletterForm = ({
       const { contact, error } = await createContact(payload);
       console.log('new contact', contact);
       setIsSubmitted(true);
-    }
+    }}
     setLoading(false);
   };
 
   const updateSubscription = async () => {
     setLoading(true);
-    const newsletterListId = sibLists.newsletter;
+    const newsletterListId = sibLists.newsletter.id;
     const firstname = form.getFieldValue(dbFields.members.firstName);
     const lastname = form.getFieldValue(dbFields.members.lastName);
     const payload = {
@@ -178,11 +175,6 @@ const NewsletterForm = ({
         }}
         form={form}
         name="newsletter"
-        initialValues={{
-          [dbFields.members.firstName]: member?.fields[dbFields.members.firstName],
-          [dbFields.members.lastName]: member?.fields[dbFields.members.lastName],
-          email: primaryEmail,
-        }}
         onValuesChange={onValuesChange}
         onFinish={onFinish}
         scrollToFirstError
@@ -310,12 +302,12 @@ const NewsletterForm = ({
               shallow={true}
             ><a>Account Settings</a></Link> &gt; <strong><em>Email addresses</em></strong></span>,
             <span><Link
-              href="/members/account#email-prefs"
+              href="/members/account#mail-prefs"
               shallow={true}
               scroll={false}
             >
               <a>Account Settings</a>
-            </Link> &gt; <strong><em>Email preferences</em></strong></span>,
+            </Link> &gt; <strong><em>Mailing preferences</em></strong></span>,
           ]}
           renderItem={item => <List.Item>{item}</List.Item>}
         />

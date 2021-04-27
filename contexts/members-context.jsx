@@ -1,63 +1,81 @@
-import { createContext, useState } from 'react';
+import { createContext, useState, useEffect } from 'react';
 import { dbFields } from '../data/members/airtable/airtable-fields';
 
 const MembersContext = createContext();
 
 const MembersProvider = ({ children }) => {
-  const [member, setMember] = useState(null);
+  // auth0 state
   const [authUser, setAuthUser] = useState(null);
+  // airtable table states
+  const [member, setMember] = useState(null);
   const [userEmails, setUserEmails] = useState(null);
   const [userPayments, setUserPayments] = useState(null);
   const [memberPlans, setMemberPlans] = useState(null);
-  // payments
+  // Stripe payments
   const [subscriptions, setSubscriptions] = useState(null);
   const [defaultCard, setDefaultCard] = useState(null);
+  // SendinBlue contact info only for verified emails, including logged-in email
+  const [emailContacts, setEmailContacts] = useState(null);
 
-  /**
-   * Airtable member functions - TODO: don't save state & move to utils
-   *  */
+  /** local vars - not saved to db */
+  // primary email = verified email not unsubscribed to on SendinBlue: previous primary, logged-in, or any verified; may be different from user-chosen primary.
+  const [primaryEmail, setPrimaryEmail] = useState(null);
+  // mailing list array
+  const [userMailingLists, setUserMailingLists] = useState(null);
 
-  /**
-   * Used to switch primary emails.
-   */
-  const updateEmails = async (body) => {
-    try {
-      const res = await fetch('/api/members/emails/update-emails', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      })
-      const updatedEmails = await res.json();
-      const emails = [...userEmails].map((email) => {
-        const emailFound = updatedEmails.find((updatedEmail) => updatedEmail.id === email.id);
-        if (emailFound) return emailFound;
-        return email;
-      })
-      setUserEmails(emails);
-    } catch (error) {
-      console.log(error);
+  const addToUserLists = (id) => {
+    let listIds = [],
+      listIdFound = null;
+    if (userMailingLists.listIds) listIds = [...userMailingLists.listIds];
+    if (listIds.length > 0) {
+      listIdFound = listIds.find((_id) => _id === id);
     }
+    if (!listIdFound) listIds.push(id);
+
+    let unlinkListIds = [];
+    if (userMailingLists.unlinkListIds) unlinkListIds = [...userMailingLists.unlinkListIds];
+    if (unlinkListIds.length > 0) {
+      unlinkListIds = unlinkListIds.reduce((acc, cur) => {
+        if (cur !== id) acc.push(cur);
+        return acc;
+      }, []);
+    }
+
+    let lists = {};
+    if (listIds.length > 0) lists.listIds = listIds;
+    if (unlinkListIds.length > 0) lists.unlinkListIds = unlinkListIds;
+
+    setUserMailingLists(lists); // > updateContactLists
+    return lists;
   }
 
-  const deleteEmail = async (id) => {
-    try {
-      const res = await fetch('/api/members/emails/delete-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(id),
-      })
-      const { emailid, error } = await res.json();
-      if (emailid) {
-        const emails = [...userEmails].reduce((acc, cur) => {
-          if (emailid !== cur.id) acc.push(cur);
-          return acc;
-        }, [])
-        setUserEmails(emails);
-      }
-    } catch (error) {
-      console.log(error);
+  const removeFromUserLists = (id) => {
+    let listIds = [];
+    if (userMailingLists.listIds) listIds = [...userMailingLists.listIds];
+    if (listIds.length > 0) {
+      listIds = listIds.reduce((acc, cur) => {
+        if (cur !== id) acc.push(cur);
+        return acc;
+      }, []);
     }
+
+    let unlinkListIds = [],
+      listIdFound = null;
+    if (userMailingLists.unlinkListIds) unlinkListIds = [...userMailingLists.unlinkListIds];
+    if (unlinkListIds.length > 0) {
+      listIdFound = unlinkListIds.find((_id) => _id === id);
+    }
+    if (!listIdFound) unlinkListIds.push(id);
+
+    let lists = {};
+    if (listIds.length > 0) lists.listIds = listIds;
+    if (unlinkListIds.length > 0) lists.unlinkListIds = unlinkListIds;
+
+    setUserMailingLists(lists); // > updateContactLists
+    return lists;
   }
+
+  // TODO: don't save state to the following & move to utils
 
   /**
    * Takes a payment created in airtable and the current member object:
@@ -71,7 +89,6 @@ const MembersProvider = ({ children }) => {
     member,
   }) => {
     // add payment id to member payments
-    // console.log('add payment id', payment.id, 'to member payments', member);
     let _member = { id: member.id, fields: Object.assign({}, member.fields) };
     let memberPaymentsIds = _member.fields[dbFields.members.payments] || [];
     memberPaymentsIds.push(payment.id);
@@ -84,7 +101,6 @@ const MembersProvider = ({ children }) => {
     _member.fields.__payments = memberPayments;
 
     // add payment for userPayments context
-    // console.log('add payment', payment, 'to userPayments', userPayments);
     let _userPayments = [];
     if (userPayments) _userPayments = [...userPayments];
     _userPayments.push(payment);
@@ -119,7 +135,6 @@ const MembersProvider = ({ children }) => {
     }
   };
 
-  // TODO: do not set state!
   const addMember = async (user) => {
     try {
       const res = await fetch('/api/members/__create-member', {
@@ -201,22 +216,6 @@ const MembersProvider = ({ children }) => {
     }
   };
 
-  const updateCustomer = async (fieldsToUpdate) => {
-    try {
-      const { error, customer } = await fetch('/api/payments/update-customer', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(fieldsToUpdate),
-      }).then(r => r.json());
-      if (error) return { error };
-      // customer isn't being saved to context
-      return { customer };
-    } catch (error) {
-      console.log(error);
-      return { error }
-    }
-  };
-
   return (<MembersContext.Provider value={{
     // Auth0
     authUser, setAuthUser,
@@ -227,30 +226,30 @@ const MembersProvider = ({ children }) => {
     userPayments, setUserPayments,
     memberPlans, setMemberPlans,
 
-    // functions
-    // TODO: move functions to /utils/
+    // Stripe payments
+    subscriptions, setSubscriptions,
+    // Stripe payment methods
+    defaultCard, setDefaultCard,
 
-    // createEmail,
-    updateEmails,
-    deleteEmail,
+    // primary email set by [page] useEffect
+    primaryEmail, setPrimaryEmail,
 
+    // email mailing lists set by [page] useEffect
+    userMailingLists, setUserMailingLists,
+    addToUserLists, removeFromUserLists,
+
+    // ESP SendinBlue
+    emailContacts, setEmailContacts,
+
+    // functions // TODO: move functions to /utils/
     // functions not used
     refreshMember,
     addMember,
-
-    // Stripe payments
-    subscriptions, setSubscriptions,
     // functions
     setPaymentState,
     saveNewSubscription,
     createSubscription,
     getSubscription,
-
-    // Stripe customers
-    updateCustomer,
-
-    // Stripe payment methods
-    defaultCard, setDefaultCard,
   }}>{children}</MembersContext.Provider>);
 };
 

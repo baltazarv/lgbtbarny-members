@@ -7,12 +7,12 @@ export default async (req, res) => {
   console.log('/api/members/update-emails', req.body);
 
   try {
-    const updatedRecords = await emailsTable.update(req.body);
-    res.statusCode = 200;
-    res.json(minifyRecords(updatedRecords));
+    const updateRes = await emailsTable.update(req.body);
+    const emails = minifyRecords(updateRes);
+    console.log('emails', emails);
+    res.status(200).json({ emails });
   } catch (error) {
     console.error(error);
-    res.statusCode = 500;
-    res.json(error);
+    res.status(500).json(error);
   }
 }

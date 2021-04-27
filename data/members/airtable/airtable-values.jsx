@@ -32,6 +32,12 @@ export const PAYMENT_TYPE_FREE = 'Free';
 
 export const PAYMENT_STATUS_PROCESSED = 'Processed';
 
+export const mailingLists = [
+  "newsletter",
+  "members",
+  "law_notes",
+]
+
 export {
   CERTIFY_OPTIONS,
   // filtered values

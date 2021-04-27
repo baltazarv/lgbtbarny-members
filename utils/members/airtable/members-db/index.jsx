@@ -13,7 +13,7 @@
  * * Beside `select`, can also use: find(recId, (err, records) => {})
  */
 
-// members
+// members table
 import {
   createMember,
   getMemberByEmail,
@@ -24,9 +24,10 @@ import {
   getAccountIsActive,
   getFullName,
   getMemberFullName,
+  getUserMailingLists,
 } from './members-table-utils';
 
-// plans
+// plans table
 import {
   getPlans,
   getLastPlan,
@@ -37,7 +38,7 @@ import {
   getStripePriceId,
 } from './plans-table-utils';
 
-// payments
+// payments table
 import {
   getUserPayments,
   addPayment,
@@ -48,15 +49,18 @@ import {
   getPaymentPlanType,
 } from './payments-table-utils';
 
-// emails
+// emails table
 import {
   createEmail,
+  updateEmails,
+  deleteEmail,
   getPrimaryEmail,
+  updatePrimaryInEmails,
 } from './emails-table-utils';
 
 export {
 
-  // members
+  // members table
   createMember, // api call
   getMemberByEmail,
   updateMember,
@@ -66,8 +70,9 @@ export {
   getAccountIsActive,
   getFullName,
   getMemberFullName,
+  getUserMailingLists,
 
-  // plans
+  // plans table
   getPlans, // api call
   getLastPlan,
   getCurrentPlans,
@@ -76,7 +81,7 @@ export {
   getMemberPlanFee,
   getStripePriceId,
 
-  // payments
+  // payments table
   getUserPayments, // api call
   addPayment, // api call
   getLastPayment,
@@ -85,7 +90,10 @@ export {
   getPaymentIsDiscounted,
   getPaymentPlanType,
 
-  // emails
+  // emails table
   createEmail, // api call
+  updateEmails,
+  deleteEmail,
   getPrimaryEmail,
+  updatePrimaryInEmails,
 };

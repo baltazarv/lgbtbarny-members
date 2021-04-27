@@ -1,7 +1,9 @@
 // functions also used on back-end
 import moment from 'moment';
 
-/** API calls */
+/*************
+ * API calls *
+ *************/
 
 const createCustomer = async (fields) => {
   try {
@@ -17,6 +19,22 @@ const createCustomer = async (fields) => {
     return { error }
   }
 }
+
+const updateCustomer = async (fieldsToUpdate) => {
+  try {
+    const { error, customer } = await fetch('/api/payments/update-customer', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(fieldsToUpdate),
+    }).then(r => r.json());
+    if (error) return { error };
+    // customer isn't being saved to context
+    return { customer };
+  } catch (error) {
+    console.log(error);
+    return { error }
+  }
+};
 
 /**
  * Update for (1) collection method or (2) price
@@ -98,6 +116,7 @@ const getPaymentMethodObject = (pm, source) => {
 export {
   // API calls
   createCustomer,
+  updateCustomer,
   updateSubscription,
 
   getActiveSubscription,

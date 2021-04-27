@@ -221,7 +221,7 @@ const RenewFormPage = () => {
         fields[dbFields.members.stripeId] = stripeResp.customer.id;
       }
 
-      // (2) create member record with stripe and email ids
+      // (2) create Airtable member record with stripe and email ids
       const memberResp = await createMember(fields);
       if (memberResp.error) console.log('member error', memberResp.error);
       let userid = null;

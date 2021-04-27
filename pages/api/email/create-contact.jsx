@@ -33,7 +33,7 @@ export default async (req, res) => {
     const contact = await contactsApi.createContact(createContact);
     return res.status('200').send({ contact });
   } catch (error) {
-    console.log('sendin blue error', error);
+    console.log('sendin blue error for /api/email/create-contact', error);
     const status = error.status || '400';
     return res.status(status).send({ error: error.response.body });
   }

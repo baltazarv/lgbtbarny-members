@@ -1,4 +1,9 @@
 import moment from 'moment';
+// data
+import * as memberTypes from '../../../../data/members/member-types';
+import { dbFields } from '../../../../data/members/airtable/airtable-fields';
+import { sibLists } from '../../../../data/emails/sendinblue-fields';
+// utils
 import {
   // plans
   getLastPlan,
@@ -6,10 +11,10 @@ import {
   getNextPaymentDate,
   getPaymentPlanType,
 } from '../../../../utils/members/airtable/members-db';
-import * as memberTypes from '../../../../data/members/member-types';
-import { dbFields } from '../../../../data/members/airtable/airtable-fields';
 
-/** API calls */
+/*************
+ * API calls *
+ *************/
 
 const createMember = async (fields) => {
   try {
@@ -41,8 +46,14 @@ const getMemberByEmail = async (email) => {
 }
 
 /**
- * Update member info before signup.
+ * Update member info before signup
  * Does not update member state!
+ *
+ * @param {object} userToUpdate
+ *        * id
+ *        * fields
+ * TODO: change signature to (id, fields)?
+ * @returns object with `member` or `error` params
  */
 const updateMember = async (userToUpdate) => {
   try {
@@ -57,6 +68,10 @@ const updateMember = async (userToUpdate) => {
     console.log({ error });
   }
 };
+
+/*************
+ * functions *
+ *************/
 
 /**
  * Get member type by last member plan
@@ -215,16 +230,98 @@ const getMemberFullName = (member) => {
   return getFullName(firstName, lastName);
 }
 
+/************************
+ * DETERMINE USER LISTS
+ ************************
+ * based on
+ * * user's unsubscribed settings for all
+ * * member status for members-only lists
+ * * any verified email ESP contact info for newsletter
+ *
+ * @param {object}
+ *        * emailContacts: if send, will check verified ESP contacts to see if subscribed to newsletter
+ * @returns { listIds, unlinkListIds }: ESP SendinBlue contacts params
+ */
+const getUserMailingLists = ({
+  member,
+  memberStatus,
+  emailContacts, // optional for newsletter
+}) => {
+  // get member unsubscribe settings
+  let lists = null,
+    unnsubscribedToNewsletter = null,
+    unsbuscribedToMembers = null,
+    unsbuscribedTolawNotes = null;
+  if (member) {
+    const memberSettings = member.fields[dbFields.members.listsUnsubscribed];
+    if (memberSettings) {
+      unnsubscribedToNewsletter = memberSettings.find((type) => type === 'newsletter');
+      unsbuscribedToMembers = memberSettings.find((type) => type === 'members');
+      unsbuscribedTolawNotes = memberSettings.find((type) => type === 'law_notes');
+    }
+  }
+
+  // remove from lists
+  let unlinkListIds = [];
+  if (unnsubscribedToNewsletter) unlinkListIds.push(sibLists.newsletter.id);
+  if (unsbuscribedTolawNotes ||
+    (memberStatus !== memberTypes.USER_STUDENT &&
+      memberStatus !== memberTypes.USER_ATTORNEY &&
+      memberStatus !== memberTypes.USER_LAW_NOTES)
+  ) unlinkListIds.push(sibLists.law_notes.id);
+  if (unsbuscribedToMembers ||
+    (memberStatus !== memberTypes.USER_STUDENT &&
+      memberStatus !== memberTypes.USER_ATTORNEY)
+  ) unlinkListIds.push(sibLists.members.id);
+
+  let listIds = [];
+  // NEWSLETTER:
+  // if user not unsubscribed
+  // if emailContacts is passed, if any verified email is subscribed to newsletter
+  let subscribedToNewsletter = false;
+  if (emailContacts) {
+    emailContacts.forEach((contact) => {
+      let newsletterFound = null;
+      if (contact.listIds) {
+        newsletterFound = contact.listIds.find((id) => {
+          if (id === sibLists.newsletter.id) return id;
+        });
+        if (newsletterFound) subscribedToNewsletter = true;
+      }
+    })
+  }
+  // unnsubscribedToNewsletter in Aritable; subscribedToNewsletter from ESP SendinBlue
+  // if don't send emailContacts, will not check if ESP contacts are subscribed to newsletter
+  if ((!unnsubscribedToNewsletter && subscribedToNewsletter) ||
+    !emailContacts) listIds.push(sibLists.newsletter.id);
+
+  // MEMBERS-ONLY lists
+  if (memberStatus === memberTypes.USER_ATTORNEY ||
+    memberStatus === memberTypes.USER_STUDENT) {
+    if (!unsbuscribedTolawNotes) listIds.push(sibLists.law_notes.id);
+    if (!unsbuscribedToMembers) listIds.push(sibLists.members.id);
+  }
+
+  if (listIds.length > 0 || unlinkListIds.length > 0) {
+    lists = {};
+    if (listIds.length > 0) lists.listIds = listIds;
+    if (unlinkListIds.length > 0) lists.unlinkListIds = unlinkListIds;
+  }
+  return lists; // may be null
+};
+
 export {
   // API calls
   createMember,
   getMemberByEmail,
   updateMember,
 
+  // other functions
   getMemberType,
   getGraduationDate,
   getMemberStatus,
   getAccountIsActive,
   getFullName,
   getMemberFullName,
+  getUserMailingLists,
 };

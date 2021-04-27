@@ -13,13 +13,11 @@ import { dbFields } from '../../../../../data/members/airtable/airtable-fields';
 import { PAYMENT_FIELDS } from '../../../../../data/payments/payment-fields';
 // utils
 import {
+  updateCustomer,
+  updateSubscription,
   getActiveSubscription,
   getPaymentMethodObject,
-  updateSubscription,
 } from '../../../../../utils/payments/stripe-utils';
-import {
-  getPrimaryEmail,
-} from '../../../../../utils/members/airtable/members-db';
 
 const UpdateCardForm = ({
   onDone,
@@ -32,13 +30,12 @@ const UpdateCardForm = ({
   const {
     // update default card for customer
     member,
-    userEmails,
-    updateCustomer,
     // update default card for subscription
     subscriptions,
     saveNewSubscription,
     // update payment method
     setDefaultCard,
+    primaryEmail,
   } = useContext(MembersContext);
   const [stripeError, _setStripeError] = useState('');
   const [stripeSuccess, _setStripeSuccess] = useState('');
@@ -47,10 +44,6 @@ const UpdateCardForm = ({
   if (!stripe || !elements) {
     return null;
   }
-
-  const primaryEmail = useMemo(() => {
-    return getPrimaryEmail(userEmails);
-  }, [userEmails]);
 
   const customerId = useMemo(() => {
     if (member && member.fields[dbFields.members.stripeId]) {

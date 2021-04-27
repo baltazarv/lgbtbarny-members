@@ -1,23 +1,29 @@
 // TODO: rename emails-table or email-addresses
 /**
- * Intermediary `AccountsItem` component with render props between this component and `Accounts` component.
+ * Intermediary `AccountsItem` component with render props between this component and `Accounts` component. `dataSource`, `selectedRowKeys`, and `setSelectedRowKeysprop` inside `value` prop sent by Account.
+ * * Account 'emailTableDataSource' defines data displayed on table.
  *
- * Primary email switch handled by grand-parent component Account.
- * * `dataSource`, `selectedRowKeys`, and `setSelectedRowKeysprop` inside `value` prop sent by Account.
- * * `selectChanges` also managed by parent.
- *
+ * * Primary email switch handled by grand-parent component Account's selectChanges` function.
+ * * Subscribing/unsubscribing (blocking) emails handled by `toggleBlockEmail` in this component.
  * * Deleting emails handled within this component by`onDeleteEmail`.
- *
- * Saving a new email handled within this component by `saveEmail`. The form surrounding the `Search` input is the only form on this component.
+ * * Saving a new email handled within this component by `saveEmail`. The form surrounding the `Search` input is the only form on this component.
  */
-import { useState, useMemo, useContext, useEffect } from 'react';
+import { useState, useMemo, useContext } from 'react';
 import { Table, Form, Input, Tag, Tooltip, Typography, Popconfirm } from 'antd';
 import { MailOutlined } from '@ant-design/icons';
+import SeeMore from '../../../../elements/see-more';
 // data
 import { MembersContext } from '../../../../../contexts/members-context';
 import { dbFields } from '../../../../../data/members/airtable/airtable-fields';
+import { sibFields, getListTitle } from '../../../../../data/emails/sendinblue-fields';
 // utils
-import { createEmail } from '../../../../../utils/members/airtable/members-db';
+import {
+  createEmail,
+  updateEmails,
+  deleteEmail,
+  updatePrimaryInEmails, // delete
+} from '../../../../../utils/members/airtable/members-db';
+import { updateContact } from '../../../../../utils/emails/sendinblue-utils';
 
 const { Link } = Typography;
 const { Search } = Input;
@@ -28,26 +34,66 @@ const EmailsForm = ({
 
   // primary email
   values,
+  selectChanges, // on save > Account changePrimaryEmail
 
-  selectChanges,
   // delete email
   onCancel,
 }) => {
-  const { userEmails, setUserEmails, deleteEmail, member, authUser } = useContext(MembersContext);
+  const {
+    authUser,
+    member,
+    userEmails, setUserEmails,
+    primaryEmail,
+    userMailingLists,
+  } = useContext(MembersContext);
   const [form] = Form.useForm(); // save email form
   const [addEmailLoading, setAddEmailLoading] = useState(false);
 
-  /**
-   * Update primary email
-   */
+  const primaryTagTooltip = 'Primary address will receive emails from the LGBT Bar of NY. Only verified addresses qualify.';
+  const blockedTagTooltip = 'Unblock an email address to start receiving emails.';
 
+  /***********************
+   * Update primary email
+   ***********************
+   */
   const onSelectChange = (selectedRowKeys) => {
     values.setSelectedRowKeys(selectedRowKeys);
   };
 
   const onSelectPrimary = (record) => {
-    selectChanges(record);
+    selectChanges(record); // change primary email
   };
+
+  /******************
+   * (Un)block email
+   ******************
+   * given a row's key and a boolean value
+   */
+  const toggleBlockEmail = async (key, bool) => {
+    const _bool = bool || false;
+    // remove blacklist from SendinBlue
+    const emailToUnblock = [...userEmails].find((email) => email.id === key);
+    await updateContact({
+      email: emailToUnblock.fields[dbFields.emails.address],
+      [sibFields.contacts.emailBlacklisted]: _bool,
+    })
+
+    // unblock email on Airtable
+    let emailsToUpdate = [
+      { id: key, fields: { [dbFields.emails.blocked]: _bool } },
+    ];
+    const { emails } = await updateEmails(emailsToUpdate);
+    const updatedEmail = emails[0];
+    const emailsWithBlockedValue = [...userEmails].map((email) => {
+      if (updatedEmail.id === email.id) return updatedEmail;
+      return email;
+    });
+
+    // const emailsWithPrimaryUpdate = updatePrimaryInEmails(emailsWithBlockedValue, loggedInEmail);
+    // setUserEmails(emailsWithPrimaryUpdate);
+
+    setUserEmails(emailsWithBlockedValue);
+  }
 
   /**
    * Save new email
@@ -99,26 +145,56 @@ const EmailsForm = ({
   }, [authUser]);
 
   const onDeleteEmail = async (key) => {
-    await deleteEmail(key);
+    const { emailid } = await deleteEmail(key);
+    if (emailid) {
+      const emails = [...userEmails].reduce((acc, cur) => {
+        if (emailid !== cur.id) acc.push(cur);
+        return acc;
+      }, [])
+      setUserEmails(emails);
+      console.log('TODO: delete or unsubsribe verified email on SiN')
+    }
     onCancel();
   }
 
   const rowSelection = useMemo(() => {
     if (editing) return {
       type: "radio",
-      // columnTitle: "Make primary",
       selectedRowKeys: values.selectedRowKeys,
       onChange: onSelectChange,
       onSelect: onSelectPrimary,
       getCheckboxProps: (record) => ({
-        disabled: record.primary || !record.verified,
+        disabled: record.primary || !record.verified || record.blocked,
       }),
       renderCell: (checked, record, index, originNode) => {
-        let label = (record.primary) ? 'Primary' : (record.verified) ? 'Make Primary' : '';
+        let label = '';
+        if (record.verified) label = 'Make Primary';
+        if (record.primary) label = 'Primary';
+        if (record.verified && record.blocked) label = <Popconfirm
+          title={<span>Unblock <strong>{record.email}</strong>?</span>} onConfirm={() => toggleBlockEmail(record.key, false)}
+          okText="Unblock"
+          cancelButtonProps={{ danger: true }}
+          placement="topLeft"
+        >
+          <Link
+            className="text-danger"
+            size="small"
+          >
+            Unblock
+          </Link>
+        </Popconfirm>;
+
         let boldClass = (record.primary) ? 'font-weight-bold' : 'font-weight-normal';
-        let primaryColorClass = (!record.primary && record.verified) ? 'text-primary' : 'text-muted';
-        return <Tooltip title={tooltipTitle}>
-          {originNode} <label style={{ fontSize: 12 }} className={`${boldClass} ${primaryColorClass}`}>{label}</label>
+
+        let colorClass = 'text-muted';
+        if (!record.primary && record.verified) colorClass = 'text-primary';
+
+        const labelContent = <>
+          {originNode} <label style={{ fontSize: 12 }} className={`${boldClass} ${colorClass}`}>{label}</label>
+        </>;
+
+        return <Tooltip title={primaryTagTooltip}>
+          {labelContent}
         </Tooltip>;
       },
     };
@@ -142,8 +218,25 @@ const EmailsForm = ({
     </Tooltip>;
   }
 
-  const deleteButton = (text, record, index) => {
-    if (record.primary || record.email === loggedInEmail) return '';
+  const deleteBlockButton = (text, record, index) => {
+    if (record.verified && !record.blocked) return <Popconfirm
+      title={<span>Block <strong>{record.email}</strong> from receiving emails?</span>} onConfirm={() => toggleBlockEmail(record.key, true)}
+      okText="Block"
+      okButtonProps={{ danger: true }}
+      placement="topLeft"
+    >
+      <Link
+        className="text-danger"
+        size="small"
+      >
+        Block
+      </Link>
+    </Popconfirm>;
+
+    if (record.primary ||
+      record.email === loggedInEmail ||
+      record.blocked) return null;
+
     return <Popconfirm
       title={<span>Delete <strong>{record.email}</strong>?</span>} onConfirm={() => onDeleteEmail(record.key)}
       okText="Delete"
@@ -153,7 +246,6 @@ const EmailsForm = ({
       <Link
         className="text-danger"
         size="small"
-      // onClick={() => console.log('DELETE', record.key)}
       >
         Delete
     </Link>
@@ -163,18 +255,28 @@ const EmailsForm = ({
   const columns = useMemo(() => {
     let cols = [];
     if (!editing) {
+      // `Primary` or `Blocked`
       cols.push(
         {
           title: 'Primary',
           dataIndex: 'primary',
           key: 'primary',
           render: (text, record) => {
-            if (record.primary) return <Tooltip title={tooltipTitle}>
-              <Tag color="blue" style={{
-                background: 'white',
-                borderStyle: "dashed",
-              }}>Primary</Tag>
-            </Tooltip>;
+            if (record.blocked) {
+              return <Tooltip title={blockedTagTooltip}>
+                <Tag color="red" style={{
+                  background: 'white',
+                  borderStyle: "dashed",
+                }}>Blocked</Tag>
+              </Tooltip>;
+            } else if (record.primary) {
+              return <Tooltip title={primaryTagTooltip}>
+                <Tag color="blue" style={{
+                  background: 'white',
+                  borderStyle: "dashed",
+                }}>Primary</Tag>
+              </Tooltip>;
+            }
             return '';
           },
           defaultSortOrder: 'ascend',
@@ -213,13 +315,34 @@ const EmailsForm = ({
     if (editing) cols.push({
       title: 'Delete',
       key: 'delete',
-      render: deleteButton,
+      render: deleteBlockButton,
       width: 100,
     });
     return cols;
   }, [editing]);
 
-  const tooltipTitle = 'Primary address will receive emails from the LGBT Bar of NY. Only verified addresses qualify.';
+  const formattedList = useMemo(() => {
+    if (userMailingLists && userMailingLists.listIds && userMailingLists.listIds.length > 0) {
+      const listLength = userMailingLists.listIds.length;
+      const formattedList = [...userMailingLists.listIds].map((id, index) => {
+        return <span key={id}>{listLength > 1 && listLength !== 2 && index > 0 && ', '}{listLength > 1 && index === listLength -1 && ' and '}<strong>{getListTitle(id)}</strong></span>
+      })
+      return <>{formattedList} mailing {userMailingLists.listIds.length > 1 ? 'lists' : 'list'}</>;
+    }
+    return null;
+  }, [userMailingLists]);
+
+  const subscriptionMessage = useMemo(() => {
+    if (!primaryEmail) return <span className="text-danger">You will not be able to receive emails, until you unblock an email address above.</span>;
+
+    let listMessage = null;
+    if (formattedList) {
+      listMessage = <>You are subscribed to the {formattedList}.</>
+    } else {
+      listMessage = <strong className="text-danger">You are not subscribed to any malining lists.</strong>
+    }
+    return <>{listMessage} Go to <a href="#mail-prefs">Mailing preferences</a> below to update your mailing list settings.</>
+  }, [userMailingLists]);
 
   return <>
     <Table
@@ -230,15 +353,15 @@ const EmailsForm = ({
       showHeader={false}
       size="small"
       className="mb-2"
-      title={() => <>
+      title={() => <SeeMore height={56}>
         <p>The <strong className="text-primary">primary</strong> email address is the one that receives emails from the LGBT Bar of NY. Only verified addresses qualify.</p>
 
         <p><strong className="text-success">Verified</strong> email addresses are those which you have used to log into your account. Any verified email address can be used to log into your account.</p>
 
-        <p>A <strong className="text-danger">blocked</strong> email address could be an email that was unsubscribed from email communications. Blocked addresses will not be able to receive emails.</p>
+        <div>A <strong className="text-danger">blocked</strong> email address could be an email that was unsubscribed from email communications. Blocked addresses will not be able to receive emails. You can only block verified emails.</div>
 
-        {editing && <p className="footnote">You may not <strong className="text-danger">delete</strong> the primary email address or the one you used to log you into the current session.</p>}
-      </>}
+        {editing && <div className="footnote">You may not <strong className="text-danger">delete</strong> the primary email address or the one you used to log into the current session, but you can <strong className="text-danger">block</strong> it.</div>}
+      </SeeMore>}
     />
 
     {/* add new user email */}
@@ -264,6 +387,7 @@ const EmailsForm = ({
         />
       </Form.Item>
     </Form>
+    <div className="mt-3 mx-4">{subscriptionMessage}</div>
   </>;
 };
 

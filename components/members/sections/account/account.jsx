@@ -17,7 +17,7 @@ import EmailsForm from './forms/emails-form';
 import MemberInfoFields from './forms/member-info-fields';
 import AdditionalInfoForm from './forms/additional-info-form';
 import PaymentInfo from './forms/payment-info';
-import EmailPrefs from './forms/email-prefs';
+import MailPrefs from './forms/email-prefs';
 // styles
 import './account.less';
 // data
@@ -36,9 +36,9 @@ import {
   // plans
   getStripePriceId,
   // emails
-  getPrimaryEmail,
+  updateEmails,
 } from '../../../../utils/members/airtable/members-db';
-import { updateSubscription, getActiveSubscription } from '../../../../utils/payments/stripe-utils';
+import { updateCustomer, updateSubscription, getActiveSubscription } from '../../../../utils/payments/stripe-utils';
 import { updateContact } from '../../../../utils/emails/sendinblue-utils';
 
 const MenuIcon = ({
@@ -61,15 +61,12 @@ const Account = ({
 }) => {
 
   const {
-    member,
-    setMember,
-    userEmails,
-    updateEmails,
+    member, setMember,
+    userEmails, setUserEmails,
     memberPlans,
     userPayments,
-    subscriptions,
-    saveNewSubscription,
-    updateCustomer,
+    subscriptions, saveNewSubscription,
+    primaryEmail,
   } = useContext(MembersContext);
   const [loading, setLoading] = useState(false);
 
@@ -159,27 +156,23 @@ const Account = ({
     }
   }
 
-  /**
-   * AccountsItem switch primary email
-   */
-
   const emailTableDataSource = useMemo(() => {
     if (userEmails) {
       return userEmails.map(email => {
+        // primaryEmail vs. user's email.fields[dbFields.emails.primary]
+        let primary = false;
+        if (email.fields[dbFields.emails.address] === primaryEmail) primary = true;
         return {
           key: email.id,
           email: email.fields.email,
           verified: email.fields.verified,
-          primary: email.fields.primary,
+          primary,
+          blocked: email.fields.blocked,
         };
       });
     }
     return null;
-  }, [userEmails]);
-
-  const primaryEmail = useMemo(() => {
-    return getPrimaryEmail(userEmails);
-  }, [userEmails]);
+  }, [userEmails, primaryEmail]);
 
   /**
    * Selected row keys = primary email
@@ -205,22 +198,30 @@ const Account = ({
     setEmailTableSelectedRowKeys(selectedRowKeys);
   }
 
+  /**
+   * Only verified emails thru UI
+   *
+   * @param {object} newPrimaryEmail - antd table item format
+   *        * key, email
+   * @returns
+   */
   const changePrimaryEmail = async (newPrimaryEmail) => {
-    const emailUpdate = Object.assign({}, { ...newPrimaryEmail });
+    const newEmailAddress = newPrimaryEmail.email;
+    const oldPrimary = userEmails.find((email) => email.fields[dbFields.emails.address] === primaryEmail);
     let emails = [
-      { id: emailUpdate.key, fields: { primary: true } },
-      { id: primaryEmail, fields: { primary: false } }
+      { id: newPrimaryEmail.key, fields: { primary: true } },
+      { id: oldPrimary.id, fields: { primary: false } },
     ];
-    // console.log('changePrimaryEmail', emails);
-    const updatedEmails = await updateEmails(emails);
 
-    // update Stripe customer
-    const customerId = member.fields[dbFields.members.stripeId];
-    const email = newPrimaryEmail.email;
-    const updateCusResult = await updateCustomer({
-      customerId,
-      email,
-    });
+    const updatedEmails = await updateEmails(emails);
+    if (updatedEmails.emails) {
+      const _userEmails = [...userEmails].map((email) => {
+        const emailFound = updatedEmails.emails.find((updatedEmail) => updatedEmail.id === email.id);
+        if (emailFound) return emailFound;
+        return email;
+      })
+      setUserEmails(_userEmails); // > [page] changes lists, updates primaryEmail
+    }
   };
 
   return <div className="members-account">
@@ -316,11 +317,11 @@ const Account = ({
         </div>
       }
 
-      {/* Email preferences */}
+      {/* Mailing preferences */}
 
-      <div className="mb-3" id="email-prefs">
-        <EmailPrefs
-          title="Email preferences"
+      <div className="mb-3" id="mail-prefs">
+        <MailPrefs
+          title="Mailing preferences"
           memberType={memberType}
           onLink={onLink}
           loading={loading}

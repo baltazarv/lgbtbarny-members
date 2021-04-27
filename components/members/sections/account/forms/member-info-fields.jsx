@@ -55,8 +55,8 @@ const MemberInfoFields = ({
    */
 
   useEffect(() => {
-    setCertifyStatus(member.fields[dbFields.members.certify]);
-  }, [member.fields[dbFields.members.certify]]);
+    if (member && member.fields[dbFields.members.certify]) setCertifyStatus(member.fields[dbFields.members.certify]);
+  }, [member]);
 
   const onMemberTypeSelect = (value) => {
     setCertifyStatus(value);

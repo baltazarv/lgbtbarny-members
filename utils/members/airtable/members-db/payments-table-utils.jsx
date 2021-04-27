@@ -14,7 +14,9 @@ import {
 } from './index';
 import { dbFields } from '../../../../data/members/airtable/airtable-fields';
 
-/** API calls */
+/*************
+ * API calls *
+ *************/
 
 /**
  * Given an array of payment Ids

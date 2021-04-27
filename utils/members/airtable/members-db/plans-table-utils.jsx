@@ -9,7 +9,9 @@ import {
 } from './payments-table-utils';
 import { dbFields } from '../../../../data/members/airtable/airtable-fields';
 
-/** API calls */
+/*************
+ * API calls *
+ *************/
 
 const getPlans = async () => {
   try {

@@ -25,6 +25,7 @@ export const dbFields = {
     specialAccom: 'special_accom',
     howFound: 'how_found',
     stripeId: 'stripe_id',
+    listsUnsubscribed: 'lists_unsubscribed',
     lastLoggedIn: '_last_logged_in',
     valueLists: {
       // salaries: [],

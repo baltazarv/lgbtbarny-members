@@ -4,7 +4,6 @@ export const ACCOUNT_FORMS = {
   editMemberInfo: 'edit-member-info',
   editAdditionalInfo: 'edit-additional-info',
   editPayment: 'edit-membership',
-  // editEmailPrefs: 'edit-email-prefs',
 
   // modals
   updateCollectMethod: 'update-collection-method',

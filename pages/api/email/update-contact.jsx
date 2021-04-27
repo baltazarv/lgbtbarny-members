@@ -42,7 +42,7 @@ export default async (req, res) => {
     await contactsApi.updateContact(email, updateContact); // nothing returned
     return res.status('200').send({ status: 'success' });
   } catch (error) {
-    console.log('sendin blue error', error);
+    console.log('sendin blue error for /api/email/update-contact', error);
     const status = error.status || '400';
     return res.status(status).send({ error: error.response.body });
   }

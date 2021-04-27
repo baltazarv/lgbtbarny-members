@@ -33,17 +33,25 @@ import './members.less';
 import { getDashboard } from '../../data/members/member-content/dashboards';
 import * as memberTypes from '../../data/members/member-types';
 import { dbFields } from '../../data/members/airtable/airtable-fields';
+import { getMemberOnlyListIndexes, getAllListIndexes } from '../../data/emails/sendinblue-fields';
 // contexts
 import { MembersContext } from '../../contexts/members-context';
 // utils
 import {
+  // members table
   getMemberType,
   getMemberStatus,
+  getUserMailingLists,
+  // plans table
   getPlans,
+  // payments table
   getUserPayments,
+  // emails
+  getPrimaryEmail,
 } from '../../utils/members/airtable/members-db';
 import { getMemberPageParentKey } from '../../utils/members/dashboard-utils';
-import { getMemberEmailListIds } from '../../utils/emails/sendinblue-utils';
+import { updateCustomer } from '../../utils/payments/stripe-utils';
+import { updateContact, updateContactLists } from '../../utils/emails/sendinblue-utils';
 // server-side function to populate loggedInMember => member
 import { processUser } from '../api/init/processes';
 
@@ -77,7 +85,12 @@ const MembersPage = ({
     userPayments, setUserPayments,
     memberPlans, setMemberPlans,
     // payments
-    setSubscriptions, setDefaultCard
+    setSubscriptions, setDefaultCard,
+    // set by this page
+    primaryEmail, setPrimaryEmail,
+    userMailingLists, setUserMailingLists,
+    // ESP emails
+    emailContacts, setEmailContacts,
   } = useContext(MembersContext);
 
   // when anon user, select tab to view preview content
@@ -175,40 +188,9 @@ const MembersPage = ({
     setMember(loggedInMember);
   }, [loggedInMember]);
 
-  /**
-   *** USER EMAILS ***
-   * When log in get all user emails.
-   * Mark logged-in email verified.
-   * Mark logged-in email primary if user doesn't have one.
-   */
-  useEffect(() => {
-    if (authUser && !userEmails) {
-      const emailAddress = authUser.name;
-      const processUserEmails = async () => {
-        const user = member || loggedInMember;
-        const result = await fetch('/api/init/process-user-emails', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            user,
-            emailAddress,
-          })
-        });
-        const { emails, error } = await result.json();
-        if (error) {
-          console.log('error', error);
-          return;
-        }
-        if (emails) setUserEmails(emails);
-        // console.log('emails', emails);
-      }
-      processUserEmails();
-    }
-  }, [authUser]);
-
-  /**
-   *** USER PAYMENTS ***
-   */
+  /*****************
+   * USER PAYMENTS *
+   *****************/
   useEffect(() => {
     if (authUser && !userPayments) {
       // IIFE
@@ -231,7 +213,9 @@ const MembersPage = ({
     }
   }, [authUser, userPayments]);
 
-  /** PLANS */
+  /*********
+   * PLANS *
+   *********/
   useEffect(() => {
     if (!memberPlans) {
       (async function fetchPlans() {
@@ -245,13 +229,157 @@ const MembersPage = ({
     }
   }, [memberPlans]);
 
-  /**
-   *** STRIPE CUSTOMER ***
+  /*******************
+   * SET USER EMAILS *
+   *******************
+   * When log in (!userEmails), get all user emails.
+   * Mark logged-in email verified. Add to ESP SendinBlue if not there.
+   * Mark blacklisted emails as blocked in Airtable.
+   * Set userEmails and emailContacts.
+   */
+  useEffect(() => {
+    if (authUser && !userEmails) {
+      const loginEmailAddress = authUser.name;
+      const processUserEmails = async () => {
+        const user = member || loggedInMember;
+        const result = await fetch('/api/init/process-user-emails', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user,
+            loginEmailAddress,
+          })
+        });
+        const resultJson = await result.json();
+        if (resultJson.error) {
+          console.log('error', resultJson.error);
+          return;
+        }
+        if (resultJson.emails) setUserEmails(resultJson.emails);
+        if (resultJson.contacts) {
+          setEmailContacts(resultJson.contacts);
+          // since both member, memberStatus (at least "pending") and email contacts have been set, good place to update mailing lists, which will update the ESP contact's lists
+          const mailingLists = getUserMailingLists({ member, memberStatus, emailContacts: resultJson.contacts });
+          setUserMailingLists(mailingLists);
+        }
+      }
+      processUserEmails();
+    }
+  }, [authUser]);
+
+  /**************************************
+   *           PRIMARY EMAIL            *
+   **************** and *****************
+   * userEmails =>                      *
+   *   mailing lists for email contacts *
+   *   update Stripe customer email     *
+   **************************************
+   * primaryEmail:
+   * * Calculated in this order:
+   *   (1) a verified email already marked as primary if not blacklisted on SendinBlue (SiB),
+   *   (2) the logged-in email if not blacklisted on SiB,
+   *   (3) any verified email that is not blacklisted on SiB.
+   * * Needed for following:
+   *   * Stripe customer email address.
+   *   * Mailing lists on ESP SendinBlue.
+   * * Email can be marked primary email in Airtable but not be the primaryEmail, eg, when user has unsubscribed it.
+   *
+   * Move lists to new primary email and remove from all other verified. Remove emails from lists only if they are not unsubscribed.
+   *
+   * Update Stripe email address with PrimaryEmail. (even if after init logged-in email written to Stripe)
+   */
+  useEffect(() => {
+    // only after userEmails populated
+    if (userEmails) {
+      // update primary email
+      const loggedInEmail = loggedInUser.name;
+      const primaryEmailRecord = getPrimaryEmail(userEmails, loggedInEmail);
+      let primaryEmailAddress = null;
+      if (primaryEmailRecord) {
+        primaryEmailAddress = primaryEmailRecord.fields[dbFields.emails.address];
+        setPrimaryEmail(primaryEmailAddress);
+      } else {
+        setPrimaryEmail(null);
+      }
+
+      // take care of ESP mailing lists
+      // may switch email on Stripe customer
+      userEmails.forEach((email) => {
+        const emailAddress = email.fields[dbFields.emails.address];
+        if (primaryEmailAddress && emailAddress === primaryEmailAddress) {
+          if (userMailingLists) {
+            updateContactLists({
+              emailAddress,
+              userMailingLists,
+            });
+            // update Stripe customer
+            const customerId = member.fields[dbFields.members.stripeId];
+
+            // no await necessary
+            updateCustomer({
+              customerId,
+              email: emailAddress,
+            });
+          }
+        } else if (email.fields[dbFields.emails.verified] && !email.fields[dbFields.emails.blocked]) {
+          // if blocked, don't remove from lists
+          let unlinkListIds = getMemberOnlyListIndexes();
+          // if there is a primary email that will get the newsletter, remove newsletter from other emails
+          if (primaryEmailAddress) unlinkListIds = getAllListIndexes();
+          updateContact({
+            email: emailAddress,
+            unlinkListIds,
+          });
+        }
+      });
+    }
+  }, [userEmails]);
+
+  /*****************
+   * MAILING LISTS *
+   *****************
+   * Add members-only lists to ESP when member status changes:
+   * * Member-only lists added when user (re)joins or student upgrades.
+   * * Member's unsubscribe list taken into account.
+   *
+   * Newsletter: if send `emailContacts` will check that a verified email contact was subscribed to the newsletter.
+   */
+  useEffect(() => {
+    // member required for memberStatus
+    // sending `emailContacts` to get newspaper subscription from ESP contacts
+    if (memberStatus && emailContacts) {
+      const mailingLists = getUserMailingLists({ member, memberStatus, emailContacts });
+      setUserMailingLists(mailingLists);
+    }
+  }, [memberStatus]);
+
+  /****************************************
+   * userMailingLists =>                  *
+   *   add/remove primaryEmail contacts   *
+   *   to/from mailingList                *
+   ****************************************
+   * When mailing list changes, update primary email with the new mailing list.
+   */
+  useEffect(() => {
+    if (primaryEmail && userMailingLists) {
+      updateContactLists({
+        emailAddress: primaryEmail,
+        userMailingLists,
+      });
+    }
+  }, [userMailingLists]);
+
+  /*******************
+   * STRIPE CUSTOMER *
+   *******************
    * When log in get stripe info, if already a stripe customer:
    * * subscriptions
    * * default card minimal info
    *
-   * If not stripe customer, create and add stripe customer id to members table
+   * If not stripe customer:
+   * * Create Stripe customer with logged-in email address.
+   *   (if primaryEmail changes will update email in Stripe!)
+   * * And add stripe customer id to members table.
    *  */
   useEffect(() => {
     if (authUser) {
@@ -270,17 +398,19 @@ const MembersPage = ({
           console.log('error', error);
           return;
         }
+        // update with Stripe ID
         if (user) setMember(user);
+
         if (subscriptions?.length > 0) setSubscriptions(subscriptions);
         if (defaultCard) setDefaultCard(defaultCard);
-        // console.log('user', user, 'subscriptions', subscriptions, 'defaultCard', defaultCard);
       }
       processStripeCust();
     }
   }, [authUser]);
 
-  /**
-   *** QUERY STRING ***
+  /****************
+   * QUERY STRING *
+   ****************
    *  * Open signup & subscribe motals.
    *  * Show prototype users.
    */
@@ -304,8 +434,9 @@ const MembersPage = ({
     }
   }, [router.query, member, authUser]); // , member, authUser
 
-  /**
-   *** CONTENT CLICK HANDLER ***
+  /*************************
+   * CONTENT CLICK HANDLER *
+   *************************
    *  * Go to login page.
    *  * Add query string >> useEffect(() => {...}, [router.query])
    *  * Navigate between anon preview users

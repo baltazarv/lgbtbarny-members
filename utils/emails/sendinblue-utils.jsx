@@ -1,6 +1,8 @@
-import { sibLists } from '../../data/emails/sendinblue-fields';
+import { sibFields, sibLists } from '../../data/emails/sendinblue-fields';
 
-/** API calls */
+/*************
+ * API calls *
+ *************/
 
 const getContactInfo = async (email) => {
   try {
@@ -47,8 +49,9 @@ const createContact = async (payload) => {
 
 /**
  * Calls SendinBlue API endpoint
- * @param {object} payload | need to include `email` and item to update:
- * listIds, unlinkListIds, newEmail, firstname, lastname,
+ * @param {object} payload | need to include `email` and items to update:
+ *                 listIds, unlinkListIds, newEmail, firstname, lastname,
+ * TODO: change signature to (email, fields)?
  */
 const updateContact = async (payload) => {
   try {
@@ -64,16 +67,33 @@ const updateContact = async (payload) => {
   }
 }
 
-const getMailListsSubscribed = async (primaryEmail) => {
-  if (primaryEmail) {
-    const { contact, error } = await getContactInfo(primaryEmail);
-    if (error) return null;
+/*************
+ * functions *
+ *************/
+
+const updateContactLists = ({
+  emailAddress,
+  userMailingLists,
+}) => {
+  const { listIds, unlinkListIds } = userMailingLists;
+  if ((unlinkListIds && unlinkListIds.length > 0) || (listIds && listIds.length > 0)) {
+    const payload = { email: emailAddress };
+    if (unlinkListIds && unlinkListIds.length > 0) payload[sibFields.contacts.unlinkListIds] = unlinkListIds;
+    if (listIds && listIds.length > 0) payload[sibFields.contacts.listIds] = listIds;
+    updateContact(payload);
+  }
+}
+
+// May not need this. Better to figure out based on member unsubscribed list and member status. See MembersContext `userMailingLists`
+const getMailListsSubscribed = (primaryEmail, emailContacts) => {
+  if (primaryEmail && emailContacts && emailContacts.length > 0) {
+    const contact = emailContacts.find((c) => c.email === primaryEmail);
     if (contact) {
-      const lists = contact.listIds;
+      const lists = contact[sibFields.contacts.listIds];
       if (lists.length > 0) {
         const mailLists = lists.map((list) => {
           for (const key in sibLists) {
-            if (sibLists[key] === list) {
+            if (sibLists[key].id === list) {
               return key;
             }
           }
@@ -93,6 +113,6 @@ export {
   getContactInfo,
   createContact,
   updateContact,
-
-  getMailListsSubscribed,
+  updateContactLists,
+  getMailListsSubscribed, // remove?
 }

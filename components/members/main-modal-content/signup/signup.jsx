@@ -25,6 +25,8 @@ import { SIGNUP_FORMS } from '../../../../data/members/member-form-names';
 import { PAYMENT_FIELDS } from '../../../../data/payments/payment-fields';
 import { STRIPE_FIELDS } from '../../../../data/payments/stripe/stripe-fields';
 import { dbFields } from '../../../../data/members/airtable/airtable-fields';
+import { getCertifyType, CERTIFY_OPTIONS } from '../../../../data/members/airtable/airtable-values';
+// import { LAW_NOTES_PRICE } from '../../../../data/payments/law-notes-values';
 // utils
 import {
   duesInit,
@@ -39,10 +41,8 @@ import {
   getNextPaymentDate,
   getPlanFee,
   getPaymentPayload,
-  getPrimaryEmail, // email for stripe payments
 } from '../../../../utils/members/airtable/members-db';
-import { getCertifyType, CERTIFY_OPTIONS } from '../../../../data/members/airtable/airtable-values';
-import { LAW_NOTES_PRICE } from '../../../../data/payments/law-notes-values';
+import { updateCustomer } from '../../../../utils/payments/stripe-utils';
 
 // import DonationFields from '../../../payments/donation-fields';
 // import { getDonationValues } from '../../../../data/payments/donation-values';
@@ -62,8 +62,7 @@ const Signup = ({
     setUserPayments,
     setPaymentState,
     memberPlans,
-    updateCustomer,
-    userEmails, // get email for stripe payments
+    primaryEmail, // email for stripe payments
   } = useContext(MembersContext);
   const memberInfoFormRef = useRef(null);
   const [certifyChoice, setCertifyChoice] = useState('');
@@ -258,12 +257,6 @@ const Signup = ({
     />;
   }, [dues, memberSignUpType, hasDiscount]);
 
-  // email for stripe payment
-  const primaryEmail = useMemo(() => {
-    const email = getPrimaryEmail(userEmails);
-    return email;
-  }, [userEmails]);
-
   // handle change of values on forms
   const onFormChange = (formName, info) => {
     // console.log(formName, 'changedFields', info.changedFields);
@@ -336,10 +329,9 @@ const Signup = ({
             const newStateItems = setPaymentState({
               member: updatedMember.member,
               payment: addedPayment.payment,
-            })
+            });
             setUserPayments(newStateItems.payments);
             setMember(newStateItems.member);
-
             setStep(step + 1);
             setIsConfirmation(true);
             setIsServerError(false);

@@ -3,24 +3,35 @@ import { Card, Typography, Switch, Row, Col, Button, message } from 'antd';
 // data
 import { MembersContext } from '../../../../../contexts/members-context';
 import * as memberTypes from '../../../../../data/members/member-types';
-import { sibLists, getAllSibListIndexes } from '../../../../../data/emails/sendinblue-fields';
+import { mailingLists } from '../../../../../data/members/airtable/airtable-values';
+import { sibLists, getAllListIndexes } from '../../../../../data/emails/sendinblue-fields';
 // utils
-import { getAccountIsActive, getPrimaryEmail } from '../../../../../utils/members/airtable/members-db';
-import { getMailListsSubscribed, updateContact } from '../../../../../utils/emails/sendinblue-utils';
+import { getAccountIsActive, updateMember } from '../../../../../utils/members/airtable/members-db';
+import { updateContact } from '../../../../../utils/emails/sendinblue-utils';
+import { dbFields } from '../../../../../data/members/airtable/airtable-fields';
 
 const { Link } = Typography;
 
-const EmailPrefs = ({
+const MailPrefs = ({
   title,
   memberType,
   onLink,
   loading,
   setLoading,
 }) => {
-  const { member, userEmails, userPayments, memberPlans } = useContext(MembersContext);
-
-  // set default list states when load
-  const [mailListsSubscribed, setMailListsSubscribed] = useState(null);
+  const {
+    // authUser,
+    member, setMember,
+    // userEmails,
+    userPayments,
+    memberPlans,
+    // emailContacts,
+    primaryEmail,
+    // userMailingLists
+    userMailingLists, setUserMailingLists,
+    addToUserLists,
+    removeFromUserLists,
+  } = useContext(MembersContext);
 
   const [newsletterChecked, setNewsletterChecked] = useState(false);
   const [memberEmailChecked, setMemberEmailChecked] = useState(false);
@@ -34,47 +45,44 @@ const EmailPrefs = ({
     });
   }, [userPayments, memberPlans, member]);
 
-  const primaryEmail = useMemo(() => {
-    return getPrimaryEmail(userEmails);
-  }, [userEmails]);
-
-  // get subscribed mailing lists from email svs provider
-  useEffect(() => {
-    (async () => {
-      const lists = await getMailListsSubscribed(primaryEmail);
-      // if list is [] getMailListsSubscribed returns null
-      if (lists) setMailListsSubscribed(lists);
-    })();
-  }, [primaryEmail]);
-
-  /**
-   * Toggle lists according to email svs provider settings.
-   *
-   * mailListsSubscribed changes when:
-   * * primary email changes.
-   * * TODO: user manually changes settings.
+  /******************************
+   * Mailing list switch toggle *
+   ******************************
+   * toggle according to userMailingLists
+   * userMailingLists changes when primary email changes.
    */
-  //
-  //
   useEffect(() => {
-    if (mailListsSubscribed) {
-      mailListsSubscribed.forEach((listValue) => {
-        for (const key in sibLists) {
-          if (listValue === key) {
-            if (listValue === 'newsletter') setNewsletterChecked(true);
-            if (listValue === 'members') setMemberEmailChecked(true);
-            if (listValue === 'lawNotes') setLawNotesChecked(true);
+    if (userMailingLists) {
+      if (userMailingLists.listIds) {
+        userMailingLists.listIds.forEach((id) => {
+          for (const key in sibLists) {
+            if (id === sibLists.newsletter.id) setNewsletterChecked(true);
+            if (id === sibLists.members.id) setMemberEmailChecked(true);
+            if (id === sibLists.law_notes.id) setLawNotesChecked(true);
           }
-        }
-      });
+        });
+      }
+      if (userMailingLists.unlinkListIds) {
+        userMailingLists.unlinkListIds.forEach((id) => {
+          for (const key in sibLists) {
+            if (id === sibLists.newsletter.id) setNewsletterChecked(false);
+            if (id === sibLists.members.id) setMemberEmailChecked(false);
+            if (id === sibLists.law_notes.id) setLawNotesChecked(false);
+          }
+        });
+      }
+    } else {
+      setNewsletterChecked(false);
+      setMemberEmailChecked(false);
+      setLawNotesChecked(false);
     }
-  }, [mailListsSubscribed]);
+  }, [userMailingLists]);
 
-  /**
-   * check/uncheck newsletter types
+  /**********************************
+   * check/uncheck newsletter types *
+   **********************************
+   * uncheck emails non-members not eligible for
    */
-
-  // uncheck emails non-members not eligible for
   useEffect(() => {
     if (memberType === memberTypes.USER_NON_MEMBER || !accountIsActive) {
       setMemberEmailChecked(false);
@@ -86,63 +94,118 @@ const EmailPrefs = ({
     return (newsletterChecked && memberEmailChecked && lawNotesChecked);
   };
 
+  /*******************************
+   * toggle list - one at a time *
+   *******************************
+   * updating userMailingLists will update ESP contact
+   *
+   * @param {string} type: 'newsletter, 'members', 'law_notes'
+   * @param {boolean} checked
+   */
   const onToggleMailing = async (type, checked) => {
     message.loading('Saving settings...', 3);
     setLoading(true);
     if (type === 'newsletter') setNewsletterChecked(checked);
     if (type === 'members') setMemberEmailChecked(checked);
-    if (type === 'lawNotes') setLawNotesChecked(checked);
+    if (type === 'law_notes') setLawNotesChecked(checked);
 
-    // change on emails svs provider
+    const addToUnsubscribed = (type) => {
+      const currentLists = member.fields[dbFields.members.listsUnsubscribed];
+      let list = [];
+      if (currentLists) list = [...currentLists];
+      let typeFound = null;
+      if (list.length > 0) typeFound = list.find((item) => item === type);
+      if (!typeFound) list.push(type);
+      return list;
+    }
+
+    const removeFromUnsubscribed = (type) => {
+      const currentLists = member.fields[dbFields.members.listsUnsubscribed];
+      let list = [];
+      if (currentLists) list = [...currentLists];
+      if (list.length > 0) {
+        list = list.reduce((acc, cur) => {
+          if (type !== cur) acc.push(cur);
+          return acc;
+        }, []);
+      }
+      return list;
+    }
+
     if (checked) {
-      // console.log('listIds =>', sibLists[type]);
-      await updateContact({
-        email: primaryEmail,
-        listIds: [ sibLists[type] ],
-      });
+      addToUserLists(sibLists[type].id); // > userMailingLists > updateContactLists
+      const lists = removeFromUnsubscribed(type);
+      const payload = {
+        id: member.id,
+        fields: {
+          [dbFields.members.listsUnsubscribed]: lists,
+        }
+      }
+      const updatedMember = await updateMember(payload);
+      if (updatedMember.member) setMember(updatedMember.member);
       setLoading(false);
       message.success('Mailing list settings updated.');
     }
     if (!checked) {
-      // console.log('unlinkListIds =>', sibLists[type]);
-      await updateContact({
-        email: primaryEmail,
-        unlinkListIds: [ sibLists[type] ],
-      });
+      removeFromUserLists(sibLists[type].id); // > userMailingLists > updateContactLists
+      const lists = addToUnsubscribed(type);
+      const payload = {
+        id: member.id,
+        fields: {
+          [dbFields.members.listsUnsubscribed]: lists,
+        }
+      }
+      const updatedMember = await updateMember(payload);
+      if (updatedMember.member) setMember(updatedMember.member);
       setLoading(false);
       message.success('Mailing list settings updated.');
     }
   }
 
+  /************************
+   * add/remove all lists *
+   ************************
+   * only when user eligible for member-only lists
+   *
+   * @param {*} bool - true = add, false = remove
+   */
   const toggleMailings = async (bool) => {
     message.loading('Saving settings...', 3);
     setLoading(true);
+
+    let unsubscribeList = [];
+    if (bool) {
+      await updateContact({
+        email: primaryEmail,
+        listIds: getAllListIndexes(),
+      });
+      setUserMailingLists({ listIds: getAllListIndexes() });
+    }
+    if (!bool) {
+      await updateContact({
+        email: primaryEmail,
+        unlinkListIds: getAllListIndexes(),
+      });
+      setUserMailingLists({ unlinkListIds: getAllListIndexes() });
+      unsubscribeList = mailingLists;
+    }
+    const updatedMember = await updateMember({
+      id: member.id,
+      fields: {
+        [dbFields.members.listsUnsubscribed]: unsubscribeList,
+      }
+    });
+    if (updatedMember.member) setMember(updatedMember.member);
     setNewsletterChecked(bool);
     setMemberEmailChecked(bool);
     setLawNotesChecked(bool);
-
-    if (bool) {
-      console.log('listIds =>', getAllSibListIndexes());
-      await updateContact({
-        email: primaryEmail,
-        listIds: getAllSibListIndexes(),
-      });
-      setLoading(false);
-      message.success('Mailing list settings updated.');
-    }
-    if (!bool) {
-      console.log('unlinkListIds =>', getAllSibListIndexes());
-      await updateContact({
-        email: primaryEmail,
-        unlinkListIds: getAllSibListIndexes(),
-      });
-      setLoading(false);
-      message.success('Mailing list settings updated.');
-    }
+    setLoading(false);
+    message.success('Mailing list settings updated.');
   };
 
+  // `Check all` and `Uncheck all` links
   const checkLink = useMemo(() => {
-    if (memberType !== memberTypes.USER_NON_MEMBER && accountIsActive) {
+    if (primaryEmail && memberType !== memberTypes.USER_NON_MEMBER && accountIsActive) {
       return <span>{areAllChecked()
         ? <Link onClick={() => toggleMailings(false)}>Uncheck all</Link>
         : <Link onClick={() => toggleMailings(true)}>Check all</Link>
@@ -157,6 +220,10 @@ const EmailPrefs = ({
       extra={checkLink}
       style={{ maxWidth: 600 }}
     >
+      {!primaryEmail &&
+        <p className="text-danger">Your email address has been blocked. Unblock a verified email address in <a href="#emails" className="text-nowrap">Email addresses</a> above to start receiving emails again.</p>
+      }
+
       <div>Choose the type of emails that you would like to receive:</div>
 
       {/* Newsletter */}
@@ -165,8 +232,10 @@ const EmailPrefs = ({
           key="newsletter-switch"
           checked={newsletterChecked}
           onChange={(checked) => onToggleMailing('newsletter', checked)}
+          disabled={!primaryEmail && true}
           loading={loading}
           size="small"
+          style={!primaryEmail ? { backgroundColor: 'red' } : null}
         />&nbsp;&nbsp;<strong>LGBT Bar Newsletter emails</strong>, including Pride and Advocacy emails
       </div>
 
@@ -177,9 +246,13 @@ const EmailPrefs = ({
             <Switch
               checked={memberEmailChecked}
               onClick={(checked) => onToggleMailing('members', checked)}
-              disabled={(memberType === memberTypes.USER_NON_MEMBER || !accountIsActive) && true}
+              disabled={(
+                memberType === memberTypes.USER_NON_MEMBER || !accountIsActive ||
+                !primaryEmail
+              ) && true}
               loading={loading}
               size="small"
+              style={primaryEmail ? null : { backgroundColor: 'red' }}
             />&nbsp;&nbsp;<strong>Association Member emails</strong>
           </Col>
           {memberType === memberTypes.USER_NON_MEMBER
@@ -197,15 +270,19 @@ const EmailPrefs = ({
           <Col>
             <Switch
               checked={lawNotesChecked}
-              onClick={(checked) => onToggleMailing('lawNotes', checked)}
-              disabled={(memberType === memberTypes.USER_NON_MEMBER || !accountIsActive) && true}
+              onClick={(checked) => onToggleMailing('law_notes', checked)}
+              disabled={(
+                memberType === memberTypes.USER_NON_MEMBER || !accountIsActive ||
+                !primaryEmail
+              ) && true}
               loading={loading}
               size="small"
+              style={primaryEmail ? null : { backgroundColor: 'red' }}
             />&nbsp;&nbsp;<strong>Law Notes emails:</strong> magazine &amp; podcast
           </Col>
-          {memberType === memberTypes.USER_NON_MEMBER &&
+          {/* {memberType === memberTypes.USER_NON_MEMBER &&
             <Col><Button type="primary" size="small" onClick={() => onLink(memberTypes.SIGNUP_LAW_NOTES)}>Subscribe to Law Notes</Button></Col>
-          }
+          } */}
         </Row>
       </div>
 
@@ -225,10 +302,10 @@ const EmailPrefs = ({
       <div className="mt-4">{primaryEmail
         ? <span>We will email you at <strong>{primaryEmail}</strong>. </span>
         : ''
-      }To update <strong>email address</strong>, edit in <a href="#emails">Email</a> section above.</div>
+      }{primaryEmail && <>To update your primary email address, edit in <a href="#emails">Email addresses</a> above.</>}</div>
 
     </Card>
   </>;
 };
 
-export default EmailPrefs;
+export default MailPrefs;
