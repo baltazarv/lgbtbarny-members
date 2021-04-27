@@ -1,4 +1,3 @@
-// TODO: rename emails-table or email-addresses
 /**
  * Intermediary `AccountsItem` component with render props between this component and `Accounts` component. `dataSource`, `selectedRowKeys`, and `setSelectedRowKeysprop` inside `value` prop sent by Account.
  * * Account 'emailTableDataSource' defines data displayed on table.
@@ -21,14 +20,14 @@ import {
   createEmail,
   updateEmails,
   deleteEmail,
-  updatePrimaryInEmails, // delete
+  // updatePrimaryInEmails, // delete
 } from '../../../../../utils/members/airtable/members-db';
 import { updateContact } from '../../../../../utils/emails/sendinblue-utils';
 
 const { Link } = Typography;
 const { Search } = Input;
 
-const EmailsForm = ({
+const EmailsAddresses = ({
   loading,
   editing,
 
@@ -89,7 +88,7 @@ const EmailsForm = ({
       return email;
     });
 
-    // const emailsWithPrimaryUpdate = updatePrimaryInEmails(emailsWithBlockedValue, loggedInEmail);
+    const emailsWithPrimaryUpdate = updatePrimaryInEmails(emailsWithBlockedValue, loggedInEmail);
     // setUserEmails(emailsWithPrimaryUpdate);
 
     setUserEmails(emailsWithBlockedValue);
@@ -391,4 +390,4 @@ const EmailsForm = ({
   </>;
 };
 
-export default EmailsForm;
+export default EmailsAddresses;

@@ -1,7 +1,7 @@
 /**
  * Form.Provider in this Accounts component.
  * * Forms in AccountsForm submitted in this onFormFinish().
- * * EmailsForm handle its new email form.
+ * * EmailAddresses handle its new email form.
  *     `changePrimaryEmail` on this Accounts form handles switching primary emails.
  */
 import { useState, useContext, useMemo, useEffect } from 'react';
@@ -13,11 +13,11 @@ import AccountsForm from './accounts-form';
 import AccountsItem from './accounts-item';
 // TODO: rename './forms/' to './sections'; move './modals' to './sections/modals/'?
 import ProfileForm from './forms/profile-form';
-import EmailsForm from './forms/emails-form';
+import EmailAddresses from './forms/email-addresses';
 import MemberInfoFields from './forms/member-info-fields';
 import AdditionalInfoForm from './forms/additional-info-form';
 import PaymentInfo from './forms/payment-info';
-import MailPrefs from './forms/email-prefs';
+import MailingPrefs from './forms/mailing-prefs';
 // styles
 import './account.less';
 // data
@@ -256,7 +256,7 @@ const Account = ({
           values={emailTableValues}
           changeValues={changePrimaryEmail}
           resetValues={resetEmailTableData}
-          render={(args) => <EmailsForm {...args} />}
+          render={(args) => <EmailAddresses {...args} />}
         />
       </div>
 
@@ -320,7 +320,7 @@ const Account = ({
       {/* Mailing preferences */}
 
       <div className="mb-3" id="mail-prefs">
-        <MailPrefs
+        <MailingPrefs
           title="Mailing preferences"
           memberType={memberType}
           onLink={onLink}
