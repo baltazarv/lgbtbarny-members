@@ -25,10 +25,7 @@
     "react-socks": "^2.1.0",
     "sib-api-v3-sdk": "^8.2.0",
     "stripe": "^8.60.0",
-    "swr": "^0.4.2"
-  },
-  "license": "ISC",
-  "devDependencies": {
+    "swr": "^0.4.2",
     "@types/node": "^14.14.37",
     "@types/react": "^17.0.3",
     "@zeit/next-less": "^1.0.1",
@@ -37,5 +34,8 @@
     "next-compose-plugins": "^2.2.1",
     "typescript": "^3.9.5",
     "webpack": "^4.3.0"
+  },
+  "license": "ISC",
+  "devDependencies": {
   }
 }
