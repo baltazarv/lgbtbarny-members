@@ -8,6 +8,11 @@ yarn
 yarn dev
 ```
 
+## Production debugging
+```bash
+yarn build --debug
+```
+
 ## webpack cli
 May need to install `webpack cli`, which `webpack 4` requires:
 https://stackoverflow.com/questions/43179531/error-cannot-find-module-webpack-lib-node-nodetemplateplugin
@@ -18,27 +23,28 @@ npm install --save-dev webpack webpack-cli html-webpack-plugin webpack-dev-serve
 
 # Built With
 
-## Bootstrap
-
 ## Ant Design
-Integrating [Ant Design](http://ant.design). Had started with nextjs example [Ant Design example (with less)](https://github.com/zeit/next.js/tree/canary/examples/with-ant-design-less), but have simplified.
+[Ant Design](http://ant.design), on [version 4](https://ant.design/docs/react/migration-v4).
 
 Default variables can be found in the node_modules `/node_modules/antd/es/style/themes/default.less` or on [GitHub](https://github.com/ant-design/ant-design/blob/master/components/style/themes/default.less) and https://medium.com/anna-coding/how-to-config-ant-design-in-next-js-with-custom-theme-b704022591af.
+
+## Next.js + Ant Design Configurations
+* `next.config.js`: without configuration get [error](https://github.com/vercel/next.js/issues/8150). See [config example](https://github.com/vercel/next.js/blob/canary/examples/with-ant-design-less/next.config.js).
+* `.babelrc`
+
+### Plugins Required
+* [babel-plugin-import](https://www.npmjs.com/package/)
+* less-vars-to-js
+* null-loader
 
 ## Next.js + Less
 https://github.com/vercel/next-plugins/tree/master/packages/next-less
 
+## Bootstrap
+Only using utitlity classes.
+
 ## Auth0
-
 https://github.com/auth0/nextjs-auth0
-
-## Plugins
-
-### next-compose-plugins (TODO: DELETE?)
-https://github.com/cyrilwanner/next-compose-plugins
-
-### babel-plugin-import (TODO: DELETE?)
-https://www.npmjs.com/package/babel-plugin-import
 
 ## Stripe
 
@@ -54,3 +60,7 @@ https://www.npmjs.com/package/babel-plugin-import
 # PDFs
 
 [Parameters for Opening PDF Files](https://www.adobe.com/content/dam/acom/en/devnet/acrobat/pdfs/pdf_open_parameters.pdf)
+
+# Code Strandards
+
+Default VS Code formatter: `Prettier - Code formatter`.
