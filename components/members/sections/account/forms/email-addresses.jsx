@@ -88,7 +88,7 @@ const EmailsAddresses = ({
       return email;
     });
 
-    const emailsWithPrimaryUpdate = updatePrimaryInEmails(emailsWithBlockedValue, loggedInEmail);
+    // const emailsWithPrimaryUpdate = updatePrimaryInEmails(emailsWithBlockedValue, loggedInEmail);
     // setUserEmails(emailsWithPrimaryUpdate);
 
     setUserEmails(emailsWithBlockedValue);

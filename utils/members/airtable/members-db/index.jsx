@@ -55,7 +55,7 @@ import {
   updateEmails,
   deleteEmail,
   getPrimaryEmail,
-  updatePrimaryInEmails,
+  // updatePrimaryInEmails,
 } from './emails-table-utils';
 
 export {
@@ -95,5 +95,5 @@ export {
   updateEmails,
   deleteEmail,
   getPrimaryEmail,
-  updatePrimaryInEmails,
+  // updatePrimaryInEmails,
 };
