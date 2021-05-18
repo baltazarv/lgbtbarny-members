@@ -14,11 +14,9 @@ const sibCreateContact = SibApiV3Sdk.CreateContact;
 const sibUpdateContact = SibApiV3Sdk.UpdateContact;
 
 // API must create a new instance of the following
-export {
-  // get-contact-info, update-contact
-  sibContactsApi,
-  // create contact
-  sibCreateContact,
-  // update contact
-  sibUpdateContact,
-}
+// get-contact-info, update-contact
+exports.sibContactsApi = sibContactsApi;
+// create contact
+exports.sibCreateContact = sibCreateContact;
+// update contact
+exports.sibUpdateContact = sibUpdateContact;
