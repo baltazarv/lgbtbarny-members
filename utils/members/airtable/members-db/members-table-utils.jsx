@@ -249,21 +249,22 @@ const getUserMailingLists = ({
 }) => {
   // get member unsubscribe settings
   let lists = null,
-    unnsubscribedToNewsletter = null,
+    unsubscribedToNewsletter = null,
     unsbuscribedToMembers = null,
     unsbuscribedTolawNotes = null;
   if (member) {
     const memberSettings = member.fields[dbFields.members.listsUnsubscribed];
     if (memberSettings) {
-      unnsubscribedToNewsletter = memberSettings.find((type) => type === 'newsletter');
+      unsubscribedToNewsletter = memberSettings.find((type) => type === 'newsletter');
       unsbuscribedToMembers = memberSettings.find((type) => type === 'members');
       unsbuscribedTolawNotes = memberSettings.find((type) => type === 'law_notes');
     }
+    const mailingSettings = member.fields[dbFields.members.mailingLists];
   }
 
   // remove from lists
   let unlinkListIds = [];
-  if (unnsubscribedToNewsletter) unlinkListIds.push(sibLists.newsletter.id);
+  if (unsubscribedToNewsletter) unlinkListIds.push(sibLists.newsletter.id);
   if (unsbuscribedTolawNotes ||
     (memberStatus !== memberTypes.USER_STUDENT &&
       memberStatus !== memberTypes.USER_ATTORNEY &&
@@ -290,9 +291,9 @@ const getUserMailingLists = ({
       }
     })
   }
-  // unnsubscribedToNewsletter in Aritable; subscribedToNewsletter from ESP SendinBlue
+  // unsubscribedToNewsletter in Aritable; subscribedToNewsletter from ESP SendinBlue
   // if don't send emailContacts, will not check if ESP contacts are subscribed to newsletter
-  if ((!unnsubscribedToNewsletter && subscribedToNewsletter) ||
+  if ((!unsubscribedToNewsletter && subscribedToNewsletter) ||
     !emailContacts) listIds.push(sibLists.newsletter.id);
 
   // MEMBERS-ONLY lists

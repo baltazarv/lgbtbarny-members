@@ -119,6 +119,16 @@ const MailPrefs = ({
       return list;
     }
 
+    const addToFromMailLists = (type) => {
+      const currentLists = member.fields[dbFields.members.mailingLists];
+      let list = [];
+      if (currentLists) list = [...currentLists];
+      let typeFound = null;
+      if (list.length > 0) typeFound = list.find((item) => item === type);
+      if (!typeFound) list.push(type);
+      return list;
+    }
+
     const removeFromUnsubscribed = (type) => {
       const currentLists = member.fields[dbFields.members.listsUnsubscribed];
       let list = [];
@@ -132,13 +142,28 @@ const MailPrefs = ({
       return list;
     }
 
+    const removeFromMailLists = (type) => {
+      const currentLists = member.fields[dbFields.members.mailingLists];
+      let list = [];
+      if (currentLists) list = [...currentLists];
+      if (list.length > 0) {
+        list = list.reduce((acc, cur) => {
+          if (type !== cur) acc.push(cur);
+          return acc;
+        }, []);
+      }
+      return list;
+    }
+
     if (checked) {
       addToUserLists(sibLists[type].id); // > userMailingLists > updateContactLists
-      const lists = removeFromUnsubscribed(type);
+      const unsubLists = removeFromUnsubscribed(type);
+      const mailLists = addToFromMailLists(type);
       const payload = {
         id: member.id,
         fields: {
-          [dbFields.members.listsUnsubscribed]: lists,
+          [dbFields.members.listsUnsubscribed]: unsubLists,
+          [dbFields.members.mailingLists]: mailLists,
         }
       }
       const updatedMember = await updateMember(payload);
@@ -148,11 +173,13 @@ const MailPrefs = ({
     }
     if (!checked) {
       removeFromUserLists(sibLists[type].id); // > userMailingLists > updateContactLists
-      const lists = addToUnsubscribed(type);
+      const unsubLists = addToUnsubscribed(type);
+      const mailLists = removeFromMailLists(type);
       const payload = {
         id: member.id,
         fields: {
-          [dbFields.members.listsUnsubscribed]: lists,
+          [dbFields.members.listsUnsubscribed]: unsubLists,
+          [dbFields.members.mailingLists]: mailLists,
         }
       }
       const updatedMember = await updateMember(payload);
@@ -174,12 +201,14 @@ const MailPrefs = ({
     setLoading(true);
 
     let unsubscribeList = [];
+    let mailLists = [];
     if (bool) {
       await updateContact({
         email: primaryEmail,
         listIds: getAllListIndexes(),
       });
       setUserMailingLists({ listIds: getAllListIndexes() });
+      mailLists = mailingLists;
     }
     if (!bool) {
       await updateContact({
@@ -193,6 +222,7 @@ const MailPrefs = ({
       id: member.id,
       fields: {
         [dbFields.members.listsUnsubscribed]: unsubscribeList,
+        [dbFields.members.mailingLists]: mailLists,
       }
     });
     if (updatedMember.member) setMember(updatedMember.member);
