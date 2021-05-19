@@ -1,17 +1,9 @@
 require("dotenv").config({ path: __dirname + "/./../../.env.development" });
+const sendinBlueFields = require('../../data/emails/sendinblue-fields');
+const dbFields = require('../../data/members/airtable/airtable-fields').dbFields;
 
-const dbFields = {
-  members: {
-    emails: "emails",
-    firstName: "first_name",
-    lastName: "last_name",
-    // calc
-    status: "_status",
-  },
-  emails: {
-    address: "address",
-  },
-};
+const sibFields = sendinBlueFields.sibFields;
+const sibLists = sendinBlueFields.sibLists;
 
 /*****************
  * DELETE EMAILS *
@@ -36,7 +28,7 @@ const emailSubscriptions = async () => {
   // get all emails (7831 records)
   const allEmails = await getUsersEmails({ maxRecords: 200 });
   // console.log("allEmails", allEmails);
-  console.log("allEmails count", allEmails.length);
+  // console.log("allEmails count", allEmails.length);
 
   // get users where email is not empty (3914/4678 records)
   const allUsers = await getUsers({
@@ -44,7 +36,7 @@ const emailSubscriptions = async () => {
     maxRecords: 200,
   });
   // console.log("allUsers", allUsers);
-  console.log("allUsers count", allUsers.length);
+  // console.log("allUsers count", allUsers.length);
 
   // get payments if want to calculate members statuses vs. using db calc field _status
 
@@ -57,30 +49,60 @@ const emailSubscriptions = async () => {
       });
       return userFound;
     })
-    console.log('address', email.id, user);
+    // console.log('address', email.id, user);
 
     if (user) {
       // add first and last name to email import
-      emailObject[dbFields.members.firstName] =
-        user.fields[dbFields.members.firstName];
-      emailObject[dbFields.members.lastName] =
-        user.fields[dbFields.members.lastName];
+      emailObject.attributes = emailObject.attributes || {};
+      emailObject.attributes[sibFields.contacts.attributes.firstname] = user.fields[dbFields.members.firstName];
+      emailObject.attributes[sibFields.contacts.attributes.lastname] = user.fields[dbFields.members.lastName];
 
-      // calculate user status for emails using payments (or use Airtable _status field)
-      const status = user.fields[dbFields.members.status];
-      // console.log(emailObject, "=>", status);
+      // maybe filter out non-primary emails? (how to decide what is primary?)
 
-      // if user is active, add to members-only lists and to newsletter
-      //   for remaining emails
-      //     add to newsletter only
-      //     if user is expired, add EXPDATE
-      //     if user is graduated, add GRADDATE
+      if (email.fields[dbFields.emails.blocked]) {
+        // blacklist emails with unsubscribed subscription status
+        emailObject.emailBlacklisted = true;
 
-      //   maybe filter out non-primary emails? (how to decide what is primary?)
+      } else if (email.fields[dbFields.emails.inactive]) {
+        // add to the `inactive` list emails either
+        //   (1) with no subscription status or
+        //   (2) marked by Wix as inactive, equivalent to "not engaged"
+        emailObject.listIds = emailObject.listIds || [];
+        emailObject.listIds.push(sibLists.inactive.id);
 
-      // blacklist email import for emails with unsubscribed subscription status and separate
+      } else {
+        // calculate user status for emails using payments (or use Airtable _status field)
+        const status = user.fields[dbFields.members.status];
+        // console.log(emailObject, "=>", status);
 
-      // add emails with no subscription status to the inactive list and separate
+        if (status === 'attorney' || status === 'student') {
+          // if user is active, add to members-only lists and to newsletter
+          emailObject.listIds = emailObject.listIds || [];
+          emailObject.listIds.push(sibLists.members.id);
+          emailObject.listIds.push(sibLists.law_notes.id);
+          
+        } else if (status == 'expired') {
+          // if user is expired, add EXPDATE
+          // get exp date from Airtable or calculate date
+          const expDate = user.fields[dbFields.members.expDate];
+          // TODO: format for ESP
+          emailObject.attributes = emailObject.attributes || {};
+          emailObject.attributes[sibFields.contacts.attributes.expDate] = expDate;
+          
+        } else if (status === 'graduated') {
+          // if user is graduated, add GRADDATE
+          // get exp date from Airtable or calculate date
+          const gradDate = user.fields[dbFields.members.gradDate];
+          // TODO: format for ESP
+          emailObject.attributes = emailObject.attributes || {};
+          emailObject.attributes[sibFields.contacts.attributes.gradDate] = gradDate;
+          
+        }
+        // add to newsletter
+        emailObject.listIds = emailObject.listIds || [];
+        emailObject.listIds.push(sibLists.newsletter.id);
+
+      }
     }
     return emailObject;
   });

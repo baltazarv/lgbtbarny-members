@@ -1,5 +1,5 @@
 // Airtable bases with table fields
-export const dbFields = {
+exports.dbFields = {
   /** `members` base */
   // members base: members table
   members: {
@@ -28,6 +28,12 @@ export const dbFields = {
     listsUnsubscribed: 'lists_unsubscribed',
     mailingLists: 'mailing_lists',
     lastLoggedIn: '_last_logged_in',
+
+    // calc
+    status: "_status",
+    expDate: "_exp_date",
+    gradDate: "_grad_date",
+    
     valueLists: {
       // salaries: [],
       // certify: [],
@@ -76,7 +82,10 @@ export const dbFields = {
     address: 'address',
     verified: 'verified',
     primary: 'primary',
-    blocked: 'blocked',
+    blocked: 'blocked', // rename
+
+    // temp field
+    inactve: "__inactive",
   },
   // members base: payments table
   payments: {

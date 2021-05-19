@@ -4,9 +4,11 @@ const sibFields = {
     unlinkListIds: "unlinkListIds",
     emailBlacklisted: "emailBlacklisted",
     attributes: {
-      name: 'name',
+      name: 'name', // remove?
       firstname: 'firstname',
       lastname: 'lastname',
+      expDate: 'expdate',
+      gradDate: 'graddate',
     }
   }
 }
@@ -23,6 +25,10 @@ const sibLists = {
   law_notes: {
     id: 5,
     title: 'Law Notes',
+  },
+  inactive: {
+    id: 8,
+    // title: '',
   },
 }
 
@@ -49,10 +55,10 @@ const getListTitle = (id) => {
   return null;
 }
 
-export {
+module.exports = {
   sibFields,
   sibLists,
   getAllListIndexes,
   getMemberOnlyListIndexes,
   getListTitle,
-}
+};
