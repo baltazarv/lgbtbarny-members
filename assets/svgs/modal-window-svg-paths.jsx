@@ -1,4 +1,4 @@
-export default ({ fill }) => {
+const ModalWindowSvgPaths = ({ fill }) => {
   const cls1Style = {
     fill, // '#ff13dc'
     fillOpacity: 0,
@@ -18,3 +18,5 @@ export default ({ fill }) => {
     <rect style={cls3Style} x="9.33" y="1.84" width="6.79" height="6.79" rx="0.01"/>
   </>
 }
+
+export default ModalWindowSvgPaths;
