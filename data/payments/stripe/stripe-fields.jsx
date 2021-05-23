@@ -65,5 +65,8 @@ export const STRIPE_FIELDS = {
       sendInvoice: 'send_invoice',
     },
     defaultPaymentMethod: 'default_payment_method',
+  },
+  coupons: {
+    percentOff: 'percent_off',
   }
 };

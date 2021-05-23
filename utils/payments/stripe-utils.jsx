@@ -56,7 +56,9 @@ const updateSubscription = async (fieldsToUpdate) => {
   }
 };
 
-/** pure utitlity functions */
+/*************************
+ * pure utitlity functions
+ * ***********************/
 
 const getActiveSubscription = (subscriptions) => {
   if (subscriptions && subscriptions.length > 0) {

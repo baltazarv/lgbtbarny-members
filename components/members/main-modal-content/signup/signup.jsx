@@ -43,6 +43,7 @@ import {
   getPaymentPayload,
 } from '../../../../utils/members/airtable/members-db';
 import { updateCustomer } from '../../../../utils/payments/stripe-utils';
+import { getUserCoupons } from '../../../../utils/members/airtable/members-db/coupons-table-utils';
 
 // import DonationFields from '../../../payments/donation-fields';
 // import { getDonationValues } from '../../../../data/payments/donation-values';
@@ -73,6 +74,7 @@ const Signup = ({
   const [paymentSuccessful, setPaymentSuccessful] = useState(false);
   // review
   const [stepsStatus, setStepsStatus] = useState('process'); // wait process finish error
+  const [userCoupon, setUserCoupon] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const [dues, setDues] = useReducer(duesReducer, duesInit);
@@ -186,6 +188,22 @@ const Signup = ({
     }
     return '';
   }, [signupType, certifyType]);
+
+  // get user coupon if any
+  useEffect(() => {
+    // step 0: membership info
+    if (member) {
+      (async function fetchUserCoupons() {
+        const { userCoupons } = await getUserCoupons(member.id);
+        // returning first instance of 100% coupon
+        if (userCoupons) {
+          const coupon = userCoupons.find(c => c[STRIPE_FIELDS.coupons.percentOff] === 100);
+          // TODO: save stripe coupon instead
+          if (userCoupons) setUserCoupon(coupon)
+        }
+      })();
+    }
+  }, [member]);
 
   // update attorney or law notes subscriber dues
   useEffect(() => {
@@ -354,14 +372,13 @@ const Signup = ({
     }
 
     // if (formName === SIGNUP_FORMS.payment) {
-      // payment processing from PaymentForm onFinish() > onSuccess()
+    // payment processing from PaymentForm onFinish() > onSuccess()
     // }
   };
 
-  const onPaymentSuccessful = () =>
-{
-  setPaymentSuccessful(true);
-}
+  const onPaymentSuccessful = () => {
+    setPaymentSuccessful(true);
+  }
   /** content */
 
   // Not-logged-in content in LoginPwdless component
@@ -389,7 +406,6 @@ const Signup = ({
       signupType === memberTypes.SIGNUP_ATTORNEY_ACTIVE) title = 'Membership Active';
     if (signupType === memberTypes.SIGNUP_STUDENT_UPGRADE) title = 'Become an Attorney Member';
     if (signupType === memberTypes.SIGNUP_ATTORNEY_RENEW) title = 'Renew your Membership';
-    // console.log(signupType, certifyType, title)
     return <>
       <strong>{title}</strong>
       {headerIcons}

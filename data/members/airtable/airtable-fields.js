@@ -28,6 +28,7 @@ exports.dbFields = {
     listsUnsubscribed: 'lists_unsubscribed',
     mailingLists: 'mailing_lists',
     lastLoggedIn: '_last_logged_in',
+    coupons: 'coupons',
 
     // calc
     status: "_status",
@@ -139,4 +140,7 @@ exports.dbFields = {
       sample: 'sample',
     }
   },
+  coupons: {
+    stripeId: "stripe_id",
+  }
 };

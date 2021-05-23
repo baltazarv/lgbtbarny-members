@@ -10,6 +10,7 @@ let paymentsTable = null;
 let plansTable = null;
 let membersCleTable = null;
 let membersCleCertsTable = null;
+let couponsTable = null;
 
 // law notes table
 let lawNotesIssuesTable = null;
@@ -31,6 +32,7 @@ if (process.env.AIRTABLE_API_KEY) {
   plansTable = membersBase("plans");
   membersCleTable = membersBase("cles");
   membersCleCertsTable = membersBase("cle_certs");
+  couponsTable = membersBase("coupons");
 
   // const clesTable = cleBase('cles');
   // const creditsTable = cleBase('credits');
@@ -90,8 +92,13 @@ const getUsersEmails = (selectOptions) => {
   return;
 }
 
-exports.getUsers = getUsers;
-exports.getUsersEmails = getUsersEmails;
+const getCoupons = (selectOptions) => {
+  if (couponsTable) {
+    return getRecords(couponsTable, selectOptions);
+  }
+  console.log('error')
+  return;
+}
 
 // members db
 exports.membersTable = membersTable;
@@ -100,6 +107,11 @@ exports.paymentsTable = paymentsTable;
 exports.plansTable = plansTable;
 exports.membersCleTable = membersCleTable;
 exports.membersCleCertsTable = membersCleCertsTable;
+exports.couponsTable = couponsTable;
+
+exports.getUsers = getUsers;
+exports.getUsersEmails = getUsersEmails;
+exports.getCoupons = getCoupons;
 
 // cle db
 // exports.clesTable = clesTable;
