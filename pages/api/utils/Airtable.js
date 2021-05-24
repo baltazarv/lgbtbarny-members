@@ -33,6 +33,7 @@ if (process.env.AIRTABLE_API_KEY) {
   membersCleTable = membersBase("cles");
   membersCleCertsTable = membersBase("cle_certs");
   couponsTable = membersBase("coupons");
+  mailingListsTable = membersBase("mailing_lists");
 
   // const clesTable = cleBase('cles');
   // const creditsTable = cleBase('credits');
@@ -76,6 +77,25 @@ const getRecords = (table, selectOptions) => {
   });
 };
 
+const updateRecord = async (table, id, fields) => {
+  if (id && fields) {
+    console.log('updateRecord', id, fields)
+    const updatedRecords = await table.update([
+      { id, fields },
+    ]);
+    if (updatedRecords) return getMinifiedRecord(updatedRecords[0]);
+  } else {
+    return new Error('Missing id, or fields');
+  }
+}
+
+/**
+ * @param {object} selectOptions examples:
+ *
+ * users by email: {
+      filterByFormula: `SEARCH("${email}", ARRAYJOIN(emails))`,
+    }
+ */
 const getUsers = (selectOptions) => {
   if (membersTable) {
     return getRecords(membersTable, selectOptions);
@@ -92,9 +112,25 @@ const getUsersEmails = (selectOptions) => {
   return;
 }
 
+const updateEmail = async (id, fields) => {
+  if (membersTable) {
+    return updateRecord(emailsTable, id, fields);
+  }
+  console.log('error')
+  return;
+}
+
 const getCoupons = (selectOptions) => {
   if (couponsTable) {
     return getRecords(couponsTable, selectOptions);
+  }
+  console.log('error')
+  return;
+}
+
+const getMailingLists = (selectOptions) => {
+  if (mailingListsTable) {
+    return getRecords(mailingListsTable, selectOptions);
   }
   console.log('error')
   return;
@@ -108,10 +144,13 @@ exports.plansTable = plansTable;
 exports.membersCleTable = membersCleTable;
 exports.membersCleCertsTable = membersCleCertsTable;
 exports.couponsTable = couponsTable;
+exports.mailingListsTable = mailingListsTable;
 
 exports.getUsers = getUsers;
 exports.getUsersEmails = getUsersEmails;
+exports.updateEmail = updateEmail;
 exports.getCoupons = getCoupons;
+exports.getMailingLists = getMailingLists;
 
 // cle db
 // exports.clesTable = clesTable;
