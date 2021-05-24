@@ -9,7 +9,6 @@ export default async (req, res) => {
   try {
     const updateRes = await emailsTable.update(req.body);
     const emails = minifyRecords(updateRes);
-    console.log('emails', emails);
     res.status(200).json({ emails });
   } catch (error) {
     console.error(error);
