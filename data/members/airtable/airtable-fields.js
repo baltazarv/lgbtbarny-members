@@ -16,6 +16,7 @@ exports.dbFields = {
     employer: 'employer',
     practiceSetting: 'practice_setting',
     practiceAreas: 'practice_areas',
+    interestGroups: 'interest_groups',
     gradYear: 'grad_year',
     lawSchool: 'law_school',
     payments: 'payments',

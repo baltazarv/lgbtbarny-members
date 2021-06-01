@@ -1,14 +1,18 @@
 const sibFields = {
   contacts: {
-    listIds: "listIds",
-    unlinkListIds: "unlinkListIds",
-    emailBlacklisted: "emailBlacklisted",
+    listIds: 'listIds',
+    unlinkListIds: 'unlinkListIds',
+    emailBlacklisted: 'emailBlacklisted',
+    smtpBlacklistSender: 'smtpBlacklistSender',
     attributes: {
       name: 'name', // remove?
       firstname: 'firstname',
       lastname: 'lastname',
+      firmOrg: 'firm_org',
       expDate: 'expdate',
       gradDate: 'graddate',
+      practice: 'practice',
+      groups: 'groups',
     }
   }
 }

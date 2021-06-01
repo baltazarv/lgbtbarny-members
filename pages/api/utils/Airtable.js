@@ -8,6 +8,7 @@ let membersTable = null;
 let emailsTable = null;
 let paymentsTable = null;
 let plansTable = null;
+let groupsTable = null;
 let membersCleTable = null;
 let membersCleCertsTable = null;
 let couponsTable = null;
@@ -30,6 +31,7 @@ if (process.env.AIRTABLE_API_KEY) {
   emailsTable = membersBase("emails");
   paymentsTable = membersBase("payments");
   plansTable = membersBase("plans");
+  groupsTable = membersBase("groups");
   membersCleTable = membersBase("cles");
   membersCleCertsTable = membersBase("cle_certs");
   couponsTable = membersBase("coupons");
@@ -136,11 +138,20 @@ const getMailingLists = (selectOptions) => {
   return;
 }
 
+const getGroups = (selectOptions) => {
+  if (groupsTable) {
+    return getRecords(groupsTable, selectOptions);
+  }
+  console.log('error')
+  return;
+}
+
 // members db
 exports.membersTable = membersTable;
 exports.emailsTable = emailsTable;
 exports.paymentsTable = paymentsTable;
 exports.plansTable = plansTable;
+exports.groupsTable = groupsTable;
 exports.membersCleTable = membersCleTable;
 exports.membersCleCertsTable = membersCleCertsTable;
 exports.couponsTable = couponsTable;
@@ -151,6 +162,7 @@ exports.getUsersEmails = getUsersEmails;
 exports.updateEmail = updateEmail;
 exports.getCoupons = getCoupons;
 exports.getMailingLists = getMailingLists;
+exports.getGroups = getGroups;
 
 // cle db
 // exports.clesTable = clesTable;
