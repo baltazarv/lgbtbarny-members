@@ -29,10 +29,11 @@ export const participate = ({
   if (memberStatus === 'graduated') {
     banner = banners('graduated', onLink);
   }
-  if (memberType === memberTypes.USER_NON_MEMBER) {
+  if (memberType === memberTypes.USER_NON_MEMBER || memberType === memberTypes.USER_LAW_NOTES) {
     locked = true;
     banner = banners('membership', onLink);
   }
+
   if (memberType === memberTypes.USER_ANON) {
     locked = true;
     banner = banners('login', onLink);

@@ -38,8 +38,12 @@ const LawNotesArchive = ({
         };
 
         // sample or locked
-        if (memberStatus !== memberTypes.USER_ATTORNEY &&
-          memberStatus !== memberTypes.USER_STUDENT) {
+        if (
+          memberType !== memberTypes.USER_LAW_NOTES &&
+          // active member
+          memberStatus !== memberTypes.USER_ATTORNEY &&
+          memberStatus !== memberTypes.USER_STUDENT
+        ) {
           if (ln.fields[dbFields.lawNotes.issues.sample]) {
             lnItem.sample = true;
           } else {
@@ -75,7 +79,11 @@ const LawNotesArchive = ({
         <p><Button type="primary" size="small" onClick={() => onLink('signup')}>Become a member</Button> to get the <em>LGBT Law Notes</em>. </p>
         {whatYouGetTxt}
       </>;
-    } else if (memberType === memberTypes.USER_ATTORNEY || memberType === memberTypes.USER_STUDENT) {
+    } else if (
+      memberType === memberTypes.USER_ATTORNEY ||
+      memberType === memberTypes.USER_STUDENT ||
+      memberType === memberTypes.USER_LAW_NOTES
+    ) {
       text = <>
         <p>Read any past editions of the <em>The LGBT Law Notes</em>. Or read the <Link onClick={() => onLink('lnlatest')}>latest issue</Link>.</p>
       </>;

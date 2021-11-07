@@ -3,7 +3,6 @@ import ClePdfEmbed from '../../../../components/members/sections/cle/cle-pdf-emb
 import CleArchive from '../../../../components/members/sections/cle/cle-archive';
 import CleCerts from '../../../../components/members/sections/cle/cle-certs';
 // parts
-import banners from '../banners';
 import { MenuIcon } from '../../../../components/members/elements/member-icons';
 //utils
 import SvgIcon from '../../../../components/elements/svg-icon';
@@ -37,6 +36,7 @@ const cleCenter = ({
   // children
   if (
     memberType === memberTypes.USER_NON_MEMBER ||
+    memberType === memberTypes.USER_LAW_NOTES ||
     memberStatus === 'expired' ||
     memberStatus === 'graduated'
   ) {

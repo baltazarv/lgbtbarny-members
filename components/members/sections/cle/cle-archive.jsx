@@ -121,6 +121,7 @@ const CleArchive = ({
         </>;
       }
     } else if (memberType === memberTypes.USER_NON_MEMBER ||
+      memberType === memberTypes.USER_LAW_NOTES ||
       memberStatus === 'expired' ||
       memberStatus === 'graduated'
     ) {
@@ -179,7 +180,11 @@ const CleArchive = ({
         let output = null;
         if (
           record.attended &&
-          (memberType === memberTypes.USER_ATTORNEY || memberType === memberTypes.USER_NON_MEMBER)
+          (
+            memberType === memberTypes.USER_ATTORNEY ||
+            memberType === memberTypes.USER_NON_MEMBER ||
+            memberType === memberTypes.USER_LAW_NOTES
+          )
         ) {
           output = <Tooltip title="open certificate">
             <Button

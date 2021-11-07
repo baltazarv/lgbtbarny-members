@@ -136,6 +136,7 @@ const Discounts = ({
 
     if (
       memberType === memberTypes.USER_NON_MEMBER ||
+      memberType === memberTypes.USER_LAW_NOTES ||
       (memberType === memberTypes.USER_ANON && previewUser === memberTypes.USER_ATTORNEY)
     ) {
       joinText = <>.&nbsp;<Button type="primary" size="small" onClick={() => onLink('signup')}>Become a member</Button> to get member discounts</>
@@ -152,6 +153,7 @@ const Discounts = ({
     if (
       memberType === memberTypes.USER_ATTORNEY ||
       memberType === memberTypes.USER_NON_MEMBER ||
+      memberType === memberTypes.USER_LAW_NOTES ||
       (
         memberType === memberTypes.USER_ANON &&
         previewUser === memberTypes.USER_ATTORNEY

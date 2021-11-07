@@ -16,7 +16,7 @@ const CleCerts = () => {
   const clesAttended = useMemo(() => {
     if (certs && member) {
       return certs.reduce((acc, cur) => {
-        if (cur.fields.user[0] === member.id) {
+        if (cur?.fields?.user?.[0] === member.id) {
           acc.push(cur);
         }
         return acc;
@@ -27,8 +27,6 @@ const CleCerts = () => {
 
   const dataTransformed = useMemo(() => {
     if (clesAttended) {
-      console.log('clesAttended', clesAttended);
-
       const trans = [...clesAttended].map((cert) => {
         const cleItem = {
           key: cert.id,

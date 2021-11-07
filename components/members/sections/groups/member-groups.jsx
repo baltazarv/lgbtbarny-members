@@ -31,8 +31,7 @@ const MemberGroups = ({
   const [modalKey, setModalKey] = useState('');
 
   useEffect(() => {
-    // memberTypeView only for USER_NON_MEMBER
-    if (memberType === memberTypes.USER_NON_MEMBER) setMemberTypeView(memberTypes.USER_ATTORNEY);
+    if (memberType === memberTypes.USER_NON_MEMBER || memberType === memberTypes.USER_LAW_NOTES) setMemberTypeView(memberTypes.USER_ATTORNEY);
   }, []);
 
   const onSetFilter = (values) => {
@@ -49,7 +48,10 @@ const MemberGroups = ({
     if (
       memberType === memberTypes.USER_ATTORNEY ||
       (
-        memberType === memberTypes.USER_NON_MEMBER &&
+        (
+          memberType === memberTypes.USER_NON_MEMBER ||
+          memberType === memberTypes.USER_LAW_NOTES
+        ) &&
         memberTypeView === memberTypes.USER_ATTORNEY
       ) ||
       previewUser === memberTypes.USER_ATTORNEY
@@ -163,7 +165,8 @@ const MemberGroups = ({
 
     if (memberType === memberTypes.USER_STUDENT) return <p>See the opportunities available to you:</p>;
 
-    if (memberType === memberTypes.USER_NON_MEMBER) {
+    if (memberType === memberTypes.USER_NON_MEMBER ||
+      memberType === memberTypes.USER_LAW_NOTES) {
       return <>
         <div>See how you can <Button type="primary" size="small" onClick={() => onLink('signup')}>get involved as a member</Button></div>
         <Radio.Group

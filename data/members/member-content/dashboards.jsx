@@ -66,7 +66,6 @@ export const getDashboard = ({
   setTitle, // Law Notest latest for active accounts
   previewUser,
 }) => {
-  // banner
   let banner = null;
   if (memberType === memberTypes.USER_ANON) {
     banner = banners('login', onLink);
@@ -77,11 +76,6 @@ export const getDashboard = ({
   } else if (memberStatus === 'graduated') {
     banner = banners('graduated', onLink);
   };
-
-/***************************
- * User-specific dashboards
- ***************************/
-
   if (!member || isEmpty(member)) {
     return anonDashboard({
       userType: memberTypes.USER_ANON,
@@ -103,13 +97,6 @@ export const getDashboard = ({
       setTitle,
       banner,
     });
-    if (memberType === memberTypes.USER_NON_MEMBER) return nonMemberDashboard({
-      member,
-      memberType,
-      setMember,
-      onLink,
-      banner,
-    });
     if (memberType === memberTypes.USER_STUDENT) return studentDashboard({
       user: member,
       memberType,
@@ -119,8 +106,35 @@ export const getDashboard = ({
       setTitle,
       banner,
     });
+    if (memberType === memberTypes.USER_NON_MEMBER) return nonMemberDashboard({
+      member,
+      memberType,
+      setMember,
+      onLink,
+      banner,
+    });
+    if (memberType === memberTypes.USER_LAW_NOTES) return lawNotesDashboard({
+      member,
+      memberType,
+      memberStatus,
+      onLink,
+      setTitle,
+      banner,
+    });
   }
 };
+
+/***************************
+ * User-specific dashboards
+ ***************************/
+
+const defaultOptions = (memberType) => {
+  return {
+    key: memberType,
+    defaultSelectedKeys: ['account'],
+    defaultMenuOpenKeys: [],
+  }
+}
 
 const anonDashboard = ({
   onLink,
@@ -129,9 +143,8 @@ const anonDashboard = ({
 }) => {
   const memberType = memberTypes.USER_ANON;
   const options = {
-    key: memberType,
+    ...defaultOptions(memberType),
     defaultSelectedKeys: ['participate'],
-    defaultMenuOpenKeys: [],
     avatar: <Avatar
       icon={<SvgIcon
         name="customer-profile"
@@ -163,40 +176,13 @@ const attorneyDashboard = ({
 }) => {
   return {
     options: {
-      key: memberType,
-      defaultSelectedKeys: ['account'],
-      defaultMenuOpenKeys: [], //
-      // user: member,
+      ...defaultOptions(memberType),
     },
     account: account({ memberType, memberStatus, user: member, setUser: setMember, onLink, banner }),
     participate: participate({ memberType, memberStatus, onLink, banner }),
     lawnotes: lawNotes({ memberType, memberStatus, onLink, setTitle, banner }),
     clecenter: cleCenter({ member, memberType, memberStatus, onLink, banner }),
     discounts: discounts({ memberType, memberStatus, onLink, banner }),
-    logout: logout(memberType, onLink),
-  };
-};
-
-const nonMemberDashboard = ({
-  member,
-  setUser, // needed?
-  memberType,
-  onLink,
-  banner,
-  previewUser,
-}) => {
-  return {
-    options: {
-      key: memberType,
-      defaultSelectedKeys: ['account'],
-      defaultMenuOpenKeys: [],
-      // user: member,
-    },
-    account: account({ memberType, user: member, setUser, onLink, banner }),
-    participate: participate({ memberType, onLink, banner }),
-    lawnotes: lawNotes({ memberType, onLink, banner, previewUser }),
-    clecenter: cleCenter({ memberType, user: member, onLink, banner }),
-    discounts: discounts({ memberType, onLink, banner }),
     logout: logout(memberType, onLink),
   };
 };
@@ -211,15 +197,55 @@ const studentDashboard = ({
 }) => {
   return {
     options: {
-      key: memberType,
-      defaultSelectedKeys: ['account'],
-      defaultMenuOpenKeys: [], //
-      // user,
+      ...defaultOptions(memberType),
     },
     account: account({ memberType, user, setUser, onLink }),
     participate: participate({ memberType, onLink }),
     lawnotes: lawNotes({ memberType, memberStatus, onLink, setTitle }),
     clecenter: cleCenter({ memberType, memberStatus, onLink }),
+    logout: logout(memberType, onLink),
+  };
+};
+
+const nonMemberDashboard = ({
+  member,
+  setUser, // needed?
+  memberType,
+  onLink,
+  banner,
+  previewUser,
+}) => {
+  return {
+    options: {
+      ...defaultOptions(memberType),
+    },
+    account: account({ memberType, user: member, setUser, onLink, banner }),
+    participate: participate({ memberType, onLink, banner }),
+    lawnotes: lawNotes({ memberType, onLink, banner, previewUser }),
+    clecenter: cleCenter({ memberType, user: member, onLink, banner }),
+    discounts: discounts({ memberType, onLink, banner }),
+    logout: logout(memberType, onLink),
+  };
+};
+
+const lawNotesDashboard = ({
+  member,
+  setUser, // needed?
+  memberType,
+  memberStatus,
+  onLink,
+  setTitle,
+  banner,
+}) => {
+  return {
+    options: {
+      ...defaultOptions(memberType),
+    },
+    account: account({ memberType, user: member, setUser, onLink, banner }),
+    lawnotes: lawNotes({ memberType, memberStatus, onLink, setTitle, banner }),
+    participate: participate({ memberType, onLink, banner }),
+    clecenter: cleCenter({ memberType, user: member, onLink, banner }),
+    discounts: discounts({ memberType, onLink, banner }),
     logout: logout(memberType, onLink),
   };
 };

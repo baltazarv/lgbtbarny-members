@@ -28,8 +28,10 @@ const lawNotes = ({
   // console.log('memberType', memberType, 'memberStatus', memberStatus);
 
   // children & links
-  if (memberStatus !== memberTypes.USER_ATTORNEY &&
-    memberStatus !== memberTypes.USER_STUDENT
+  if (
+    memberStatus !== memberTypes.USER_ATTORNEY &&
+    memberStatus !== memberTypes.USER_STUDENT &&
+    memberType !== memberTypes.USER_LAW_NOTES
   ) {
     // redirect = 'lnsample';
     children = {
@@ -64,10 +66,17 @@ const lawNotes = ({
  * Latest Law Notes Page
  *************************/
 
-// member only
-const lnLatest = ({ memberType, onLink, setTitle, }) => {
+// member and laws notes subscribers
+const lnLatest = ({
+  memberType,
+  onLink,
+  setTitle,
+}) => {
   let locked = false;
-  if (memberType === memberTypes.USER_NON_MEMBER || memberTypes.USER_ANON) locked = true;
+  if (
+    memberType === memberTypes.USER_NON_MEMBER ||
+    memberTypes.USER_ANON
+  ) locked = true;
   return {
     route: 'law-notes-latest',
     title: 'Latest Law Notes', // reset by <LawNotesLatest /> to issue month and year; useful link label
@@ -126,7 +135,8 @@ const lnArchive = ({
   let links = null;
   if (
     memberStatus === memberTypes.USER_STUDENT ||
-    memberStatus === memberTypes.USER_ATTORNEY
+    memberStatus === memberTypes.USER_ATTORNEY ||
+    memberType === memberTypes.USER_LAW_NOTES
   ) {
     links = addToSignupLinks({
       memberType,
