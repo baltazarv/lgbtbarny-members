@@ -1,3 +1,4 @@
+// TODO: move /data/members/member-content to /content/members/
 /**
  * Dashboard object props:
  *
@@ -76,6 +77,8 @@ export const getDashboard = ({
   } else if (memberStatus === 'graduated') {
     banner = banners('graduated', onLink);
   };
+
+  // not logged in
   if (!member || isEmpty(member)) {
     return anonDashboard({
       userType: memberTypes.USER_ANON,
@@ -84,7 +87,10 @@ export const getDashboard = ({
       banner,
       previewUser,
     });
+  
   } else {
+
+    // attorney or graduated student
     if (
       memberType === memberTypes.USER_ATTORNEY ||
       (memberType === memberTypes.USER_STUDENT && memberStatus === 'graduated')
@@ -97,6 +103,8 @@ export const getDashboard = ({
       setTitle,
       banner,
     });
+
+    // active student
     if (memberType === memberTypes.USER_STUDENT) return studentDashboard({
       user: member,
       memberType,
@@ -106,6 +114,8 @@ export const getDashboard = ({
       setTitle,
       banner,
     });
+  
+    // pending member
     if (memberType === memberTypes.USER_NON_MEMBER) return nonMemberDashboard({
       member,
       memberType,
@@ -113,6 +123,8 @@ export const getDashboard = ({
       onLink,
       banner,
     });
+
+    // Law Notes subscriber: active and expired
     if (memberType === memberTypes.USER_LAW_NOTES) return lawNotesDashboard({
       member,
       memberType,

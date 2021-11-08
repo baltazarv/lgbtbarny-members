@@ -25,13 +25,12 @@ const lawNotes = ({
   let links = [];
   let children = null;
 
-  // console.log('memberType', memberType, 'memberStatus', memberStatus);
 
   // children & links
   if (
     memberStatus !== memberTypes.USER_ATTORNEY &&
     memberStatus !== memberTypes.USER_STUDENT &&
-    memberType !== memberTypes.USER_LAW_NOTES
+    memberStatus !== memberTypes.USER_LAW_NOTES
   ) {
     // redirect = 'lnsample';
     children = {

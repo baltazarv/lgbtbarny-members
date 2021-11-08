@@ -1,15 +1,14 @@
-/**
- * user types for:
- * • for logged-in member dashboard.
- * • sign-up modal for anonymous view.
- * • sign-up account preview on anonymous dashboard.
- */
+// TODO: remove memberStatus and replace with memberType
+// TODO: maybe make variable shorter, remove "USER_"
 export const USER_ANON = 'anonymous-user';
-export const USER_NON_MEMBER = 'non-member';
+export const USER_NON_MEMBER = 'non-member'; // PENDING?
 export const USER_LAW_NOTES = 'law-notes';
+export const USER_LAW_NOTES_EXPIRED = 'law-notes-expired';
 export const USER_MEMBER = 'member'; // attorneys and students
-export const USER_ATTORNEY = 'attorney';
 export const USER_STUDENT = 'student';
+export const USER_STUDENT_GRADUATED = 'graduated';
+export const USER_ATTORNEY = 'attorney';
+export const USER_ATTORNEY_EXPIRED = 'expired';
 
 // different types of sign up views
 // logged-in; not chosen membership

@@ -85,7 +85,7 @@ const updateMember = async (userToUpdate) => {
  * * 'attorney' or 'student' from memberPlans
  */
 const getMemberType = ({ member, userPayments, memberPlans }) => {
-  let type = memberTypes.USER_ANON;
+  let type = memberTypes.USER_ANON; // 'pending'?
   if (member) type = memberTypes.USER_NON_MEMBER;
   if (userPayments && memberPlans) {
     type = getLastPlan({ userPayments, memberPlans }).fields[dbFields.plans.type];
@@ -138,59 +138,59 @@ const getGraduationDate = ({
   return null;
 }
 
+// TODO: rename to memberType and remove memberStatus function
 /**
- * Return values:
- * * `pending`
- * * `attorney` (active)
- * * `student` (active)
- * * `expired (attorney)`
- * * `graduated (student)`
- * * `subscribed (law-notes)`
- * * `not-subscribed (law-notes)`
+ * Return values: see data/members/member-types
  *
  * If no userPayments, 'pending'
- * Match on memberPlans for type, 'attorney' or 'member'
- * If attorney, userPayments to see if 'expired'
+ * Match on memberPlans for type, 'attorney', 'student', 'law-notes'
+ * If attorney or Law Notes subscriber, userPayments to see if 'expired'
  * if student, member grad year to see if 'graduated'
  *
- * Also `_status` field on airtable `members` table
- * TODO: in Airtable, 'active' => 'student' or 'attorney'
+ * Also match `_status` calc field on airtable `members` table
  */
 const getMemberStatus = ({
   userPayments,
   memberPlans,
   member, // for student grad year
 }) => {
-  // console.log('getMemberStatus userPayments', userPayments, 'memberPlans', memberPlans, 'member', member)
-
   if (!userPayments) {
-    // console.log('STATUS: PENDING')
-    return 'pending';
+    return 'pending'; // memberTypes.USER_ANON?
   } else {
     if (member && memberPlans) {
       const lastPlan = getLastPlan({ userPayments, memberPlans });
       const lastPlanType = lastPlan.fields[dbFields.plans.type];
 
-      // if attorney, 'attorney' or 'expired'
-      if (lastPlanType === memberTypes.USER_ATTORNEY) {
+      if (lastPlanType === memberTypes.USER_ATTORNEY ||
+        lastPlanType === memberTypes.USER_LAW_NOTES) {
+
         const nextDueDate = getNextPaymentDate({ userPayments, memberPlans });
         const isPastDue = moment().isAfter(nextDueDate);
 
-        if (isPastDue) {
-          // console.log('STATUS: EXPIRED')
-          return 'expired';
+        // attorney
+        if (lastPlanType === memberTypes.USER_ATTORNEY) {
+          if (isPastDue) {
+            return memberTypes.USER_ATTORNEY_EXPIRED;
+          }
+          return memberTypes.USER_ATTORNEY;
         }
-        // console.log('STATUS:', memberTypes.USER_ATTORNEY)
-        return memberTypes.USER_ATTORNEY;
+
+        // Law Notes subscriber
+        else if (lastPlanType === memberTypes.USER_LAW_NOTES) {
+          if (isPastDue) {
+            return memberTypes.USER_LAW_NOTES_EXPIRED;
+          }
+          return memberTypes.USER_LAW_NOTES;
+        }
       }
 
-      // if student, 'student' or 'graduated'
+      // student
       else if (lastPlanType === memberTypes.USER_STUDENT) {
         // graduation date
         const graduationDate = getGraduationDate({ member, userPayments, memberPlans });
 
         // if graduation date after today
-        if (graduationDate && moment().isAfter(graduationDate)) return 'graduated';
+        if (graduationDate && moment().isAfter(graduationDate)) return memberTypes.USER_STUDENT_GRADUATED;
 
         // if not graduated
         return memberTypes.USER_STUDENT;

@@ -1,7 +1,6 @@
 // TODO: very similar to LawNotesSample, maybe wrap in LawNotesIssue?
 import { useEffect, useMemo } from 'react';
 import { Typography, Spin } from 'antd';
-import moment from 'moment';
 import './law-notes.less';
 import PdfViewer from '../../../elements/pdf/pdf-viewer';
 import { dbFields } from '../../../../data/members/airtable/airtable-fields';

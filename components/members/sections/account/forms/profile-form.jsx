@@ -102,13 +102,31 @@ const ProfileForm = ({
     }
 
     // expired attorney
-    if (memberStatus === 'expired') {
+    if (memberStatus === memberTypes.USER_ATTORNEY_EXPIRED) {
       return <div className="text-center">
         <div className="text-center">Your account has <strong className="text-danger">expired</strong>.</div>
         <p>{nextPaymentDate && <>Your membership payment was due <strong>{nextPaymentDate}</strong>.</>}
         </p>
         <p className="text-center">
           <Button type="primary" onClick={() => onLink('signup')}>Renew membership</Button>
+        </p>
+      </div>;
+    }
+
+    // active Law Notes subscriber
+    if (memberStatus === memberTypes.USER_LAW_NOTES) {
+      return <ul>
+        <li>Your Law Notes subscription is <strong className="text-success">active</strong>.</li>
+        {nextPaymentDate && <li>Your next membership payment is due on <strong>{nextPaymentDate}</strong>.</li>}
+        <li>Read the latest edition of the <Link onClick={() => onLink('lnlatest')}><em>LGBT Law Notes</em></Link>. Or find previous editions in the <Link onClick={() => onLink('lnarchive')}>Archives</Link>.</li>
+      </ul>;
+    }
+
+    // expired Law Notes subscription
+    if (memberStatus === memberTypes.USER_LAW_NOTES_EXPIRED) {
+      return <div className="text-center">
+        <div className="text-center">Your Law Notes subscription has <strong className="text-danger">expired</strong>.</div>
+        <p>{nextPaymentDate && <>Your membership payment was due <strong>{nextPaymentDate}</strong>.</>}
         </p>
       </div>;
     }

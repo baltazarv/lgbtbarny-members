@@ -122,8 +122,14 @@ const MembersPage = ({
     })();
   }, []);
 
+  // TODO: remove memberStatus, only need memberType
+
   const memberType = useMemo(() => {
-    return getMemberType({ member, userPayments, memberPlans });
+    return getMemberType({
+      member,
+      userPayments,
+      memberPlans,
+    });
   }, [member, userPayments, memberPlans]);
 
   const memberStatus = useMemo(() => {

@@ -39,7 +39,7 @@ const LawNotesArchive = ({
 
         // sample or locked
         if (
-          memberType !== memberTypes.USER_LAW_NOTES &&
+          memberStatus !== memberTypes.USER_LAW_NOTES &&
           // active member
           memberStatus !== memberTypes.USER_ATTORNEY &&
           memberStatus !== memberTypes.USER_STUDENT
@@ -64,9 +64,12 @@ const LawNotesArchive = ({
       <p>See what you get with <em>LGBT Law Notes</em> &mdash; See the contents of any of the editions. Or read the <Link onClick={() => onLink('lnsample')}>sample January edition</Link>:</p>
     </>;
 
-    if (memberStatus === 'graduated' || memberStatus === 'expired') {
+    if (
+      memberStatus === memberTypes.USER_STUDENT_GRADUATED ||
+      memberStatus === memberTypes.USER_ATTORNEY_EXPIRED
+    ) {
       let signUpBtnLabel = 'Renew your membership';
-      if (memberStatus === 'graduated') signUpBtnLabel = 'Upgrade your membership';
+      if (memberStatus === memberTypes.USER_STUDENT_GRADUATED) signUpBtnLabel = 'Upgrade your membership';
       whatYouGetTxt = <>
         <p>To remind you what you get with <em>LGBT Law Notes</em> &mdash; See the contents of any of the editions. Or read the <Link onClick={() => onLink('lnsample')}>sample January edition</Link>:</p>
       </>;
