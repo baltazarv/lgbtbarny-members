@@ -89,6 +89,7 @@ const getMemberType = ({ member, userPayments, memberPlans }) => {
   if (member) type = memberTypes.USER_NON_MEMBER;
   if (userPayments && memberPlans) {
     type = getLastPlan({ userPayments, memberPlans }).fields[dbFields.plans.type];
+    if (type === memberTypes.USER_DONOR) type = memberTypes.USER_NON_MEMBER;
     return type;
   }
   return type;
@@ -139,11 +140,12 @@ const getGraduationDate = ({
 }
 
 // TODO: rename to memberType and remove memberStatus function
+// TODO: return same value for memberTypes.USER_NON_MEMBER and "pending"
 /**
  * Return values: see data/members/member-types
  *
  * If no userPayments, 'pending'
- * Match on memberPlans for type, 'attorney', 'student', 'law-notes'
+ * Match on memberPlans for type, 'attorney', 'student', 'law-notes', 'donor'
  * If attorney or Law Notes subscriber, userPayments to see if 'expired'
  * if student, member grad year to see if 'graduated'
  *
@@ -155,11 +157,14 @@ const getMemberStatus = ({
   member, // for student grad year
 }) => {
   if (!userPayments) {
-    return 'pending'; // memberTypes.USER_ANON?
+    return 'pending'; // memberTypes.USER_NON_MEMBER
   } else {
     if (member && memberPlans) {
       const lastPlan = getLastPlan({ userPayments, memberPlans });
       const lastPlanType = lastPlan.fields[dbFields.plans.type];
+
+      // donor
+      if (lastPlanType === memberTypes.USER_DONOR) return 'pending'; // memberTypes.USER_NON_MEMBER
 
       if (lastPlanType === memberTypes.USER_ATTORNEY ||
         lastPlanType === memberTypes.USER_LAW_NOTES) {

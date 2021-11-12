@@ -87,7 +87,7 @@ export const getDashboard = ({
       banner,
       previewUser,
     });
-  
+
   } else {
 
     // attorney or graduated student
@@ -114,7 +114,7 @@ export const getDashboard = ({
       setTitle,
       banner,
     });
-  
+
     // pending member
     if (memberType === memberTypes.USER_NON_MEMBER) return nonMemberDashboard({
       member,
@@ -133,6 +133,16 @@ export const getDashboard = ({
       setTitle,
       banner,
     });
+
+    // pending member, aka memberTypes.USER_NON_MEMBER (default)
+    // also other plans, eg, "donor"
+    return nonMemberDashboard({
+      member,
+      memberType,
+      setMember,
+      onLink,
+      banner,
+    })
   }
 };
 
