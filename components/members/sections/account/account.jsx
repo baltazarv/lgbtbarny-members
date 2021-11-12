@@ -37,6 +37,8 @@ import {
   getStripePriceId,
   // emails
   updateEmails,
+  // multiple tables
+  getIsLastPlanComplimentary,
 } from '../../../../utils/members/airtable/members-db';
 import { updateCustomer, updateSubscription, getActiveSubscription } from '../../../../utils/payments/stripe-utils';
 import { updateContact } from '../../../../utils/emails/sendinblue-utils';
@@ -93,6 +95,10 @@ const Account = ({
     });
     return status;
   }, [userPayments, memberPlans, member]);
+
+  const isLastPlanComplimentary = useMemo(() => {
+    return getIsLastPlanComplimentary(memberStatus, userPayments, memberPlans)
+  }, [memberStatus, userPayments, memberPlans])
 
   /**
    * AccountForm form handling
@@ -304,8 +310,10 @@ const Account = ({
 
       {/* Additional info */}
 
-      {memberType === memberTypes.USER_ATTORNEY
-        && <div className="mb-3" id="payment-info">
+      {(
+        memberType === memberTypes.USER_ATTORNEY &&
+        !isLastPlanComplimentary
+      ) && <div className="mb-3" id="payment-info">
           <AccountsForm
             name={ACCOUNT_FORMS.editPayment}
             title="Payment information"

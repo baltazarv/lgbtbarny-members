@@ -101,6 +101,7 @@ exports.dbFields = {
   },
   // members base: plans table
   plans: {
+    name: 'name',
     type: 'type',
     typeValues: {
       attorney: 'attorney',

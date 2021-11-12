@@ -27,6 +27,10 @@ const getPlans = async () => {
   }
 }
 
+/******************
+ * util functions *
+ ******************/
+
 // Find user's last payment and match on plans table
 // * use to get member type: getLastPlan.fields.type
 // * `getMemberStatus` uses to get status
@@ -40,6 +44,10 @@ const getLastPlan = ({ userPayments, memberPlans }) => {
   }
   return null;
 };
+
+const getPlanById = (plans, id) => {
+  return plans?.find((plan) => plan.id === id)
+}
 
 /**
  * attorney salaries
@@ -124,16 +132,24 @@ const getStripePriceId = (salary, memberPlans) => {
   return null;
 };
 
+// is member plan a complimentary account?
+const isPlanComplimentary = (plan) => {
+  if (plan?.fields?.[dbFields.plans.name]?.toLowerCase().includes('complimentary')) return true
+  return false
+}
+
 export {
   // API calls
   getPlans,
 
   getLastPlan,
+  getPlanById,
   getCurrentPlans,
   getSalaries,
   getPlanFee,
   getMemberPlanFee,
   getStripePriceId,
+  isPlanComplimentary,
 
   // payments-table-utils
   getPaymentPlanType,

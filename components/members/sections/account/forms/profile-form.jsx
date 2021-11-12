@@ -10,6 +10,7 @@ import {
   getMemberStatus,
   getNextPaymentDate,
   getGraduationDate,
+  getIsLastPlanComplimentary,
 } from '../../../../../utils/members/airtable/members-db';
 
 const { Link } = Typography;
@@ -44,7 +45,7 @@ const ProfileForm = ({
       userPayments,
       memberPlans,
       format: 'MMMM Do, YYYY',
-     });
+    });
   }, [member, userPayments, memberPlans]);
 
   /**
@@ -64,34 +65,20 @@ const ProfileForm = ({
     return status;
   }, [userPayments, memberPlans, member]);
 
+  const isLastPlanComplimentary = useMemo(() => {
+    return getIsLastPlanComplimentary(memberStatus, userPayments, memberPlans)
+  }, [memberStatus, userPayments, memberPlans])
+
   const introMessage = useMemo(() => {
     // non-member
     if (memberStatus === 'pending') return <>
       <p className="text-center">
         If you are an attorney or a law student, join the LGBT Bar Association:
-        </p>
+      </p>
       <p className="text-center">
         <Button type="primary" onClick={() => onLink('signup')}>Become a member</Button>
       </p>
     </>;
-
-    // graduated student
-    if (memberStatus === 'graduated') return <>
-      <p className="text-danger text-center">
-        It looks like you have graduated. Congratulations! You can now join the LGBT Bar Association as an attorney member.
-        </p>
-      <p className="text-center">
-        <Button type="primary" onClick={() => onLink('signup')}>Upgrade membership</Button>
-      </p>
-    </>;
-
-    // active attorney
-    if (memberStatus === memberTypes.USER_ATTORNEY) {
-      return <ul>
-        <li>Your account is <strong className="text-success">active</strong>.</li>
-        {nextPaymentDate && <li>Your next membership payment is due on <strong>{nextPaymentDate}</strong>. To update <strong>payment info</strong>, edit in <Link href="#payment-info">Payment info</Link> section below.</li>}
-      </ul>;
-    }
 
     // active student
     if (memberStatus === memberTypes.USER_STUDENT) {
@@ -101,12 +88,40 @@ const ProfileForm = ({
       </ul>;
     }
 
+    // graduated student
+    if (memberStatus === 'graduated') return <>
+      <p className="text-danger text-center">
+        It looks like you have graduated. Congratulations! You can now join the LGBT Bar Association as an attorney member.
+      </p>
+      <p className="text-center">
+        <Button type="primary" onClick={() => onLink('signup')}>Upgrade membership</Button>
+      </p>
+    </>;
+
+    // active attorney
+    if (memberStatus === memberTypes.USER_ATTORNEY) {
+      return <ul>
+        <li>Your account is <strong className="text-success">active</strong>.</li>
+        {nextPaymentDate && isLastPlanComplimentary &&
+          <li>Enjoy your complimentary account, which extends until <strong>{nextPaymentDate}</strong>.</li>
+        }
+        {nextPaymentDate && !isLastPlanComplimentary &&
+          <li>Your next membership payment is due on <strong>{nextPaymentDate}</strong>. To update <strong>payment info</strong>, edit in <Link href="#payment-info">Payment info</Link> section below.</li>
+        }
+      </ul>
+    }
+
     // expired attorney
     if (memberStatus === memberTypes.USER_ATTORNEY_EXPIRED) {
       return <div className="text-center">
-        <div className="text-center">Your account has <strong className="text-danger">expired</strong>.</div>
-        <p>{nextPaymentDate && <>Your membership payment was due <strong>{nextPaymentDate}</strong>.</>}
-        </p>
+        {isLastPlanComplimentary ?
+          <p className="text-center">Your complimentary account has <strong className="text-danger">expired</strong>.</p> :
+          <>
+            <div className="text-center">Your account has <strong className="text-danger">expired</strong>.</div>
+            <p>{nextPaymentDate && <>Your membership payment was due <strong>{nextPaymentDate}</strong>.</>}
+            </p>
+          </>
+        }
         <p className="text-center">
           <Button type="primary" onClick={() => onLink('signup')}>Renew membership</Button>
         </p>

@@ -59,9 +59,9 @@ const addPayment = async (newPayment) => {
   }
 }
 
-/**
- * functions that take state objects
- * */
+/******************
+ * util functions *
+ ******************/
 
 // given userPayments object, returns the last payment record
 const getLastPayment = (userPayments) => {
@@ -71,6 +71,13 @@ const getLastPayment = (userPayments) => {
     return acc.fields.date > cur.fields.date ? Object.assign({}, acc) : Object.assign({}, cur);
   });
 };
+
+const getPaymentPlanId = (payment) => {
+  let plan = payment?.fields[dbFields.payments.plans]
+  if (Array.isArray(plan)) plan = plan[0]
+  if (payment) return plan
+  return null
+}
 
 /**
  * Returns due date, normally one year after last pay date, unless archived 2-year plan.
@@ -194,6 +201,7 @@ export {
   addPayment,
 
   getLastPayment,
+  getPaymentPlanId,
   getNextPaymentDate,
   getPaymentPayload,
   getPaymentIsDiscounted,
