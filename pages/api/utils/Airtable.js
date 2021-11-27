@@ -11,7 +11,6 @@ let plansTable = null;
 let groupsTable = null;
 let membersCleTable = null;
 let membersCleCertsTable = null;
-let couponsTable = null;
 
 // law notes table
 let lawNotesIssuesTable = null;
@@ -34,7 +33,6 @@ if (process.env.AIRTABLE_API_KEY) {
   groupsTable = membersBase("groups");
   membersCleTable = membersBase("cles");
   membersCleCertsTable = membersBase("cle_certs");
-  couponsTable = membersBase("coupons");
   mailingListsTable = membersBase("mailing_lists");
 
   // const clesTable = cleBase('cles');
@@ -122,14 +120,6 @@ const updateEmail = async (id, fields) => {
   return;
 }
 
-const getCoupons = (selectOptions) => {
-  if (couponsTable) {
-    return getRecords(couponsTable, selectOptions);
-  }
-  console.log('error')
-  return;
-}
-
 const getMailingLists = (selectOptions) => {
   if (mailingListsTable) {
     return getRecords(mailingListsTable, selectOptions);
@@ -154,13 +144,11 @@ exports.plansTable = plansTable;
 exports.groupsTable = groupsTable;
 exports.membersCleTable = membersCleTable;
 exports.membersCleCertsTable = membersCleCertsTable;
-exports.couponsTable = couponsTable;
 exports.mailingListsTable = mailingListsTable;
 
 exports.getUsers = getUsers;
 exports.getUsersEmails = getUsersEmails;
 exports.updateEmail = updateEmail;
-exports.getCoupons = getCoupons;
 exports.getMailingLists = getMailingLists;
 exports.getGroups = getGroups;
 

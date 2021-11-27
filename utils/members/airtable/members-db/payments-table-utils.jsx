@@ -1,9 +1,15 @@
 import moment from 'moment';
+
+// airtable constants
 import {
   PAYMENT_TYPE_STRIPE,
   PAYMENT_TYPE_FREE,
   PAYMENT_STATUS_PROCESSED,
 } from '../../../../data/members/airtable/airtable-values';
+import { dbFields } from '../../../../data/members/airtable/airtable-fields';
+// stripe constants
+import { STRIPE_FIELDS } from '../../../../data/payments/payment-fields'
+// airtable utils
 import {
   // members
   getMemberStatus,
@@ -12,7 +18,6 @@ import {
   getLastPlan,
   getCurrentPlans,
 } from './index';
-import { dbFields } from '../../../../data/members/airtable/airtable-fields';
 
 /*************
  * API calls *
@@ -107,6 +112,7 @@ const getNextPaymentDate = ({
 
 /**
  * Used to create a payment in airtable.
+ * ... return fields for create-payment API.
  * if no salary, assume a student plan
  * @param {String} userid
  * @param {Number} salary
@@ -115,8 +121,8 @@ const getNextPaymentDate = ({
 const getPaymentPayload = ({
   userid,
   memberPlans,
-  salary,
-  hasDiscount,
+  salary, // attorneys only
+  coupon, // Stripe object
   invoice,
   invoicePdf,
   invoiceUrl,
@@ -125,8 +131,10 @@ const getPaymentPayload = ({
     let planid = null;
     let type = '';
     let status = PAYMENT_STATUS_PROCESSED;
-    let total = 0;
-    let discount = 0;
+    let coupon_id = null
+    let coupon_name = null
+    let total = 0
+    let discount = 0
     if (!salary) {
       type = PAYMENT_TYPE_FREE;
       total = 0;
@@ -138,11 +146,20 @@ const getPaymentPayload = ({
       let plan = (attorneyPlans && attorneyPlans.length > 1) ? attorneyPlans.find((plan) => plan.fields[dbFields.members.salary] === salary) : null;
       if (plan) {
         planid = plan.id;
-        if (hasDiscount) {
-          total = discount = plan.fields[dbFields.plans.fee] / 2;
-        } else {
-          total = plan.fields[dbFields.plans.fee];
+        // coupon is stripe object
+        const fee = plan.fields[dbFields.plans.fee]
+        if (coupon) {
+          coupon_id = coupon[STRIPE_FIELDS.coupons.id]
+          coupon_name = coupon[STRIPE_FIELDS.coupons.name]
+          // calculate total and discount from coupon
+          if (coupon[STRIPE_FIELDS.coupons.percentOff]) {
+            discount = fee * coupon[STRIPE_FIELDS.coupons.percentOff] / 100;
+          } else if (coupon[STRIPE_FIELDS.coupons.amountOff]) {
+            // 100 = $1.00 (always assuming USD)
+            discount = coupon[STRIPE_FIELDS.coupons.amountOff] / 100
+          }
         }
+        total = fee - discount
       }
     }
     let payload = {
@@ -150,25 +167,17 @@ const getPaymentPayload = ({
       planid,
       type,
       status,
-      discount,
       total,
-      invoice: invoice || null,
-      invoicePdf: invoicePdf || null,
-      invoiceUrl: invoiceUrl || null,
     };
+    if (coupon_id) payload.coupon_id = coupon_id;
+    if (coupon_name) payload.coupon_name = coupon_name;
+    if (discount) payload.discount = discount;
+    if (invoice) payload.invoice = invoice;
+    if (invoicePdf) payload.invoicePdf = invoicePdf;
+    if (invoiceUrl) payload.invoiceUrl = invoiceUrl;
     return payload;
   }
   return new Error('Error: payment not created. `userid`, `salary`, or `memberPlans` missing.');
-};
-
-// discount applied if last payment not type `attorney`, must match on plans table
-const getPaymentIsDiscounted = (userPayments, memberPlans) => {
-  if (userPayments && memberPlans) {
-    const lastPlan = getLastPlan({ userPayments, memberPlans });
-    if (lastPlan && lastPlan.fields[dbFields.plans.type] === memberTypes.USER_ATTORNEY) return false;
-    return true;
-  }
-  return false;
 };
 
 /**
@@ -204,7 +213,6 @@ export {
   getPaymentPlanId,
   getNextPaymentDate,
   getPaymentPayload,
-  getPaymentIsDiscounted,
   getPaymentPlanType,
 
   // members-table-utils

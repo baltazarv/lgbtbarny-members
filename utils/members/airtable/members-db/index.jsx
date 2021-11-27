@@ -50,7 +50,6 @@ import {
   getPaymentPlanId,
   getNextPaymentDate,
   getPaymentPayload,
-  getPaymentIsDiscounted,
   getPaymentPlanType,
 } from './payments-table-utils';
 
@@ -111,7 +110,6 @@ export {
   getPaymentPlanId,
   getNextPaymentDate,
   getPaymentPayload,
-  getPaymentIsDiscounted,
   getPaymentPlanType,
 
   // emails table

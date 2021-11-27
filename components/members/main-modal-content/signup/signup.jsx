@@ -32,7 +32,6 @@ import {
   duesInit,
   duesReducer,
   getMemberFees,
-  getTotal,
 } from '../../../../utils/payments/member-dues'; // , setDonation
 import {
   updateMember,
@@ -42,8 +41,9 @@ import {
   getPlanFee,
   getPaymentPayload,
 } from '../../../../utils/members/airtable/members-db';
-import { updateCustomer } from '../../../../utils/payments/stripe-utils';
-import { getUserCoupons } from '../../../../utils/members/airtable/members-db/coupons-table-utils';
+import { updateCustomer, retrieveCoupon } from '../../../../utils/payments/stripe-utils';
+// constants
+import { FIRST_TIME_COUPON } from '../../../../data/payments/stripe/stripe-values';
 
 // import DonationFields from '../../../payments/donation-fields';
 // import { getDonationValues } from '../../../../data/payments/donation-values';
@@ -68,13 +68,17 @@ const Signup = ({
   const memberInfoFormRef = useRef(null);
   const [certifyChoice, setCertifyChoice] = useState('');
   const [step, setStep] = useState(0);
+
+  // coupon
+  const [firstTimeCoupon, setFirstTimeCoupon] = useState(null)
+  const [coupon, setCoupon] = useState(null)
+
   // show confirmation text
   const [isConfirmation, setIsConfirmation] = useState(false);
   const [isServerError, setIsServerError] = useState(false);
   const [paymentSuccessful, setPaymentSuccessful] = useState(false);
   // review
   const [stepsStatus, setStepsStatus] = useState('process'); // wait process finish error
-  const [userCoupon, setUserCoupon] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const [dues, setDues] = useReducer(duesReducer, duesInit);
@@ -125,8 +129,13 @@ const Signup = ({
     return status;
   }, [userPayments, memberPlans, member]);
 
-  // if user doesn't choose membership type, assume from last payment type
-  // if student graduated, set to attorney
+  /**
+   * Has very different functions
+   * 1. sets prior certification option for pending users
+   * 2. removes certification value for graduated students
+   * 3. returns a limited signup member type 
+   *   ... TODO: remove, b/c should not be necessary, especially since already have a "memberSignUpType")
+   */
   const signupType = useMemo(() => {
 
     // // test user scenarios
@@ -157,6 +166,7 @@ const Signup = ({
     return '';
   }, [memberStatus, memberInfoFormRef.current]);
 
+  // limited signup type based on member type
   const memberSignUpType = useMemo(() => {
     // student
     if (
@@ -189,23 +199,8 @@ const Signup = ({
     return '';
   }, [signupType, certifyType]);
 
-  // get user coupon if any
-  useEffect(() => {
-    // step 0: membership info
-    if (member) {
-      (async function fetchUserCoupons() {
-        const { userCoupons } = await getUserCoupons(member.id);
-        // returning first instance of 100% coupon
-        if (userCoupons) {
-          const coupon = userCoupons.find(c => c[STRIPE_FIELDS.coupons.percentOff] === 100);
-          // TODO: save stripe coupon instead
-          if (userCoupons) setUserCoupon(coupon)
-        }
-      })();
-    }
-  }, [member]);
 
-  // update attorney or law notes subscriber dues
+  // update dues based on form inputs
   useEffect(() => {
     if (memberInfoFormRef.current && memberPlans) {
       // if certify as attorney
@@ -217,12 +212,22 @@ const Signup = ({
       const salary = memberInfoFormRef.current.getFieldValue(dbFields.members.salary);
       updateDues(getMemberFees({
         fee: getPlanFee(salary, memberPlans),
-        hasDiscount,
-      }));
+        coupon,
+      }))
       // updateDues(setDonation(memberInfoFormRef.current));
       updateDues(getLawNotesAmt());
     }
-  }, [signupType, memberInfoFormRef.current], memberPlans);
+  }, [signupType, memberInfoFormRef.current, memberPlans]);
+
+  // update dues when coupon changes
+  useEffect(() => {
+    if (dues?.fee) {
+      updateDues(getMemberFees({
+        fee: dues.fee,
+        coupon,
+      }))
+    }
+  }, [coupon])
 
   // if not member offer law notes
   const getLawNotesAmt = (form) => {
@@ -236,11 +241,6 @@ const Signup = ({
     }
   };
 
-  const total = useMemo(() => {
-    if (dues) return getTotal(dues);
-    return null;
-  }, [dues]);
-
   // when user is not eligible
   const hideFormElements = useMemo(() => {
     if (memberSignUpType === memberTypes.USER_NON_MEMBER && !certifyChoice) return true;
@@ -253,27 +253,51 @@ const Signup = ({
     return false;
   });
 
-  const hasDiscount = useMemo(() => {
-    if ((signupType === memberTypes.SIGNUP_LOGGED_IN && certifyType === memberTypes.USER_ATTORNEY) ||
-      signupType === memberTypes.SIGNUP_STUDENT_UPGRADE) return true;
-    return false;
-  }, [signupType, memberSignUpType]);
+  // save first-time member coupon
+
+  // check if user is eligible for a first-time attorney coupon
+  const is1stTimeEligible = () => {
+    if (
+      (signupType === memberTypes.SIGNUP_LOGGED_IN &&
+        certifyType === memberTypes.USER_ATTORNEY) ||
+      signupType === memberTypes.SIGNUP_STUDENT_UPGRADE
+    ) {
+      return true
+    }
+    return false
+  }
+
+  // download coupon for first-time attorney
+  useEffect(() => {
+      (async function fetchFirstTimeCoupon() {
+        const res = await retrieveCoupon(FIRST_TIME_COUPON)
+        if (res.coupon) setFirstTimeCoupon(res.coupon)
+      })()
+  }, [])
+
+  // set first-time attorney coupon if eligible
+  useEffect(() => {
+    // WARNING: user always starts as non-member at init - checking for is1stTimeEligiblec may be useless
+    if (is1stTimeEligible() && firstTimeCoupon) {
+      setCoupon(firstTimeCoupon)
+    }
+  }, [firstTimeCoupon])
 
   const duesSummary = useMemo(() => {
     return <DuesSummary
-      fee={dues.fee}
-      discount={dues.discount}
-      lawNotesAmt={dues.lawNotesAmt}
-      donation={dues.donation}
+      dues={dues}
+      // TODO: don't pass following
+      fee={dues?.fee}
+      lawNotesAmt={dues?.lawNotesAmt}
+      donation={dues?.donation}
 
       showSalary={memberSignUpType === memberTypes.USER_ATTORNEY}
-      showDiscount={hasDiscount}
       showDonation={false}
       showLawNotes={memberSignUpType === memberTypes.USER_LAW_NOTES ||
         memberSignUpType === memberTypes.USER_NON_MEMBER}
       showTotal={memberSignUpType === memberTypes.USER_ATTORNEY}
     />;
-  }, [dues, memberSignUpType, hasDiscount]);
+  }, [dues, memberSignUpType, coupon]);
 
   // handle change of values on forms
   const onFormChange = (formName, info) => {
@@ -286,7 +310,7 @@ const Signup = ({
           const salary = memberInfoFormRef.current.getFieldValue(dbFields.members.salary);
           updateDues(getMemberFees({
             fee: getPlanFee(salary, memberPlans),
-            hasDiscount,
+            coupon,
           }));
         }
         // else if (
@@ -379,6 +403,7 @@ const Signup = ({
   const onPaymentSuccessful = () => {
     setPaymentSuccessful(true);
   }
+
   /** content */
 
   // Not-logged-in content in LoginPwdless component
@@ -493,6 +518,7 @@ const Signup = ({
             [dbFields.members.lawSchool]: member?.fields[dbFields.members.lawSchool],
             [dbFields.members.gradYear]: member?.fields[dbFields.members.gradYear],
           }}
+          is1stTimeEligible={is1stTimeEligible}
         />
       </>,
     }
@@ -536,11 +562,11 @@ const Signup = ({
                 // [PAYMENT_FIELDS.renewDonation]: true,
                 [STRIPE_FIELDS.subscription.collectionMethod]: STRIPE_FIELDS.subscription.collectionMethodValues.chargeAutomatically,
               }}
-              total={total} // display in message
-              hasDiscount={hasDiscount} // appy as subscription coupon
+              dues={dues}
+              coupon={coupon}
+              setCoupon={setCoupon}
               loading={loading}
               setLoading={setLoading}
-
               onPaymentSuccessful={onPaymentSuccessful}
             />
 
@@ -552,7 +578,7 @@ const Signup = ({
 
       </>,
     };
-  }, [duesSummary, dues, total, loading])
+  }, [duesSummary, dues, loading, coupon])
 
   const steps = useMemo(() => {
     let _steps = [memberInfoStepContent];

@@ -18,14 +18,15 @@ import MemberInfoForm from '../../components/members/main-modal-content/signup/m
 import PaymentForm from '../../components/members/main-modal-content/signup/payment-form'
 import DuesSummary from '../../components/payments/dues-summary';
 import { TitleIcon } from '../../components/elements/icon';
-// data
+// constants
 import { MembersContext } from '../../contexts/members-context';
 import { SIGNUP_FORMS } from '../../data/members/member-form-names';
 import { dbFields } from '../../data/members/airtable/airtable-fields';
 import { PAYMENT_FIELDS } from '../../data/payments/payment-fields';
 import { STRIPE_FIELDS } from '../../data/payments/stripe/stripe-fields';
 import * as memberTypes from '../../data/members/member-types';
-// utils
+import { FIRST_TIME_COUPON } from '../../data/payments/stripe/stripe-values'
+// utils / apis
 import auth0 from '../../pages/api/utils/auth0'; // for getServerSideProps
 import {
   getMemberByEmail,
@@ -43,7 +44,7 @@ import {
   getMemberFees,
 } from '../../utils/payments/member-dues';
 import { createCustomer } from '../../utils/payments/stripe-utils';
-// import '../../components/members/main-modal-content/login-signup.less';
+import { retrieveCoupon } from '../../utils/payments/stripe-utils'
 
 const { Content } = Layout;
 
@@ -67,8 +68,10 @@ const RenewFormPage = () => {
 
   const [step, setStep] = useState(0);
   const [emailAddress, setEmailAddress] = useState(null);
-  // if member has no payments will have discount
-  // member updated salary without making payment: `renew` => `pay`
+
+  // if member has no payments will get first-time member coupon
+  const [coupon, setCoupon] = useState(null)
+
   const [hasDiscount, setHasDiscount] = useState(false);
   const [loading, setLoading] = useState(false);
   // const [submitError, setSubmitError] = useState('');
@@ -103,23 +106,35 @@ const RenewFormPage = () => {
     }
   }, []);
 
-  // get dues and discount
+  const setFirstTimeCoupon = async () => {
+    const res = await retrieveCoupon(FIRST_TIME_COUPON)
+    if (res.coupon) setCoupon(res.coupon)
+  }
+
+  // get first-time coupon > update dues
   useEffect(() => {
     if (member?.fields.salary && memberPlans) {
       const salary = member.fields[dbFields.members.salary];
-      let hasDiscount = false;
-      if (!member.fields[dbFields.members.payments]) hasDiscount = true;
-      if (hasDiscount) {
-        setHasDiscount(true);
+      if (!member.fields[dbFields.members.payments]) {
+        setFirstTimeCoupon(salary)
       } else {
-        setHasDiscount(false);
+        updateDues(getMemberFees({
+          fee: getPlanFee(salary, memberPlans),
+        }))
       }
+    }
+  }, [member, memberPlans])
+
+  // update dues when coupon changes
+  useEffect(() => {
+    if (coupon) {
+      const salary = member.fields[dbFields.members.salary];
       updateDues(getMemberFees({
         fee: getPlanFee(salary, memberPlans),
-        hasDiscount,
-      }));
+        coupon,
+      }))
     }
-  }, [member, memberPlans]);
+  }, [coupon])
 
   // get user payments
   useEffect(() => {
@@ -147,17 +162,19 @@ const RenewFormPage = () => {
     }
   }, [step]);
 
-  const duesSummary = useMemo(() => {
+  const duesSummary = () => {
     if (member && dues?.fee) return <DuesSummary
-      fee={dues.fee}
-      discount={dues.discount}
+      // TODO: pass dues
+      dues={dues}
+      // pass dues instead?
+      fee={dues?.fee}
       showSalary={true}
-      showDiscount={dues.discount && true}
+      showTotal={true}
     />
     return null;
-  }, [member, dues, step]);
+  }
 
-  const accountIsActive = useMemo(() => {
+  const accountIsActive = () => {
     if (userPayments && memberPlans && member) {
       const isActive = getAccountIsActive({
         userPayments,
@@ -167,16 +184,16 @@ const RenewFormPage = () => {
       return isActive;
     }
     return null;
-  }, [userPayments, memberPlans, member, emailAddress]);
+  }
 
-  const nextPaymentDate = useMemo(() => {
+  const nextPaymentDate = () => {
     if (userPayments && memberPlans) return getNextPaymentDate({
       userPayments,
       memberPlans,
       format: 'MMMM Do, YYYY',
     });
     return null;
-  }, [userPayments, memberPlans]);
+  }
 
   const onFormChange = (formName, info) => {
     // console.log('onFormChange formName:', formName, 'info.changedFields:', info.changedFields);
@@ -266,26 +283,35 @@ const RenewFormPage = () => {
     </Row>
   }
 
-  const memberFoundContent = useMemo(() => {
+  // TODO: pull component out of "renew" page
+  const MemberFoundContent = () => {
     if (member) {
-      if (accountIsActive) {
+      if (accountIsActive()) {
         return <>
-          <p>The account for that email is currently <strong className="text-success">active</strong> until <strong>{nextPaymentDate}</strong> when membership dues will be up for renewal.</p>
+          <p>The account for that email is currently <strong className="text-success">active</strong> until <strong>{nextPaymentDate()}</strong> when membership dues will be up for renewal.</p>
           <p><Link href="/members/home">Login</Link> to view account details on the <strong>Members Dashboard</strong>.</p>
         </>
       } else if (member.fields.salary) {
         return <>
           <div className="mb-2 text-right">See your calculated dues below.
           </div>
-          <Row>
+
+          <Row className="mb-3">
             <Col
               xs={{ span: 24 }}
               sm={{ offset: 8, span: 16 }}
             >
-              {duesSummary}
+              {duesSummary()}
             </Col>
           </Row>
-          { getSubmitButton('Pay dues', () => setStep(2))}
+
+          <Row>
+            <Col span={18} offset={3}>
+              <div className="mb-1">Have a <strong>complimentary membership</strong> or a&nbsp;<strong>discount</strong>? Redeem it in the next screen.</div>
+            </Col>
+          </Row>
+
+          {getSubmitButton('Next', () => setStep(2))}
         </>
       } else {
         return <>
@@ -294,13 +320,14 @@ const RenewFormPage = () => {
       }
     }
     return null;
-  }, [member, accountIsActive, duesSummary, loading]);
+  }
 
   /** step one */
 
-  const confirmEmailStepContent = useMemo(() => {
+  // TODO: pull component out of "renew" page
+  const ConfirmEmailStepContent = () => {
     return <>
-      <div className="mx-5 mb-2">Enter the email that we have for you to get your membership dues:</div>
+      <div className="mx-5 mb-2">Enter the email that we have for you to find your account:</div>
       <Form
         form={confirmEmailForm}
         name={SIGNUP_FORMS.renewMembership.confirmEmail}
@@ -340,27 +367,28 @@ const RenewFormPage = () => {
             htmlType="submit"
             loading={loading}
           >
-            Get membership dues
-        </Button>
+            Find your account
+          </Button>
         </Form.Item>
 
       </Form>
     </>
-  }, [member, step, loading]);
+  }
 
-  const title = useMemo(() => {
+  const title = () => {
     if (!member &&
       (step === 1 || step === 2)
     ) return 'Attorney Membership';
     return 'Renew Attorney Membership';
-  })
+  }
 
   /**
    * step two:
    * * Either review dues if member found.
    * * Or create a new account.
    * */
-  const step2Content = useMemo(() => {
+  // TODO: pull component out of "renew" page
+  const Step2Content = () => {
     // const email = confirmEmailForm.getFieldValue('email');
     return <>
 
@@ -427,7 +455,7 @@ const RenewFormPage = () => {
                     onClick={() => setStep(0)}
                   >
                     Edit
-                </Button>
+                  </Button>
                 </Col>
 
               </Row>
@@ -439,7 +467,7 @@ const RenewFormPage = () => {
             signupType={memberTypes.SIGNUP_ATTORNEY_RENEW}
             memberSignUpType={memberTypes.USER_ATTORNEY}
             hasDiscount={hasDiscount}
-            duesSummary={duesSummary}
+            duesSummary={duesSummary()}
             createAccount={true}
             initialValues={{
               email: confirmEmailForm.getFieldValue('email'),
@@ -456,9 +484,9 @@ const RenewFormPage = () => {
         </div>
       }
 
-      {memberFoundContent}
+      <MemberFoundContent />
     </>;
-  }, [member, accountIsActive, loading, duesSummary]);
+  }
 
   /** step three: payment */
 
@@ -466,18 +494,18 @@ const RenewFormPage = () => {
     if (member) {
       return <>
         <PaymentForm
-          duesSummList={duesSummary}
+          duesSummList={duesSummary()}
           emailAddress={emailAddress}
           initialValues={{
             [PAYMENT_FIELDS.billingname]: `${member?.fields[dbFields.members.firstName]} ${member?.fields[dbFields.members.lastName]}`,
             [STRIPE_FIELDS.subscription.collectionMethod]: STRIPE_FIELDS.subscription.collectionMethodValues.chargeAutomatically,
           }}
-          // total...
-          hasDiscount={hasDiscount}
+          dues={dues}
+          coupon={coupon}
+          setCoupon={setCoupon}
           loading={loading}
           setLoading={setLoading}
           onPaymentSuccessful={onPaymentSuccessful}
-        // setPaymentSuccessful={setPaymentSuccessful}
         />
 
         {emailAddress &&
@@ -487,30 +515,32 @@ const RenewFormPage = () => {
       </>
     }
     return null;
-  }, [duesSummary, member, loading]);
+  }, [member, member?.fields, duesSummary, emailAddress, dues, coupon, loading]);
 
+  // TODO: don't use useMemo or make into component?
+  // ... ConfirmEmailStepContent and Step2Content props may not be part of this useMemo reqs array
   const steps = useMemo(() => {
     // title
     let step2Title = 'Review dues';
     if (!member &&
       (step === 1 || step === 2)) step2Title = 'Create Account';
-    if (accountIsActive) {
+    if (accountIsActive()) {
       step2Title = 'Membership active';
     };
 
     let content = [{
       title: "Check account",
-      content: confirmEmailStepContent,
+      content: <ConfirmEmailStepContent />,
     },
     {
       title: step2Title,
-      content: step2Content,
+      content: <Step2Content />,
     }];
 
     // additional payments step if account not active
     // must navigate to step 1 before hiding step 2
     if (step === 0 ||
-      (!accountIsActive && step === 1) ||
+      (!accountIsActive() && step === 1) ||
       step === 2) {
       content.push({
         title: "Payment",
@@ -518,7 +548,7 @@ const RenewFormPage = () => {
       })
     };
     return content;
-  }, [member, accountIsActive, step, loading]); // , submitError
+  }, [member, step, paymentStepContent, loading])
 
   return <div>
     <Elements stripe={stripePromise}>
@@ -537,7 +567,7 @@ const RenewFormPage = () => {
               <Card
                 className="mt-3 mb-2 login-signup-card"
                 title={<>
-                  <strong>{title}</strong>
+                  <strong>{title()}</strong>
                   <div>
                     <TitleIcon name="demographic" ariaLabel="Participate" />&nbsp;&nbsp;<TitleIcon name="bookmark" ariaLabel="LGBT Law Notes" />&nbsp;&nbsp;<TitleIcon name="government" ariaLabel="CLE Center" />&nbsp;&nbsp;<TitleIcon name="star" ariaLabel="Discounts" />
                   </div>

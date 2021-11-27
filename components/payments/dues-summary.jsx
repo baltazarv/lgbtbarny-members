@@ -1,41 +1,42 @@
-import { useMemo } from 'react';
 import { List, Row, Col } from 'antd';
 import './dues-summary.less';
 
 const DuesSummary = ({
+  dues,
+  // TODO: do not pass props inside dues; use from dues
   fee = 0,
-  discount = 0,
   donation = 0,
   lawNotesAmt = 0,
 
   showSalary,
-  showDiscount,
   showDonation,
   showTotal = false,
   colLayout = { xs: { span: 24 } },
 }) => {
 
-  const duesSummary = useMemo(() => {
+  // console.log('DuesSummary', {
+  //   dues, fee, donation, lawNotesAmt, showSalary, showDonation, showTotal,
+  // })
+
+  const duesSummary = () => {
     let _duesList = null;
     let duesListData = [];
     let total = fee + lawNotesAmt + donation;
-
-    // console.log('duesSummary fee', fee, 'discount', discount, 'total', total);
 
     // annual membership + discount
 
     if (showSalary) {
       let feeText = '';
 
-      total -= discount;
+      total -= (dues?.discount || 0);
 
       if (fee) {
         feeText = `$${fee.toFixed(2)}`;
       }
       duesListData.push(<>Annual membership fee:&nbsp;&nbsp;&nbsp;{feeText}</>);
 
-      if (fee && showDiscount) {
-        duesListData.push(<>First-time member discount:&nbsp;&nbsp;-${discount.toFixed(2)}</>);
+      if (fee && dues?.discount && dues?.discountName) {
+        duesListData.push(<>{dues.discountName}:&nbsp;&nbsp;-${dues.discount.toFixed(2)}</>)
       }
     }
 
@@ -68,10 +69,10 @@ const DuesSummary = ({
     }
 
     return _duesList;
-  }, [fee, discount, donation, lawNotesAmt, showSalary, showTotal]);
+  }
 
   return <>
-    {duesSummary}
+    {duesSummary()}
   </>;
 };
 

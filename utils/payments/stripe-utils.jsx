@@ -48,13 +48,26 @@ const updateSubscription = async (fieldsToUpdate) => {
       body: JSON.stringify(fieldsToUpdate),
     }).then(r => r.json());
     if (error) return { error };
-    // saveSubscription(subscription);
     return { subscription };
   } catch (error) {
     console.log(error);
     return { error }
   }
 };
+
+const retrieveCoupon = async (code) => {
+  const res = await fetch('/api/payments/retrieve-coupon', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(code),
+  }).then(r => r.json())
+  /**
+   * res:
+   * { coupon }
+   * { error, statusCode, code, message, type }
+   */
+  return res
+}
 
 /*************************
  * pure utitlity functions
@@ -120,6 +133,7 @@ export {
   createCustomer,
   updateCustomer,
   updateSubscription,
+  retrieveCoupon,
 
   getActiveSubscription,
   getPaymentMethodObject,

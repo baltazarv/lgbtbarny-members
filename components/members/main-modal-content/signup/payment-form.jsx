@@ -1,22 +1,22 @@
 // TODO: move outside of /main-modal-content since /members/renew page now using
 /**
  * Used by Signup and RenewFormPage
- * When form submitted, onFinish() -> onSuccess() & calls parent's onPaymentSuccessful()
+ * When form submitted, onFinish() -> createAirtablePayment() & calls parent's onPaymentSuccessful()
  */
-import { useMemo, useState, useContext } from 'react';
+import { useMemo, useState, useContext, useEffect } from 'react';
 import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
-import { Card, Divider, Form, Row, Col, Button } from 'antd';
+import { Card, Divider, Form, Row, Col, Input, Button } from 'antd';
 import CardFields from '../../../payments/card-fields';
 import CollectMethodRadios from '../../../payments/collect-method-radios';
 import './payment-form.less';
+import Error from '../../../elements/error'
 // contexts
 import { MembersContext } from '../../../../contexts/members-context';
-// data
+// constants
 import { SIGNUP_FORMS } from '../../../../data/members/member-form-names';
 import { STRIPE_FIELDS } from '../../../../data/payments/stripe/stripe-fields';
 import { dbFields } from '../../../../data/members/airtable/airtable-fields';
-import { FIRST_TIME_COUPON } from '../../../../data/payments/stripe/stripe-values';
-// utils
+// utils / apis
 import {
   // free student plan
   addPayment,
@@ -26,17 +26,19 @@ import {
 import {
   getPaymentMethodObject,
   updateSubscription,
-} from '../../../../utils/payments/stripe-utils';
+  retrieveCoupon,
+} from '../../../../utils/payments/stripe-utils'
+import { getTotal } from '../../../../utils/payments/member-dues'
 
 const PaymentForm = ({
   duesSummList,
   emailAddress,
   initialValues,
-  total,
-  hasDiscount,
+  dues,
+  coupon,
+  setCoupon,
   loading,
   setLoading,
-
   onPaymentSuccessful,
 }) => {
   const [form] = Form.useForm();
@@ -66,10 +68,9 @@ const PaymentForm = ({
   const [stripeError, _setStripeError] = useState('');
   const [stripeSuccess, _setStripeSuccess] = useState('');
 
-  // show form when stripe elements available
-  if (!stripe || !elements) {
-    return null;
-  }
+  // coupons
+  const [noPaymentReq, setNoPaymentReq] = useState(false)
+  const [couponError, setCouponError] = useState(null)
 
   const customerId = useMemo(() => {
     if (member && member.fields[dbFields.members.stripeId]) {
@@ -89,11 +90,10 @@ const PaymentForm = ({
     return null;
   }, [member, memberPlans]);
 
-  // added as coupon to first-time subscription
-  const coupon = useMemo(() => {
-    if (hasDiscount) return FIRST_TIME_COUPON;
+  const total = useMemo(() => {
+    if (dues) return getTotal(dues)
     return null;
-  }, [hasDiscount]);
+  }, [dues])
 
   // helper for displaying error messages.
   const setStripeError = (error) => {
@@ -107,31 +107,48 @@ const PaymentForm = ({
     _setStripeSuccess(msg);
   }
 
+  /** EVENT LISTENERS */
+
+  // check if user payment is required after coupon savings
+  useEffect(() => {
+    if (coupon) {
+      let _fee = dues?.fee
+      if (
+        coupon[STRIPE_FIELDS.coupons.percentOff] === 100 ||
+        coupon[STRIPE_FIELDS.coupons.amountOff] / 100 >= _fee
+      ) {
+        setNoPaymentReq(true)
+      } else {
+        setNoPaymentReq(false)
+      }
+    }
+  }, [dues, coupon])
+
   const onValuesChange = (changedFields, allFields) => {
     // console.log('onValuesChange', changedFields, 'allFields', allFields);
     if (changedFields.hasOwnProperty(STRIPE_FIELDS.subscription.collectionMethod)) setCollectionMethod(changedFields[STRIPE_FIELDS.subscription.collectionMethod]);
   };
 
-  // create payment >> add invoice id to payment
-  const onSuccess = async (subscription) => {
+  const createAirtablePayment = async (subscription) => {
     saveNewSubscription(subscription);
 
     // when expand subscription get latest_invoice object, including latest_invoice.id, otherwise, latest_invoice is id
     const stripeInvoiceId = subscription.latest_invoice.id || subscription.latest_invoice;
     const invoicePdf = subscription.latest_invoice.invoice_pdf;
     const invoiceUrl = subscription.latest_invoice.hosted_invoice_url;
-    const payload = (getPaymentPayload({
+
+    const paymentPayload = (getPaymentPayload({
       userid: member.id,
       memberPlans,
       salary: member.fields[dbFields.members.salary],
-      hasDiscount,
+      coupon, // id and name retrieved from coupon object
       invoice: stripeInvoiceId,
       invoicePdf,
       invoiceUrl,
     }));
 
     // TODO: use webhook to check that payment was created from subscription?
-    const addedPayment = await addPayment(payload);
+    const addedPayment = await addPayment(paymentPayload);
     if (addedPayment.error) {
       console.log(addedPayment.error);
     } else {
@@ -190,14 +207,16 @@ const PaymentForm = ({
      * CREATE SUBSCRIPTION
      */
 
-    // Create the subscription.
-    let createSubResult = await createSubscription({
+    const subsObj = {
       customerId,
       paymentMethodId: paymentMethod.id,
       priceId,
       collectionMethod,
-      coupon,
-    });
+    }
+    if (coupon) subsObj.coupon = coupon.id
+
+    // Create the subscription.
+    let createSubResult = await createSubscription(subsObj);
 
     const subError = createSubResult.error;
     let { subscription } = createSubResult; // may be updated later
@@ -310,12 +329,95 @@ const PaymentForm = ({
       field: 'default_payment_method',
     });
     setDefaultCard(pmObject);
-    onSuccess(subscription);
+    createAirtablePayment(subscription);
 
     setLoading(false);
     cardElement.update({ disabled: false });
     cardElement.clear();
   };
+
+  const getCouponDiscount = (coupon) => {
+    if (dues?.fee) {
+      const _fee = dues.fee
+      if (coupon?.[STRIPE_FIELDS.coupons.percentOff]) {
+        return _fee * coupon[STRIPE_FIELDS.coupons.percentOff] / 100
+      }
+      if (coupon?.[STRIPE_FIELDS.coupons.amountOff]) {
+        return coupon[STRIPE_FIELDS.coupons.amountOff] / 100
+      }
+    }
+    return 0
+  }
+
+  const verifyCoupon = async (code) => {
+    if (code) {
+      const res = await retrieveCoupon(code)
+      if (res.coupon) {
+        /**
+         * id: same as code
+         * name
+         * percentage_off
+         * amount_off
+         * currency: 'USD'?
+         * valid: true
+         */
+        if (res.coupon.valid) {
+          // if 1st-time attorney coupon set (at SignUp init), show error message
+          if (getCouponDiscount(coupon) > getCouponDiscount(res.coupon)) {
+            setCouponError(<span>You will save more with the <strong>{coupon[STRIPE_FIELDS.coupons.name]}</strong>.</span>)
+          } else {
+            setCoupon(res.coupon)
+            setCouponError(null)
+          }
+        } else {
+          setCouponError('The coupon code is not valid.')
+          setCoupon(null)
+        }
+      }
+      if (res.error?.statusCode === 404) {
+        /**
+         * * statusCode: 404
+         * * message: 'No such coupon: "..."'
+         */
+        setCouponError(res.error.message)
+      }
+    }
+  }
+
+  // submit function, if no payment required
+  const redeemMembership = async () => {
+    if (noPaymentReq) {
+      setLoading(true);
+
+      const subsObj = {
+        customerId,
+        priceId,
+        coupon: coupon.id,
+      }
+
+      // Create the subscription.
+      let createSubResult = await createSubscription(subsObj);
+
+      const subError = createSubResult.error;
+      let { subscription } = createSubResult;
+
+      if (subError) {
+        // show error and collect new card details.
+        setLoading(false)
+        setStripeError(subError.message)
+        return
+      }
+
+      setStripeSuccess(`Subscription created with ${subscription.status} status.`);
+
+      createAirtablePayment(subscription);
+    }
+  }
+
+  // show form when stripe elements available
+  if (!stripe || !elements) {
+    return null;
+  }
 
   return <>
     <Form className={"payment-form"}
@@ -326,69 +428,105 @@ const PaymentForm = ({
       onFinish={onFinish}
     >
 
-      <div className="mt-0 mb-1">Review charges:</div>
+      <Row>
+        <Col span={18} offset={3}>
+          <div className="mb-1">If you have a <strong>complimentary membership</strong> or a&nbsp;<strong>discount</strong> look up with <em>coupon&nbsp;code:</em></div>
+        </Col>
+      </Row>
+      <Row>
+        <Col span={12} offset={6}>
+          <Input.Search
+            placeholder="Coupon Code"
+            enterButton="Find Coupon"
+            size="small"
+            disabled={loading}
+            onSearch={verifyCoupon}
+            className="coupon-search"
+          />
+        </Col>
+      </Row>
+      <Row className="mt-2">
+        <Col span={14} offset={4}>
+          <Error message={couponError} />
+        </Col>
+      </Row>
 
-      <Row justify="center">
+      <div className="mt-4 mb-1">Review charges:</div>
+
+      <Row justify="center mb-5">
         <Col>
           {duesSummList}
         </Col>
       </Row>
 
-      <Divider className="mt-4 mb-2 "><strong>Credit Card Payment</strong></Divider>
+      {noPaymentReq ?
+        <Button
+          type="primary"
+          onClick={redeemMembership}
+          loading={loading}
+        >
+          Redeem Membership
+        </Button> :
+        <>
+          <Divider className="mb-2 "><strong>Credit Card Payment</strong></Divider>
 
-      {total &&
-        <div className="mt-0 mb-2">Charge <strong>${total.toFixed(2)}</strong> to the credit card below.</div>
+          {total &&
+            <div className="mt-0 mb-2">Charge <strong>${total.toFixed(2)}</strong> to the credit card below.</div>
+          }
+
+          <Card>
+
+            {/* card fields */}
+            <CardFields
+              loading={loading}
+            />
+
+            {/* collection method radio buttons */}
+            <div className="mt-4">
+              <div className="mb-2">
+                When your membership comes up for renewal next&nbsp;year:
+              </div>
+              <CollectMethodRadios
+                loading={loading}
+              />
+            </div>
+
+            <div className="mt-2 mb-0 mx-2 text-left" style={{ fontSize: '0.9em', lineHeight: 1.5 }}>
+              You may update these settings or cancel your membership at any time from <em>My Account &gt; Payment information</em>.
+            </div>
+
+            {stripeError && <>
+              <div className="text-danger mt-3">{stripeError}</div>
+            </>
+            }
+
+            {stripeSuccess && <>
+              <div className="text-success mt-3">{stripeSuccess}</div>
+            </>
+            }
+
+            {/* submit button */}
+            <Form.Item
+              className="mt-3"
+              wrapperCol={{
+                xs: { span: 24, offset: 0 },
+                sm: { span: 18, offset: 3 },
+              }}
+            >
+              <Button
+                style={{ width: '100%' }}
+                type="primary"
+                htmlType="submit"
+                loading={loading}
+              >
+                Pay Member Dues
+              </Button>
+            </Form.Item>
+          </Card>
+        </>
       }
 
-      <Card>
 
-        {/* card fields */}
-        <CardFields
-          loading={loading}
-        />
-
-        {/* collection method radio buttons */}
-        <div className="mt-4">
-          <div className="mb-2">
-            When your membership comes up for renewal next&nbsp;year:
-          </div>
-          <CollectMethodRadios
-            loading={loading}
-          />
-        </div>
-
-        <div className="mt-2 mb-0 mx-2 text-left" style={{ fontSize: '0.9em', lineHeight: 1.5 }}>
-          You may update these settings or cancel your membership at any time from <em>My Account &gt; Payment information</em>.
-        </div>
-
-        {stripeError && <>
-          <div className="text-danger mt-3">{stripeError}</div>
-        </>
-        }
-
-        {stripeSuccess && <>
-          <div className="text-success mt-3">{stripeSuccess}</div>
-        </>
-        }
-
-        {/* submit button */}
-        <Form.Item
-          className="mt-3"
-          wrapperCol={{
-            xs: { span: 24, offset: 0 },
-            sm: { span: 18, offset: 3 },
-          }}
-        >
-          <Button
-            style={{ width: '100%' }}
-            type="primary"
-            htmlType="submit"
-            loading={loading}
-          >
-            Pay Member Dues
-          </Button>
-        </Form.Item>
-      </Card>
     </Form>
   </>
 }

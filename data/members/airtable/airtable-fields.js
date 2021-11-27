@@ -93,6 +93,8 @@ exports.dbFields = {
   payments: {
     date: 'date',
     plans: 'plans',
+    coupon_id: 'stripe_coupon',
+    coupon_name: 'coupon_name',
     discount: 'discount',
     total: 'total',
     invoiceId: '_stripe_invoice_id',
@@ -142,7 +144,4 @@ exports.dbFields = {
       sample: 'sample',
     }
   },
-  coupons: {
-    stripeId: "stripe_id",
-  }
 };

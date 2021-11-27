@@ -1,4 +1,4 @@
-import { useMemo, useContext, useState } from 'react';
+import { useMemo, useContext } from 'react';
 import { Form, Row, Col, Select } from 'antd';
 
 // data
@@ -7,7 +7,7 @@ import { dbFields } from '../../data/members/airtable/airtable-fields';
 import { getSalaryOptions } from '../../utils/members/airtable/airtable-select-options';
 
 const SalaryField = ({
-  hasDiscount = false,
+  is1stTimeEligible = false,
   loading
 }) => {
   const { memberPlans } = useContext(MembersContext);
@@ -41,18 +41,17 @@ const SalaryField = ({
             placeholder="Choose salary to calculate fee..."
             disabled={loading}
             onChange={onFieldChange}
-            // onChange={(val) => onChange(dbFields.members.salary, val)}
           >
             {salaryOptions}
           </Select>
         </Form.Item>
 
-        {hasDiscount &&
+        {/* only shown on logged-in signup, not on renew page yet */}
+        {is1stTimeEligible() &&
           <Row className="mb-2">
             <Col
               xs={{ span: 24, offset: 0 }}
               sm={{ span: 16, offset: 8 }}
-            // {...tailFormItemLayout}
             >
               50% discount for first-time membership!
             </Col>
@@ -61,7 +60,7 @@ const SalaryField = ({
       </>;
     }
     return salary;
-  }, [salaryOptions, loading]);
+  }, [salaryOptions, is1stTimeEligible, loading]);
 
   return <>
     {salaryField}

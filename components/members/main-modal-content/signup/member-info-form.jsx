@@ -30,7 +30,7 @@ const MemberInfoForm = ({
   setCertifyChoice = null,
 
   // shows "50% discount"
-  hasDiscount,
+  is1stTimeEligible,
 
   // if member not logged in, add email address
   // and show attorney certify select options w/out "n/a"
@@ -142,16 +142,24 @@ const MemberInfoForm = ({
 
       {memberSignUpType === memberTypes.USER_ATTORNEY && !hideFormElements &&
         <SalaryField
-          hasDiscount={hasDiscount}
+          is1stTimeEligible={is1stTimeEligible}
           loading={loading}
         />
       }
 
-      <Row justify="end">
+      <Row justify="end mb-3">
         <Col>
           {duesSummary}
         </Col>
       </Row>
+
+      {memberSignUpType !== memberTypes.USER_STUDENT &&
+        <Row>
+          <Col span={18} offset={3}>
+            <div className="mb-1">Have a <strong>complimentary membership</strong> or a&nbsp;<strong>discount</strong>? <em>Submit Info</em> and redeem it in the next screen.</div>
+          </Col>
+        </Row>
+      }
 
       {/* submit button */}
       {!hideFormElements &&

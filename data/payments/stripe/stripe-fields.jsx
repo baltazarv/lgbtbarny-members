@@ -67,6 +67,9 @@ export const STRIPE_FIELDS = {
     defaultPaymentMethod: 'default_payment_method',
   },
   coupons: {
+    id: 'id',
+    name: 'name',
     percentOff: 'percent_off',
+    amountOff: 'amount_off', // assumed in USD
   }
 };

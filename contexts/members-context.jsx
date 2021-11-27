@@ -1,3 +1,5 @@
+// context used to keep app state current
+
 import { createContext, useState, useEffect } from 'react';
 import { dbFields } from '../data/members/airtable/airtable-fields';
 
@@ -160,7 +162,6 @@ const MembersProvider = ({ children }) => {
    */
   const createSubscription = async (payload) => {
     let { error, subscription } = await fetch('/api/payments/create-subscription', {
-      // let { error, subscription } = await fetch('/api/payments/create-subscription', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -242,14 +243,15 @@ const MembersProvider = ({ children }) => {
     emailContacts, setEmailContacts,
 
     // functions // TODO: move functions to /utils/
-    // functions not used
-    refreshMember,
-    addMember,
     // functions
     setPaymentState,
     saveNewSubscription,
     createSubscription,
     getSubscription,
+
+    // functions not used
+    refreshMember,
+    addMember,
   }}>{children}</MembersContext.Provider>);
 };
 
