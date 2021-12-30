@@ -3,6 +3,9 @@
  * 
  * In addition to validating emails, check for dupe email addresses; lowercase to compare.
  * */
+
+// TODO: move to https://github.com/baltazarv/lgbtbarny-cronjobs.git (batch-scripts)
+
 require('dotenv').config({ path: __dirname + "/./../../.env.development" });
 
 const dbFields = require('../../data/members/airtable/airtable-fields').dbFields;

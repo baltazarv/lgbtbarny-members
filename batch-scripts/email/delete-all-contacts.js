@@ -3,6 +3,9 @@
  *****************
  * For bad imports. Run with caution!
  */
+
+// TODO: move to https://github.com/baltazarv/lgbtbarny-cronjobs.git (batch-scripts)
+
 require('dotenv').config({ path: __dirname + "/./../../.env.development" });
 const sendinblue = require("../../pages/api/utils/sendinblue");
 const sibContactsApi = sendinblue.sibContactsApi;
