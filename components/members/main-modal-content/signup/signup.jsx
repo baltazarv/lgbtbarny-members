@@ -18,7 +18,7 @@ import PaymentForm from './payment-form';
 import DuesSummary from '../../../payments/dues-summary';
 import '../login-signup.less';
 import { TitleIcon } from '../../../elements/icon';
-// data
+// constants
 import { MembersContext } from '../../../../contexts/members-context';
 import * as memberTypes from '../../../../data/members/member-types';
 import { SIGNUP_FORMS } from '../../../../data/members/member-form-names';
@@ -27,6 +27,7 @@ import { STRIPE_FIELDS } from '../../../../data/payments/stripe/stripe-fields';
 import { dbFields } from '../../../../data/members/airtable/airtable-fields';
 import { getCertifyType, CERTIFY_OPTIONS } from '../../../../data/members/airtable/airtable-values';
 // import { LAW_NOTES_PRICE } from '../../../../data/payments/law-notes-values';
+import { FIRST_TIME_COUPON } from '../../../../data/payments/stripe/stripe-values';
 // utils
 import {
   duesInit,
@@ -40,11 +41,10 @@ import {
   getNextPaymentDate,
   getPlanFee,
   getPaymentPayload,
+  getVerifiedEmails,
 } from '../../../../utils/members/airtable/members-db';
 import { updateCustomer, retrieveCoupon } from '../../../../utils/payments/stripe-utils';
-// constants
-import { FIRST_TIME_COUPON } from '../../../../data/payments/stripe/stripe-values';
-
+import { updateContact } from '../../../../utils/emails/sendinblue-utils'
 // import DonationFields from '../../../payments/donation-fields';
 // import { getDonationValues } from '../../../../data/payments/donation-values';
 
@@ -57,13 +57,12 @@ const Signup = ({
 }) => {
   const {
     authUser,
-    member,
-    setMember,
-    userPayments,
-    setUserPayments,
+    member, setMember,
+    userPayments, setUserPayments,
     setPaymentState,
     memberPlans,
     primaryEmail, // email for stripe payments
+    userEmails,
   } = useContext(MembersContext);
   const memberInfoFormRef = useRef(null);
   const [certifyChoice, setCertifyChoice] = useState('');
@@ -343,18 +342,38 @@ const Signup = ({
         const _member = { id: member.id, fields };
         const updatedMember = await updateMember(_member);
 
-        // if name change, update stripe name
-        // all users automatically get a stripe account
-        const firstName = dbFields.members.firstName;
-        const lastName = dbFields.members.lastName;
+        // update SendinBlue contact for all verified emails
+        // and update stripe name
+        // ...all users automatically get a stripe account
+        const firstName = dbFields.members.firstName
+        const lastName = dbFields.members.lastName
+        const employer = dbFields.members.employer
+        let contactPayload = {}
         if (info.values[firstName] !== member.fields[firstName] ||
           info.values[lastName] !== member.fields[lastName]
         ) {
+          // update SiB contact name
+          if (info.values[firstName] !== member.fields[firstName]) contactPayload.firstname = info.values[firstName]
+          if (info.values[lastName] !== member.fields[lastName]) contactPayload.lastname = info.values[lastName]
+
+          // update stripe customer name
           const customerId = member.fields[dbFields.members.stripeId];
           const updateCusResult = await updateCustomer({
             customerId,
             name: `${info.values[firstName]} ${info.values[lastName]}`,
           });
+        }
+
+        // update SiB contact firmOrg attribute
+        if (info.values[employer] !== member.fields[employer]) contactPayload.firmOrg = info.values[employer]
+        // if there are any fields to update
+        if (Object.keys(contactPayload).length > 0) {
+          userEmails.forEach((emailRec) => {
+            contactPayload.email = emailRec.fields[dbFields.emails.address]
+            if (emailRec.fields[dbFields.emails.verified]) {
+              updateContact(contactPayload)
+            }
+          })
         }
 
         // create student account
