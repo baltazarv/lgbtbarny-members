@@ -1,4 +1,8 @@
 // Airtable bases with table fields
+
+// shared by both members.listsUnsubscribed and emails.mailingLists
+const listNewsletter = 'Newsletter'
+
 exports.dbFields = {
   /** `members` base */
   // members base: members table
@@ -14,8 +18,8 @@ exports.dbFields = {
     certify: 'certify',
     salary: 'salary',
     employer: 'employer',
-    practiceSetting: 'practice_setting',
-    practiceAreas: 'practice_areas',
+    practiceSetting: 'practice_setting', // single select
+    practiceAreas: 'practice_areas', // string
     interestGroups: 'interest_groups',
     gradYear: 'grad_year',
     lawSchool: 'law_school',
@@ -26,16 +30,19 @@ exports.dbFields = {
     specialAccom: 'special_accom',
     howFound: 'how_found',
     stripeId: 'stripe_id',
-    listsUnsubscribed: 'lists_unsubscribed',
-    mailingLists: 'mailing_lists',
     lastLoggedIn: '_last_logged_in',
     coupons: 'coupons',
+
+    listsUnsubscribed: 'exclude_mailings',
+    listNewsletter,
+    listMembers: 'Members',
+    listLawNotes: 'Law Notes',
 
     // calc
     status: "_status",
     expDate: "_exp_date",
     gradDate: "_grad_date",
-    
+
     valueLists: {
       // salaries: [],
       // certify: [],
@@ -85,6 +92,8 @@ exports.dbFields = {
     verified: 'verified',
     primary: 'primary',
     blocked: 'blocked', // rename
+    mailingLists: 'mailing_lists',
+    listNewsletter,
 
     // temp field
     inactve: "__inactive",
@@ -132,6 +141,9 @@ exports.dbFields = {
     date: 'date',
     cert: 'cert',
     creditsTotal: 'credits_total',
+  },
+  groups: {
+    name: 'name',
   },
 
   /** `law notes` base */

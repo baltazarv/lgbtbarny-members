@@ -2,7 +2,7 @@
  * Intermediary `AccountsItem` component with render props between this component and `Accounts` component. `dataSource`, `selectedRowKeys`, and `setSelectedRowKeysprop` inside `value` prop sent by Account.
  * * Account 'emailTableDataSource' defines data displayed on table.
  *
- * * Primary email switch handled by grand-parent component Account's selectChanges` function.
+ * * Primary email switch handled by grand-parent component Account's changePrimaryEmail` function.
  * * Subscribing/unsubscribing (blocking) emails handled by `toggleBlockEmail` in this component.
  * * Deleting emails handled within this component by`onDeleteEmail`.
  * * Saving a new email handled within this component by `saveEmail`. The form surrounding the `Search` input is the only form on this component.
@@ -20,7 +20,6 @@ import {
   createEmail,
   updateEmails,
   deleteEmail,
-  // updatePrimaryInEmails, // delete
 } from '../../../../../utils/members/airtable/members-db';
 import { updateContact } from '../../../../../utils/emails/sendinblue-utils';
 
@@ -43,10 +42,20 @@ const EmailsAddresses = ({
     member,
     userEmails, setUserEmails,
     primaryEmail,
-    userMailingLists,
+    mailingLists,
   } = useContext(MembersContext);
   const [form] = Form.useForm(); // save email form
-  const [addEmailLoading, setAddEmailLoading] = useState(false);
+  const [addEmailLoading, setAddEmailLoading] = useState(false)
+
+  // the primary email is never null even if all verified emails are blacklisted
+  const primaryEmailIsBlocked = useMemo(() => {
+    if (primaryEmail && userEmails) {
+      return userEmails.find((email) => {
+        return email.fields[dbFields.emails.address] === primaryEmail && email.fields[dbFields.emails.blocked]
+      })
+    }
+    return null
+  }, [primaryEmail, userEmails])
 
   const primaryTagTooltip = 'Primary address will receive emails from the LGBT Bar of NY. Only verified addresses qualify.';
   const blockedTagTooltip = 'Unblock an email address to start receiving emails.';
@@ -88,9 +97,6 @@ const EmailsAddresses = ({
       return email;
     });
 
-    // const emailsWithPrimaryUpdate = updatePrimaryInEmails(emailsWithBlockedValue, loggedInEmail);
-    // setUserEmails(emailsWithPrimaryUpdate);
-
     setUserEmails(emailsWithBlockedValue);
   }
 
@@ -98,7 +104,7 @@ const EmailsAddresses = ({
    * Save new email
    */
 
-  const saveEmail = async (emailAddress) => {
+  const addEmail = async (emailAddress) => {
     setAddEmailLoading(true);
     if (emailAddress) {
       try {
@@ -247,7 +253,7 @@ const EmailsAddresses = ({
         size="small"
       >
         Delete
-    </Link>
+      </Link>
     </Popconfirm>;
   };
 
@@ -321,28 +327,28 @@ const EmailsAddresses = ({
   }, [editing]);
 
   const formattedList = useMemo(() => {
-    if (userMailingLists && userMailingLists.listIds && userMailingLists.listIds.length > 0) {
-      const listLength = userMailingLists.listIds.length;
-      const formattedList = [...userMailingLists.listIds].map((id, index) => {
-        return <span key={id}>{listLength > 1 && listLength !== 2 && index > 0 && ', '}{listLength > 1 && index === listLength -1 && ' and '}<strong>{getListTitle(id)}</strong></span>
+    if (mailingLists?.length > 0) {
+      const listLength = mailingLists.length
+      const formattedList = [...mailingLists].map((list, index) => {
+        return <span key={list}>{listLength > 1 && listLength !== 2 && index > 0 && ', '}{listLength > 1 && index === listLength - 1 && ' and '}<strong>{list}</strong></span>
       })
-      return <>{formattedList} mailing {userMailingLists.listIds.length > 1 ? 'lists' : 'list'}</>;
+      return <>{formattedList} mailing {mailingLists.length > 1 ? 'lists' : 'list'}</>
     }
-    return null;
-  }, [userMailingLists]);
+    return null
+  }, [mailingLists])
 
-  const subscriptionMessage = useMemo(() => {
-    if (!primaryEmail) return <span className="text-danger">You will not be able to receive emails, until you unblock an email address above.</span>;
+  const subscriptionMessage = () => {
+    if (primaryEmailIsBlocked) return <span className="text-danger">You will not be able to receive emails, until you unblock an email address above.</span>;
 
     let listMessage = null;
     if (formattedList) {
       listMessage = <>You are subscribed to the {formattedList}.</>
     } else {
-      listMessage = <strong className="text-danger">You are not subscribed to any malining lists.</strong>
+      listMessage = <strong className="text-danger">You are not subscribed to any mailing lists.</strong>
     }
     return <>{listMessage} Go to <a href="#mail-prefs">Mailing preferences</a> below to update your mailing list settings.</>
-  }, [userMailingLists]);
-
+  }
+  
   return <>
     <Table
       rowSelection={rowSelection}
@@ -378,7 +384,7 @@ const EmailsAddresses = ({
           enterButton="Add"
           addonBefore="Alternate Email"
           placeholder="user@domain.com"
-          onSearch={saveEmail}
+          onSearch={addEmail}
           loading={addEmailLoading}
           disabled={addEmailLoading}
           allowClear={true}
@@ -386,7 +392,7 @@ const EmailsAddresses = ({
         />
       </Form.Item>
     </Form>
-    <div className="mt-3 mx-4">{subscriptionMessage}</div>
+    <div className="mt-3 mx-4">{subscriptionMessage()}</div>
   </>;
 };
 

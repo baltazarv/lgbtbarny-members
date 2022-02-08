@@ -64,77 +64,67 @@ const deleteEmail = async (id) => {
 /**************************
  * DETERMINE PRIMARY EMAIL
  **************************
- * Requirements:
- * * only one primary email.
- * * needs to be verified.
- * * cannot be blacklisted on ESP (SendinBlue).
- *
- * Order to follow:
- * (1) Previous primary email.
- * (2) Logged-in email (if relavant).
- * (3) Any verified email.
- *
- * @param {object} emails: list of Airtable records or records being prepared to save to Airtable, in format { id, fields: {} }
- *                 fields needed: address, verified, blocked
- * @param {string} loggedInEmail: optional logged-in email
- * @returns {object} primary email in Airtable format.
+ * Requirements for primary email:
+ * * must be one and only one primary email.
+ * * needs to be verified, ie, used to log in.
+ * * avoid blacklisted SendinBlue contacts.
+ * * if all verified blacklisted, should be logged-in email
+ * 
+ * Needed for following:
+ * * Stripe customer email address.
+ * * Add to SendinBlue mailing lists.
+ * 
+ * Primary email calculation:
+ * (1) a verified email already marked as primary if not blacklisted on SendinBlue (SiB),
+ * (2) the logged-in email if not blacklisted on SiB,
+ * (3) any verified email that is not blacklisted on SiB.
+ * 
+ * @param {Object} emails: list of Airtable records or records being prepared to save to Airtable,
+ * ...in format { id, fields: {} }
+ * ...fields needed: address, verified, blocked
+ * @param {String} loggedInEmail
+ * @returns {String} primary email in Airtable format.
  */
-//
 const getPrimaryEmail = (emails, loggedInEmail) => {
-  let primary = null;
+  let primary = loggedInEmail
   if (emails) {
-
     // find previously-marked primary, not blocked
-    const primaryEmailFound = emails.find((email) => email.fields[dbFields.emails.primary] && !email.fields[dbFields.emails.blocked]);
+    let primaryEmailFound = null
+    const primaryRecFound = emails.find((email) => email.fields[dbFields.emails.primary] && !email.fields[dbFields.emails.blocked])
+    if (primaryRecFound) primaryEmailFound = primaryRecFound.fields[dbFields.emails.address]
     if (primaryEmailFound) {
-      primary = primaryEmailFound;
+      primary = primaryEmailFound
     } else {
-
-      // find logged-in email, not blocked
-      let loggedInEmailFound = null;
-      if (loggedInEmail) loggedInEmailFound = emails.find((email) => email.fields[dbFields.emails.address] === loggedInEmail && !email.fields[dbFields.emails.blocked]);
-      if (loggedInEmailFound) {
-        primary = loggedInEmailFound;
-      } else {
-
+      // if logged-in email is blocked,
+      // ...set to any other verified email
+      const loggedInEmailBlocked = emails.find((email) => email.fields[dbFields.emails.address] === loggedInEmail && email.fields[dbFields.emails.blocked])
+      if (loggedInEmailBlocked) {
         // find any verified, not blocked
-        const verifiedEmailFound = emails.find((email) => email.fields[dbFields.emails.verified] && !email.fields[dbFields.emails.blocked]);
-        if (verifiedEmailFound) primary = verifiedEmailFound;
+        const verifiedEmailRecFound = emails.find((email) => email.fields[dbFields.emails.verified] && !email.fields[dbFields.emails.blocked])
+        if (verifiedEmailRecFound) primary = verifiedEmailRecFound.fields[dbFields.emails.address]
       }
     }
   }
-  return primary;
+  return primary
 }
 
-/**
- * Should no longer use. The primary email flag in Airtable should only be set by the user, in contrast to the primaryEmail variable that isn't always the one the user has designated as such.
- *
- * @param {array} emails Airtable format
- * @param {string} loggedInEmail
- * @returns
- */
-const updatePrimaryInEmails = (emails, loggedInEmail) => {
-  if (emails && emails.length > 0) {
-    const primaryEmailRecord = getPrimaryEmail(emails, loggedInEmail);
-    let emailAddress = null;
-    if (primaryEmailRecord) emailAddress = primaryEmailRecord.fields[dbFields.emails.address];
-    const emailsUpdated = emails.map((email) => {
-      if (emailAddress && email.fields[dbFields.emails.address] === emailAddress) {
-        email.fields[dbFields.emails.primary] = true;
-      } else {
-        email.fields[dbFields.emails.primary] = false;
+// return {Array of Strings} email addresses
+const getVerifiedEmails = (userEmails) => {
+  if (userEmails) {
+    return userEmails.reduce((acc, emailRec) => {
+      if (emailRec.fields[dbFields.emails.verified]) {
+        acc.push(emailRec.fields[dbFields.emails.address])
       }
-      return email;
-    })
-    return emailsUpdated;
+      return acc
+    }, [])
   }
-  return null;
-};
+  return null
+}
 
 export {
   createEmail,
   updateEmails,
   deleteEmail,
   getPrimaryEmail,
-  updatePrimaryInEmails,
+  getVerifiedEmails,
 }

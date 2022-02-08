@@ -73,8 +73,8 @@ const PaymentForm = ({
   const [couponError, setCouponError] = useState(null)
 
   const customerId = useMemo(() => {
-    if (member && member.fields[dbFields.members.stripeId]) {
-      const id = member.fields[dbFields.members.stripeId];
+    if (member && member.fields?.[dbFields.members.stripeId]) {
+      const id = member.fields?.[dbFields.members.stripeId];
       return id;
     } else {
       console.error('Stripe customer missing!');
@@ -83,8 +83,8 @@ const PaymentForm = ({
   }, [member]);
 
   const priceId = useMemo(() => {
-    if (member && member.fields[dbFields.members.salary]) {
-      const price = getStripePriceId(member.fields[dbFields.members.salary], memberPlans);
+    if (member && member.fields?.[dbFields.members.salary]) {
+      const price = getStripePriceId(member.fields?.[dbFields.members.salary], memberPlans);
       return price;
     }
     return null;
@@ -140,7 +140,7 @@ const PaymentForm = ({
     const paymentPayload = (getPaymentPayload({
       userid: member.id,
       memberPlans,
-      salary: member.fields[dbFields.members.salary],
+      salary: member.fields?.[dbFields.members.salary],
       coupon, // id and name retrieved from coupon object
       invoice: stripeInvoiceId,
       invoicePdf,
@@ -191,7 +191,7 @@ const PaymentForm = ({
       card: cardElement,
       billing_details: {
         email: emailAddress,
-        name: `${member.fields[dbFields.members.firstName]} ${member.fields[dbFields.members.lastName]}`,
+        name: `${member.fields?.[dbFields.members.firstName]} ${member.fields?.[dbFields.members.lastName]}`,
       },
     }); //-> returns result.error or result.paymentMethod
 

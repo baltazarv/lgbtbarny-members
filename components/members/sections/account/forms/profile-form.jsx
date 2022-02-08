@@ -151,7 +151,7 @@ const ProfileForm = ({
   }, [memberStatus]);
 
   const userName = useMemo(() => {
-    if (!editing && !member?.fields[dbFields.members.firstName] && !member?.fields[dbFields.members.lastName]) return <>
+    if (!editing && !member?.fields?.[dbFields.members.firstName] && !member?.fields?.[dbFields.members.lastName]) return <>
       <div><label className="ant-form-item-label">Name</label></div>
       <div style={{ fontSize: 16 }} className="text-danger">Please add your name to your profile.</div></>
     if (editing) return <>

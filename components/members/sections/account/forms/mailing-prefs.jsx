@@ -3,189 +3,179 @@ import { Card, Typography, Switch, Row, Col, Button, message } from 'antd';
 // data
 import { MembersContext } from '../../../../../contexts/members-context';
 import * as memberTypes from '../../../../../data/members/member-types';
-import { mailingLists } from '../../../../../data/members/airtable/airtable-values';
-import { sibLists, getAllListIndexes } from '../../../../../data/emails/sendinblue-fields';
+import {
+  sibLists,
+  getSibListIdByTitle,
+  getAllListIndeces,
+} from '../../../../../data/emails/sendinblue-fields';
 // utils
-import { getAccountIsActive, updateMember } from '../../../../../utils/members/airtable/members-db';
+import {
+  getMemberEligibleLists,
+  updateMember,
+} from '../../../../../utils/members/airtable/members-db';
 import { updateContact } from '../../../../../utils/emails/sendinblue-utils';
 import { dbFields } from '../../../../../data/members/airtable/airtable-fields';
 
 const { Link } = Typography;
 
-const MailPrefs = ({
+const MailingPrefs = ({
   title,
+  memberStatus,
   memberType,
   onLink,
   loading,
   setLoading,
 }) => {
   const {
-    // authUser,
+    // member
     member, setMember,
-    // userEmails,
-    userPayments,
-    memberPlans,
-    // emailContacts,
+
+    // email
     primaryEmail,
-    // userMailingLists
-    userMailingLists, setUserMailingLists,
-    addToUserLists,
-    removeFromUserLists,
+    mailingLists, setMailingLists,
   } = useContext(MembersContext);
 
   const [newsletterChecked, setNewsletterChecked] = useState(false);
   const [memberEmailChecked, setMemberEmailChecked] = useState(false);
   const [lawNotesChecked, setLawNotesChecked] = useState(false);
 
-  const accountIsActive = useMemo(() => {
-    return getAccountIsActive({
-      userPayments,
-      memberPlans,
-      member,
-    });
-  }, [userPayments, memberPlans, member]);
+  const isMemberListEligible =
+    memberStatus === memberTypes.USER_ATTORNEY ||
+    memberStatus === memberTypes.USER_STUDENT ||
+    // deprecate
+    memberStatus === memberTypes.USER_MEMBER ||
+    memberStatus === memberTypes.USER_DONOR;
+
+  const isLawNotesEligible = isMemberListEligible ||
+    memberStatus === memberTypes.USER_LAW_NOTES;
+
+  // eligible member lists, including the Newsletter
+  const allMemberElegibleLists = useMemo(() => {
+    let lists = [dbFields.members.listNewsletter]
+    const memberEligible = getMemberEligibleLists(memberStatus)
+    if (memberEligible?.length > 0) {
+      lists = [...lists, ...memberEligible]
+    }
+    return lists
+  }, [member, memberStatus])
 
   /******************************
    * Mailing list switch toggle *
    ******************************
-   * toggle according to userMailingLists
-   * userMailingLists changes when primary email changes.
+   * toggle according to mailingLists
    */
   useEffect(() => {
-    if (userMailingLists) {
-      if (userMailingLists.listIds) {
-        userMailingLists.listIds.forEach((id) => {
-          for (const key in sibLists) {
-            if (id === sibLists.newsletter.id) setNewsletterChecked(true);
-            if (id === sibLists.members.id) setMemberEmailChecked(true);
-            if (id === sibLists.law_notes.id) setLawNotesChecked(true);
-          }
-        });
-      }
-      if (userMailingLists.unlinkListIds) {
-        userMailingLists.unlinkListIds.forEach((id) => {
-          for (const key in sibLists) {
-            if (id === sibLists.newsletter.id) setNewsletterChecked(false);
-            if (id === sibLists.members.id) setMemberEmailChecked(false);
-            if (id === sibLists.law_notes.id) setLawNotesChecked(false);
-          }
-        });
-      }
-    } else {
-      setNewsletterChecked(false);
-      setMemberEmailChecked(false);
-      setLawNotesChecked(false);
+    let newsletterChecked = false
+    let membersChecked = false
+    let lawNotesChecked = false
+    if (mailingLists?.length > 0) {
+      mailingLists.forEach((id) => {
+        for (const key in sibLists) {
+          if (id === sibLists.newsletter.title) newsletterChecked = true;
+          if (id === sibLists.members.title) membersChecked = true;
+          if (id === sibLists.law_notes.title) lawNotesChecked = true;
+        }
+      })
     }
-  }, [userMailingLists]);
+    setNewsletterChecked(newsletterChecked)
+    setMemberEmailChecked(membersChecked)
+    setLawNotesChecked(lawNotesChecked)
+  }, [mailingLists])
 
   /**********************************
-   * check/uncheck newsletter types *
+   * check/uncheck mailing lists
    **********************************
    * uncheck emails non-members not eligible for
    */
   useEffect(() => {
-    if (memberType === memberTypes.USER_NON_MEMBER || !accountIsActive) {
-      setMemberEmailChecked(false);
+    if (!isLawNotesEligible) {
       setLawNotesChecked(false);
     }
-  }, [memberTypes]);
+    if (!isMemberListEligible) {
+      setMemberEmailChecked(false);
+    }
+  }, [memberType]);
 
-  const areAllChecked = () => {
-    return (newsletterChecked && memberEmailChecked && lawNotesChecked);
-  };
+  const stopLoading = () => {
+    message.loading('Saving settings...')
+    setLoading(false)
+  }
+
+  // update member exclde list and set new member
+  const updateExcludeList = async (value) => {
+    const excludePayload = {
+      id: member.id,
+      fields: {
+        [dbFields.members.listsUnsubscribed]: value,
+      }
+    }
+    const updatedMember = await updateMember(excludePayload)
+    if (updatedMember.member) setMember(updatedMember.member)
+  }
 
   /*******************************
    * toggle list - one at a time *
-   *******************************
-   * updating userMailingLists will update ESP contact
-   *
-   * @param {string} type: 'newsletter, 'members', 'law_notes'
+   *******************************   *
+   * @param {string} listTitle: 'Newsletter, 'Members', 'Law Notes'
    * @param {boolean} checked
    */
-  const onToggleMailing = async (type, checked) => {
-    message.loading('Saving settings...', 3);
-    setLoading(true);
-    if (type === 'newsletter') setNewsletterChecked(checked);
-    if (type === 'members') setMemberEmailChecked(checked);
-    if (type === 'law_notes') setLawNotesChecked(checked);
+  const onToggleMailing = async (listTitle, checked) => {
+    setLoading(true)
+    if (listTitle === dbFields.members.listNewsletter) setNewsletterChecked(checked)
+    if (listTitle === dbFields.members.listMembers) setMemberEmailChecked(checked)
+    if (listTitle === dbFields.members.listLawNotes) setLawNotesChecked(checked)
 
-    const addToUnsubscribed = (type) => {
-      const currentLists = member.fields[dbFields.members.listsUnsubscribed];
-      let list = [];
-      if (currentLists) list = [...currentLists];
-      let typeFound = null;
-      if (list.length > 0) typeFound = list.find((item) => item === type);
-      if (!typeFound) list.push(type);
-      return list;
-    }
-
-    const addToFromMailLists = (type) => {
-      const currentLists = member.fields[dbFields.members.mailingLists];
-      let list = [];
-      if (currentLists) list = [...currentLists];
-      let typeFound = null;
-      if (list.length > 0) typeFound = list.find((item) => item === type);
-      if (!typeFound) list.push(type);
-      return list;
-    }
-
-    const removeFromUnsubscribed = (type) => {
-      const currentLists = member.fields[dbFields.members.listsUnsubscribed];
-      let list = [];
-      if (currentLists) list = [...currentLists];
-      if (list.length > 0) {
-        list = list.reduce((acc, cur) => {
-          if (type !== cur) acc.push(cur);
-          return acc;
-        }, []);
-      }
-      return list;
-    }
-
-    const removeFromMailLists = (type) => {
-      const currentLists = member.fields[dbFields.members.mailingLists];
-      let list = [];
-      if (currentLists) list = [...currentLists];
-      if (list.length > 0) {
-        list = list.reduce((acc, cur) => {
-          if (type !== cur) acc.push(cur);
-          return acc;
-        }, []);
-      }
-      return list;
-    }
-
+    // add mailing list
     if (checked) {
-      addToUserLists(sibLists[type].id); // > userMailingLists > updateContactLists
-      const unsubLists = removeFromUnsubscribed(type);
-      const mailLists = addToFromMailLists(type);
-      const payload = {
-        id: member.id,
-        fields: {
-          [dbFields.members.listsUnsubscribed]: unsubLists,
-          [dbFields.members.mailingLists]: mailLists,
-        }
+      // add to SendingBlue
+      const listIds = [getSibListIdByTitle(listTitle)]
+      updateContact({ email: primaryEmail, listIds })
+
+      // remove from Airtable exclusion list
+      const currentLists = member.fields[dbFields.members.listsUnsubscribed]
+      let excludeList = []
+      if (currentLists) {
+        excludeList = [...currentLists].filter((list) => list !== listTitle)
+        await updateExcludeList(excludeList)
+        stopLoading()
+      } else {
+        stopLoading()
       }
-      const updatedMember = await updateMember(payload);
-      if (updatedMember.member) setMember(updatedMember.member);
-      setLoading(false);
-      message.success('Mailing list settings updated.');
+
+      // update local state
+      let lists = []
+      if (mailingLists) lists = [...mailingLists]
+      lists.push(listTitle)
+      setMailingLists(lists)
+
+      message.success('Mailing list settings updated.')
     }
+
+    // uncheck and remove mailing list
     if (!checked) {
-      removeFromUserLists(sibLists[type].id); // > userMailingLists > updateContactLists
-      const unsubLists = addToUnsubscribed(type);
-      const mailLists = removeFromMailLists(type);
-      const payload = {
-        id: member.id,
-        fields: {
-          [dbFields.members.listsUnsubscribed]: unsubLists,
-          [dbFields.members.mailingLists]: mailLists,
-        }
+
+      // remove from SendinBlue
+      const unlinkListIds = [getSibListIdByTitle(listTitle)]
+      updateContact({ email: primaryEmail, unlinkListIds })
+
+      // add to Airtable exclusion list
+      const currentLists = member.fields[dbFields.members.listsUnsubscribed]
+      let excludeList = [listTitle]
+      if (currentLists) excludeList = [
+        ...currentLists,
+        ...excludeList
+      ]
+      await updateExcludeList(excludeList)
+
+      // update local state
+      let lists = []
+      if (mailingLists) {
+        lists = [...mailingLists].filter((list) => list !== listTitle)
+        setMailingLists(lists)
       }
-      const updatedMember = await updateMember(payload);
-      if (updatedMember.member) setMember(updatedMember.member);
-      setLoading(false);
-      message.success('Mailing list settings updated.');
+
+      setLoading(false)
+      message.success('Mailing list settings updated.')
     }
   }
 
@@ -193,61 +183,76 @@ const MailPrefs = ({
    * add/remove all lists *
    ************************
    * only when user eligible for member-only lists
-   *
-   * @param {*} bool - true = add, false = remove
+   * links that call function don't appear if member not active
+   * @param {*} check - true = check all, false = uncheck all
    */
-  const toggleMailings = async (bool) => {
-    message.loading('Saving settings...', 3);
-    setLoading(true);
+  const toggleAllMailings = async (check) => {
+    setLoading(true)
 
-    let unsubscribeList = [];
-    let mailLists = [];
-    if (bool) {
-      await updateContact({
-        email: primaryEmail,
-        listIds: getAllListIndexes(),
-      });
-      setUserMailingLists({ listIds: getAllListIndexes() });
-      mailLists = mailingLists;
+    // check all
+    if (check) {
+
+      // add to SendingBlue
+      const listIds = [...allMemberElegibleLists].map((list) => getSibListIdByTitle(list))
+      updateContact({ email: primaryEmail, listIds })
+
+      // remove all from Airtable exclusion list
+      await updateExcludeList([])
+
+      // update local state
+      setMailingLists([...allMemberElegibleLists])
     }
-    if (!bool) {
-      await updateContact({
+
+    // uncheck all
+    if (!check) {
+
+      // remove all from SendingBlue
+      updateContact({
         email: primaryEmail,
-        unlinkListIds: getAllListIndexes(),
-      });
-      setUserMailingLists({ unlinkListIds: getAllListIndexes() });
-      unsubscribeList = mailingLists;
+        unlinkListIds: getAllListIndeces(),
+      })
+
+      // add all to Airtable exclusion list
+      await updateExcludeList([...allMemberElegibleLists])
+
+      // update local state
+      setMailingLists([])
     }
-    const updatedMember = await updateMember({
-      id: member.id,
-      fields: {
-        [dbFields.members.listsUnsubscribed]: unsubscribeList,
-        [dbFields.members.mailingLists]: mailLists,
-      }
-    });
-    if (updatedMember.member) setMember(updatedMember.member);
-    setNewsletterChecked(bool);
-    setMemberEmailChecked(bool);
-    setLawNotesChecked(bool);
-    setLoading(false);
-    message.success('Mailing list settings updated.');
-  };
+    setNewsletterChecked(check)
+    setMemberEmailChecked(check)
+    setLawNotesChecked(check)
+    setLoading(false)
+    message.success('Mailing list settings updated.')
+  }
 
   // `Check all` and `Uncheck all` links
-  const checkLink = useMemo(() => {
-    if (primaryEmail && memberType !== memberTypes.USER_NON_MEMBER && accountIsActive) {
-      return <span>{areAllChecked()
-        ? <Link onClick={() => toggleMailings(false)}>Uncheck all</Link>
-        : <Link onClick={() => toggleMailings(true)}>Check all</Link>
-      }</span>;
+  // ...only appear when member is active
+  const checkLink = () => {
+    if (primaryEmail &&
+      allMemberElegibleLists?.length > 0
+    ) {
+      if (mailingLists?.length === allMemberElegibleLists.length) {
+        return <span><Link onClick={() => toggleAllMailings(false)}>Uncheck all</Link></span>
+      } else {
+        return <span><Link onClick={() => toggleAllMailings(true)}>Check all</Link></span>
+      }
     }
     return null;
-  }, [memberType, memberTypes, newsletterChecked, memberEmailChecked, lawNotesChecked]);
+  }
+
+  const signUpButton = () => {
+    const button = (label) => {
+      return <Col><Button type="primary" size="small" onClick={() => onLink('signup')}>{label}</Button></Col>
+    }
+    if (memberStatus === memberTypes.USER_NON_MEMBER) return button('Become a member');
+    if (memberStatus === memberTypes.USER_STUDENT_GRADUATED) return button('Upgrade membership');
+    if (memberStatus === memberTypes.USER_ATTORNEY_EXPIRED || memberStatus === memberTypes.USER_LAW_NOTES_EXPIRED) return button('Renew your membership');
+  }
 
   return <>
     <Card
       title={<span>{title}</span>}
-      extra={checkLink}
+      extra={checkLink()}
       style={{ maxWidth: 600 }}
     >
       {!primaryEmail &&
@@ -261,7 +266,7 @@ const MailPrefs = ({
         <Switch
           key="newsletter-switch"
           checked={newsletterChecked}
-          onChange={(checked) => onToggleMailing('newsletter', checked)}
+          onChange={(checked) => onToggleMailing(dbFields.members.listNewsletter, checked)}
           disabled={!primaryEmail && true}
           loading={loading}
           size="small"
@@ -275,9 +280,9 @@ const MailPrefs = ({
           <Col>
             <Switch
               checked={memberEmailChecked}
-              onClick={(checked) => onToggleMailing('members', checked)}
+              onClick={(checked) => onToggleMailing(dbFields.members.listMembers, checked)}
               disabled={(
-                memberType === memberTypes.USER_NON_MEMBER || !accountIsActive ||
+                !isMemberListEligible || !isLawNotesEligible ||
                 !primaryEmail
               ) && true}
               loading={loading}
@@ -285,12 +290,7 @@ const MailPrefs = ({
               style={primaryEmail ? null : { backgroundColor: 'red' }}
             />&nbsp;&nbsp;<strong>Association Member emails</strong>
           </Col>
-          {memberType === memberTypes.USER_NON_MEMBER
-            && <Col><Button type="primary" size="small" onClick={() => onLink('signup')}>Become a member</Button></Col>
-          }
-          {memberType !== memberTypes.USER_NON_MEMBER && !accountIsActive
-            && <Col><Button type="primary" size="small" onClick={() => onLink('signup')}>Upgrade membership</Button></Col>
-          }
+          {signUpButton()}
         </Row>
       </div>
 
@@ -300,9 +300,9 @@ const MailPrefs = ({
           <Col>
             <Switch
               checked={lawNotesChecked}
-              onClick={(checked) => onToggleMailing('law_notes', checked)}
+              onClick={(checked) => onToggleMailing(dbFields.members.listLawNotes, checked)}
               disabled={(
-                memberType === memberTypes.USER_NON_MEMBER || !accountIsActive ||
+                !isLawNotesEligible ||
                 !primaryEmail
               ) && true}
               loading={loading}
@@ -333,9 +333,8 @@ const MailPrefs = ({
         ? <span>We will email you at <strong>{primaryEmail}</strong>. </span>
         : ''
       }{primaryEmail && <>To update your primary email address, edit in <a href="#emails">Email addresses</a> above.</>}</div>
-
     </Card>
   </>;
 };
 
-export default MailPrefs;
+export default MailingPrefs;

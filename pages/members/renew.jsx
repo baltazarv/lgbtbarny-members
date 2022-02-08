@@ -33,6 +33,7 @@ import {
   getPlanFee,
   getPlans,
   getUserPayments,
+  getMemberStatus,
   getAccountIsActive,
   getNextPaymentDate,
   createMember,
@@ -176,14 +177,15 @@ const RenewFormPage = () => {
 
   const accountIsActive = () => {
     if (userPayments && memberPlans && member) {
-      const isActive = getAccountIsActive({
+      const memberStatus = getMemberStatus({
+        member,
         userPayments,
         memberPlans,
-        member,
-      });
-      return isActive;
+      })
+      const isActive = getAccountIsActive(memberStatus);
+      return isActive
     }
-    return null;
+    return null
   }
 
   const nextPaymentDate = () => {

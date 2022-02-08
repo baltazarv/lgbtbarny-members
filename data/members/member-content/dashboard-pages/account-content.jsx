@@ -6,12 +6,12 @@ import { MenuIcon } from '../../../../components/members/elements/member-icons';
  ****************/
 
 export const account = ({
+  memberStatus,
   memberType,
   // memberStatus,
   onLink,
   banner,
 }) => {
-
   return {
     route: 'account',
     icon: <MenuIcon name="user-admin" ariaLabel="My Account Settings" />,
@@ -21,6 +21,7 @@ export const account = ({
     // title: `Welcome, ${user.firstname} ${user.lastname}`,
     content: <Account
       onLink={onLink}
+      memberStatus={memberStatus}
       memberType={memberType}
     />,
   };

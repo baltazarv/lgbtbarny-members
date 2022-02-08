@@ -33,8 +33,6 @@ if (process.env.AIRTABLE_API_KEY) {
   groupsTable = membersBase("groups");
   membersCleTable = membersBase("cles");
   membersCleCertsTable = membersBase("cle_certs");
-  mailingListsTable = membersBase("mailing_lists");
-
   // const clesTable = cleBase('cles');
   // const creditsTable = cleBase('credits');
 
@@ -91,10 +89,8 @@ const updateRecord = async (table, id, fields) => {
 
 /**
  * @param {object} selectOptions examples:
- *
- * users by email: {
-      filterByFormula: `SEARCH("${email}", ARRAYJOIN(emails))`,
-    }
+ * Sample: users by email:
+ *   { filterByFormula: `SEARCH("${email}", ARRAYJOIN(emails))` }
  */
 const getUsers = (selectOptions) => {
   if (membersTable) {
@@ -120,14 +116,6 @@ const updateEmail = async (id, fields) => {
   return;
 }
 
-const getMailingLists = (selectOptions) => {
-  if (mailingListsTable) {
-    return getRecords(mailingListsTable, selectOptions);
-  }
-  console.log('error')
-  return;
-}
-
 const getGroups = (selectOptions) => {
   if (groupsTable) {
     return getRecords(groupsTable, selectOptions);
@@ -144,12 +132,10 @@ exports.plansTable = plansTable;
 exports.groupsTable = groupsTable;
 exports.membersCleTable = membersCleTable;
 exports.membersCleCertsTable = membersCleCertsTable;
-exports.mailingListsTable = mailingListsTable;
 
 exports.getUsers = getUsers;
 exports.getUsersEmails = getUsersEmails;
 exports.updateEmail = updateEmail;
-exports.getMailingLists = getMailingLists;
 exports.getGroups = getGroups;
 
 // cle db

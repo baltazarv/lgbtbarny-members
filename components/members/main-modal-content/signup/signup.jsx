@@ -92,10 +92,10 @@ const Signup = ({
   /** used to figure out signupType & memberSignUpType */
 
   // signed in vs not
-  const signedInEmail = useMemo(() => {
+  const signedInEmail = () => {
     if (!authUser) return '';
     return authUser.name;
-  }, [authUser]);
+  }
 
   // no due date for plans with no term limits, eg, Volunteer
   const nextPaymentDate = useMemo(() => {
@@ -112,6 +112,7 @@ const Signup = ({
     return '';
   }, [certifyChoice]);
 
+  // TODO: change to memberType and remove memberStatus
   /**
    * Results:
    * * `pending`
@@ -242,11 +243,11 @@ const Signup = ({
   };
 
   // when user is not eligible
-  const hideFormElements = useMemo(() => {
+  const hideFormElements = () => {
     if (memberSignUpType === memberTypes.USER_NON_MEMBER && !certifyChoice) return true;
     if (certifyChoice === CERTIFY_OPTIONS.na.label) return true;
     return false;
-  }, [memberSignUpType, certifyChoice]);
+  }
 
   const showNewsletterSignup = useMemo(() => {
     if (certifyChoice === CERTIFY_OPTIONS.na.label) return true;
@@ -269,10 +270,10 @@ const Signup = ({
 
   // download coupon for first-time attorney
   useEffect(() => {
-      (async function fetchFirstTimeCoupon() {
-        const res = await retrieveCoupon(FIRST_TIME_COUPON)
-        if (res.coupon) setFirstTimeCoupon(res.coupon)
-      })()
+    (async function fetchFirstTimeCoupon() {
+      const res = await retrieveCoupon(FIRST_TIME_COUPON)
+      if (res.coupon) setFirstTimeCoupon(res.coupon)
+    })()
   }, [])
 
   // set first-time attorney coupon if eligible
@@ -408,7 +409,7 @@ const Signup = ({
 
   // Not-logged-in content in LoginPwdless component
 
-  const headerIcons = useMemo(() => {
+  const headerIcons = () => {
     // attorney
     if (memberSignUpType === memberTypes.USER_ATTORNEY ||
       memberSignUpType === memberTypes.USER_NON_MEMBER) return <div>
@@ -421,7 +422,7 @@ const Signup = ({
     </div>;
 
     return null;
-  }, [memberSignUpType]);
+  }
 
   const titleBar = useMemo(() => {
     let title = 'Become a Member';
@@ -433,12 +434,12 @@ const Signup = ({
     if (signupType === memberTypes.SIGNUP_ATTORNEY_RENEW) title = 'Renew your Membership';
     return <>
       <strong>{title}</strong>
-      {headerIcons}
+      {headerIcons()}
     </>
   }, [signupType, certifyType]);
 
-  const signupIntroText = useMemo(() => {
-    const loggedInMessage = <p>You are logged in as <strong>{signedInEmail}</strong>.</p>;
+  const signupIntroText = () => {
+    const loggedInMessage = <p>You are logged in as <strong>{signedInEmail()}</strong>.</p>;
 
     let text = null;
 
@@ -476,16 +477,16 @@ const Signup = ({
      */
 
     if (signupType === memberTypes.SIGNUP_ATTORNEY_RENEW && member) text = <p>
-      {member.fields[dbFields.members.firstName] ? member.fields[dbFields.members.firstName] : 'Hi'}, your membership expired on&nbsp;<strong className="text-danger">{(nextPaymentDate)}</strong>.
+      {member.fields?.[dbFields.members.firstName] ? member.fields[dbFields.members.firstName] : 'Hi'}, your membership expired on&nbsp;<strong className="text-danger">{(nextPaymentDate)}</strong>.
     </p>;
 
     return <>
       {loggedInMessage}
       {text}
     </>
-  }, [member, certifyType, signupType]); // , isConfirmation
+  }
 
-  const memberInfoStepContent = useMemo(() => {
+  const memberInfoStepContent = () => {
 
     let certifyLabel = 'Please complete the information below to join:';
     if (signupType === memberTypes.SIGNUP_NON_MEMBER && (
@@ -499,38 +500,38 @@ const Signup = ({
         <MemberInfoForm
           signupType={signupType}
           memberSignUpType={memberSignUpType}
-          hideFormElements={hideFormElements}
+          hideFormElements={hideFormElements()}
 
           // choose student or attorney membership
           certifyChoice={certifyChoice}
           setCertifyChoice={setCertifyChoice}
 
           formRef={memberInfoFormRef}
-          duesSummary={(memberSignUpType === memberTypes.USER_ATTORNEY && !hideFormElements) ? duesSummary : null}
+          duesSummary={(memberSignUpType === memberTypes.USER_ATTORNEY && !hideFormElements()) ? duesSummary : null}
           loading={loading}
           initialValues={{
-            [dbFields.members.certify]: member?.fields[dbFields.members.certify],
-            [dbFields.members.firstName]: member?.fields[dbFields.members.firstName],
-            [dbFields.members.lastName]: member?.fields[dbFields.members.lastName],
-            [dbFields.members.certify]: member?.fields[dbFields.members.certify],
-            [dbFields.members.employer]: member?.fields[dbFields.members.employer],
-            [dbFields.members.salary]: member?.fields[dbFields.members.salary],
-            [dbFields.members.lawSchool]: member?.fields[dbFields.members.lawSchool],
-            [dbFields.members.gradYear]: member?.fields[dbFields.members.gradYear],
+            [dbFields.members.certify]: member?.fields?.[dbFields.members.certify],
+            [dbFields.members.firstName]: member?.fields?.[dbFields.members.firstName],
+            [dbFields.members.lastName]: member?.fields?.[dbFields.members.lastName],
+            [dbFields.members.certify]: member?.fields?.[dbFields.members.certify],
+            [dbFields.members.employer]: member?.fields?.[dbFields.members.employer],
+            [dbFields.members.salary]: member?.fields?.[dbFields.members.salary],
+            [dbFields.members.lawSchool]: member?.fields?.[dbFields.members.lawSchool],
+            [dbFields.members.gradYear]: member?.fields?.[dbFields.members.gradYear],
           }}
           is1stTimeEligible={is1stTimeEligible}
         />
       </>,
     }
-  }, [member, memberSignUpType, certifyChoice, duesSummary, loading]);
+  }
 
-  const studentDoneStepContent = useMemo(() => {
+  const studentDoneStepContent = () => {
     return <>
       <strong>Enjoy your Student Membership!</strong>
     </>
-  });
+  }
 
-  const memberPaymentStepContent = useMemo(() => {
+  const memberPaymentStepContent = () => {
     return {
       title: "Member dues",
       content: <>
@@ -558,7 +559,7 @@ const Signup = ({
               duesSummList={duesSummary}
               emailAddress={primaryEmail}
               initialValues={{
-                [PAYMENT_FIELDS.billingname]: `${member?.fields[dbFields.members.firstName]} ${member?.fields[dbFields.members.lastName]}`,
+                [PAYMENT_FIELDS.billingname]: `${member?.fields?.[dbFields.members.firstName]} ${member?.fields?.[dbFields.members.lastName]}`,
                 // [PAYMENT_FIELDS.renewDonation]: true,
                 [STRIPE_FIELDS.subscription.collectionMethod]: STRIPE_FIELDS.subscription.collectionMethodValues.chargeAutomatically,
               }}
@@ -578,35 +579,35 @@ const Signup = ({
 
       </>,
     };
-  }, [duesSummary, dues, loading, coupon])
+  }
 
-  const steps = useMemo(() => {
-    let _steps = [memberInfoStepContent];
+  const steps = () => {
+    let _steps = [memberInfoStepContent()]
     if (memberSignUpType === memberTypes.USER_ATTORNEY) {
-      _steps.push(memberPaymentStepContent);
+      _steps.push(memberPaymentStepContent())
     } else if (memberSignUpType === memberTypes.USER_STUDENT) {
       _steps.push({
         title: "Done",
-        content: studentDoneStepContent,
+        content: studentDoneStepContent(),
       });
     }
     return _steps;
-  }, [memberSignUpType, memberInfoStepContent, memberPaymentStepContent]);
+  }
 
-  const activeAttorneyContent = useMemo(() => {
+  const activeAttorneyContent = () => {
     if (memberStatus === memberStatus.USER_ATTORNEY) return null;
     return <>
       <p>{member?.fields[dbFields.members.firstName] ? member.fields[dbFields.members.firstName] : 'Hi'}, your membership is up-to-date.<br />
         {nextPaymentDate && <>Your next payment is due on&nbsp;<strong>{nextPaymentDate}</strong>.</>}</p>
     </>;
-  }, [memberStatus]);
+  }
 
-  const activeStudentContent = useMemo(() => {
+  const activeStudentContent = () => {
     if (member) return <>
       <p>Your membership is up-to-date and will remain active until you graduate in <strong>{member.fields[dbFields.members.gradYear]}</strong>.</p>
     </>;
     return null;
-  }, [member]);
+  }
 
   /**
    * active but next payment not scheduled
@@ -614,22 +615,22 @@ const Signup = ({
    * * <p>But first, update or confirm important member information.</p>
    */
 
-  const signUpContent = useMemo(() => {
-    if (signupType === memberTypes.SIGNUP_STUDENT_ACTIVE && !isConfirmation) return activeStudentContent;
-    if (signupType === memberTypes.SIGNUP_ATTORNEY_ACTIVE) return activeAttorneyContent;
+  const signUpContent = () => {
+    if (signupType === memberTypes.SIGNUP_STUDENT_ACTIVE && !isConfirmation) return activeStudentContent()
+    if (signupType === memberTypes.SIGNUP_ATTORNEY_ACTIVE) return activeAttorneyContent()
     return <>
       {/* if payments in the past */}
       <Form.Provider
         onFormFinish={onFormFinish}
         onFormChange={onFormChange}
       >
-        {signupIntroText}
+        {signupIntroText()}
 
-        {steps.length > 1 &&
+        {steps().length > 1 &&
           <div className="mb-4">
             <Steps size="small" current={step} status={stepsStatus}>
               {/* onChange={stepOnChange} */}
-              {steps.map(item => (
+              {steps().map(item => (
                 <Step key={item.title} title={item.title} />
               ))}
             </Steps>
@@ -637,7 +638,7 @@ const Signup = ({
         }
 
         {/* step content */}
-        <div className="steps-content">{steps[step].content}</div>
+        <div className="steps-content">{steps()[step].content}</div>
 
         {showNewsletterSignup && <>
           <Divider>Newsletter&nbsp;&nbsp;<TitleIcon name="email" ariaLabel="Newsletter Sign-up" /></Divider>
@@ -649,7 +650,7 @@ const Signup = ({
         {isServerError && <div className="text-danger">There was a server error. Please try again later.</div>}
       </Form.Provider>
     </>
-  }, [member, signedInEmail, signupType, steps, step, isConfirmation]);
+  }
 
   return <>
     <Container
@@ -660,7 +661,7 @@ const Signup = ({
         style={{ width: '100%' }}
         title={titleBar}
       >
-        {signUpContent}
+        {signUpContent()}
       </Card>
     </Container>
   </>;

@@ -1,4 +1,4 @@
-// context used to keep app state current
+// context for data from Airtable, Stripe, and SendinBlue
 
 import { createContext, useState, useEffect } from 'react';
 import { dbFields } from '../data/members/airtable/airtable-fields';
@@ -16,68 +16,16 @@ const MembersProvider = ({ children }) => {
   // Stripe payments
   const [subscriptions, setSubscriptions] = useState(null);
   const [defaultCard, setDefaultCard] = useState(null);
-  // SendinBlue contact info only for verified emails, including logged-in email
-  const [emailContacts, setEmailContacts] = useState(null);
 
-  /** local vars - not saved to db */
   // primary email = verified email not unsubscribed to on SendinBlue: previous primary, logged-in, or any verified; may be different from user-chosen primary.
   const [primaryEmail, setPrimaryEmail] = useState(null);
-  // mailing list array
-  const [userMailingLists, setUserMailingLists] = useState(null);
 
-  const addToUserLists = (id) => {
-    let listIds = [],
-      listIdFound = null;
-    if (userMailingLists.listIds) listIds = [...userMailingLists.listIds];
-    if (listIds.length > 0) {
-      listIdFound = listIds.find((_id) => _id === id);
-    }
-    if (!listIdFound) listIds.push(id);
+  // Subscribed mailing lists - should match the SendinBlue listIds array for the primary email
+  // ... NEW
+  const [mailingLists, setMailingLists] = useState(null)
 
-    let unlinkListIds = [];
-    if (userMailingLists.unlinkListIds) unlinkListIds = [...userMailingLists.unlinkListIds];
-    if (unlinkListIds.length > 0) {
-      unlinkListIds = unlinkListIds.reduce((acc, cur) => {
-        if (cur !== id) acc.push(cur);
-        return acc;
-      }, []);
-    }
-
-    let lists = {};
-    if (listIds.length > 0) lists.listIds = listIds;
-    if (unlinkListIds.length > 0) lists.unlinkListIds = unlinkListIds;
-
-    setUserMailingLists(lists); // > updateContactLists
-    return lists;
-  }
-
-  const removeFromUserLists = (id) => {
-    let listIds = [];
-    if (userMailingLists.listIds) listIds = [...userMailingLists.listIds];
-    if (listIds.length > 0) {
-      listIds = listIds.reduce((acc, cur) => {
-        if (cur !== id) acc.push(cur);
-        return acc;
-      }, []);
-    }
-
-    let unlinkListIds = [],
-      listIdFound = null;
-    if (userMailingLists.unlinkListIds) unlinkListIds = [...userMailingLists.unlinkListIds];
-    if (unlinkListIds.length > 0) {
-      listIdFound = unlinkListIds.find((_id) => _id === id);
-    }
-    if (!listIdFound) unlinkListIds.push(id);
-
-    let lists = {};
-    if (listIds.length > 0) lists.listIds = listIds;
-    if (unlinkListIds.length > 0) lists.unlinkListIds = unlinkListIds;
-
-    setUserMailingLists(lists); // > updateContactLists
-    return lists;
-  }
-
-  // TODO: don't save state to the following & move to utils
+  // TODO: move functions to utils
+  // TODO: don't save local state
 
   /**
    * Takes a payment created in airtable and the current member object:
@@ -235,12 +183,8 @@ const MembersProvider = ({ children }) => {
     // primary email set by [page] useEffect
     primaryEmail, setPrimaryEmail,
 
-    // email mailing lists set by [page] useEffect
-    userMailingLists, setUserMailingLists,
-    addToUserLists, removeFromUserLists,
-
-    // ESP SendinBlue
-    emailContacts, setEmailContacts,
+    // ESP SendinBlue mailing lists set by [page] useEffect
+    mailingLists, setMailingLists,
 
     // functions // TODO: move functions to /utils/
     // functions

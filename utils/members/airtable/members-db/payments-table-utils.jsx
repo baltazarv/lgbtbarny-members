@@ -84,6 +84,7 @@ const getPaymentPlanId = (payment) => {
   return null
 }
 
+// TODO: move to utils/members/airtable/members-db/index.jsx b/c need both payments and plans tables
 /**
  * Returns due date, normally one year after last pay date, unless archived 2-year plan.
  * If student, will return the wrong date. Use `getGraduationDate` instead.

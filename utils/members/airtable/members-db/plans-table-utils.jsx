@@ -18,12 +18,12 @@ const getPlans = async () => {
     const result = await fetch('/api/members/get-plans', {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
-    });
-    const { plans, error } = await result.json();
-    if (plans) return { plans };
-    if (error) return { error };
+    })
+    const { plans, error } = await result.json()
+    if (plans) return { plans }
+    if (error) return { error }
   } catch (error) {
-    return { error };
+    return { error }
   }
 }
 
@@ -38,8 +38,11 @@ const getLastPlan = ({ userPayments, memberPlans }) => {
   if (userPayments && memberPlans) {
     const lastPayment = getLastPayment(userPayments);
     if (lastPayment) {
-      const lastPlanId = lastPayment.fields[dbFields.payments.plans][0];
-      return memberPlans.find((plans) => plans.id === lastPlanId);
+      const lastPlanId = lastPayment.fields?.[dbFields.payments.plans]?.[0]
+      // all payments should have a plan, but just in case
+      if (lastPlanId) {
+        return memberPlans.find((plans) => plans.id === lastPlanId);
+      }
     }
   }
   return null;
@@ -113,7 +116,7 @@ const getPlanFee = (salary, memberPlans) => {
  * @param {Array} memberPlans
  */
 const getMemberPlanFee = (member, memberPlans) => {
-  if (member && member.fields[dbFields.members.salary] && memberPlans) {
+  if (member && member.fields?.[dbFields.members.salary] && memberPlans) {
     const salary = member.fields[dbFields.members.salary];
     return getPlanFee(salary, memberPlans);
   }

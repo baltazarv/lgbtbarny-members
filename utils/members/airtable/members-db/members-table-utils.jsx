@@ -73,6 +73,7 @@ const updateMember = async (userToUpdate) => {
  * functions *
  *************/
 
+// TODO: REMOVE and replace with getMemberStatus
 /**
  * Get member type by last member plan
  *
@@ -88,19 +89,22 @@ const getMemberType = ({ member, userPayments, memberPlans }) => {
   let type = memberTypes.USER_ANON; // 'pending'?
   if (member) type = memberTypes.USER_NON_MEMBER;
   if (userPayments && memberPlans) {
-    type = getLastPlan({ userPayments, memberPlans }).fields[dbFields.plans.type];
-    if (type === memberTypes.USER_DONOR) type = memberTypes.USER_NON_MEMBER;
-    return type;
+    const lastPlan = getLastPlan({ userPayments, memberPlans })
+    if (lastPlan) {
+      type = lastPlan.fields[dbFields.plans.type];
+      if (type === memberTypes.USER_DONOR) type = memberTypes.USER_NON_MEMBER;
+    }
   }
   return type;
 };
 
+// TODO: move to utils/members/airtable/members-db/index.jsx because uses three tables
 /**
  * Student memberships expire:
  * * Either on 5/31 of the year that they graduate,
  * * But not over 4 years after 5/31 of the year they joined, regardless of grad year.
  *
- * Return null if no student membership "payment"
+ * Return null if no active or graduated student membership "payment"
  *
  * @param {object} payload
  * @returns
@@ -111,35 +115,38 @@ const getGraduationDate = ({
   memberPlans,
   format,
 }) => {
-  if (member && memberPlans && userPayments && userPayments?.length > 0) {
+  if (member && memberPlans && userPayments?.length > 0) {
+    // there should only be one student "payment"
     const studentPayment = userPayments.find((payment) => {
-      const paymentPlanType = getPaymentPlanType({ payment, memberPlans });
-      return paymentPlanType === memberTypes.USER_STUDENT;
-    });
+      const paymentPlanType = getPaymentPlanType({ payment, memberPlans })
+      return paymentPlanType === memberTypes.USER_STUDENT
+    })
+
     if (studentPayment) {
-      const paymentDate = studentPayment.fields[dbFields.payments.date];
-      const gradYear = member.fields[dbFields.members.gradYear];
+      const paymentDate = studentPayment.fields[dbFields.payments.date]
+      const gradYear = member.fields[dbFields.members.gradYear]
 
       // after 4 years after 5/31 of the year they started membership?
-      const paymentYearPlus4 = moment(paymentDate).year() + 4;
-      const dateExpiresAfterPayment = moment(`5/31/${paymentYearPlus4}`, 'M/D/YYYY');
+      const paymentYearPlus4 = moment(paymentDate).year() + 4
+      const dateExpiresAfterPayment = moment(`5/31/${paymentYearPlus4}`, 'M/D/YYYY')
 
       // after 5/31 of the year they write for their graduation year?
       const dateExpiresAfterGradYear = moment(`5/31/${gradYear}`, 'M/D/YYYY')
+
       if (dateExpiresAfterPayment.isBefore(dateExpiresAfterGradYear)) {
-        if (format) return dateExpiresAfterPayment.format(format);
-        return dateExpiresAfterPayment;
+        if (format) return dateExpiresAfterPayment.format(format)
+        return dateExpiresAfterPayment
       } else {
-        if (format) return dateExpiresAfterGradYear.format(format);
-        return dateExpiresAfterGradYear;
+        if (format) return dateExpiresAfterGradYear.format(format)
+        return dateExpiresAfterGradYear
       }
-    };
+    }
   }
   // if not student or no student payment, return null
-  return null;
+  return null
 }
 
-// TODO: rename to memberType and remove memberStatus function
+// TODO: rename to getMemberType and remove getMemberStatus function
 // TODO: return same value for memberTypes.USER_NON_MEMBER and "pending"
 /**
  * Return values: see data/members/member-types
@@ -152,16 +159,18 @@ const getGraduationDate = ({
  * Also match `_status` calc field on airtable `members` table
  */
 const getMemberStatus = ({
+  member, // for student grad year
   userPayments,
   memberPlans,
-  member, // for student grad year
 }) => {
   if (!userPayments) {
     return 'pending'; // memberTypes.USER_NON_MEMBER
   } else {
     if (member && memberPlans) {
       const lastPlan = getLastPlan({ userPayments, memberPlans });
-      const lastPlanType = lastPlan.fields[dbFields.plans.type];
+      if (!lastPlan) return ''
+      const lastPlanType = lastPlan.fields?.[dbFields.plans.type]
+      // there should always be a last plan type, but in case
 
       // donor
       if (lastPlanType === memberTypes.USER_DONOR) return 'pending'; // memberTypes.USER_NON_MEMBER
@@ -172,25 +181,21 @@ const getMemberStatus = ({
         const nextDueDate = getNextPaymentDate({ userPayments, memberPlans });
         const isPastDue = moment().isAfter(nextDueDate);
 
-        // attorney
         if (lastPlanType === memberTypes.USER_ATTORNEY) {
+          // attorney
           if (isPastDue) {
             return memberTypes.USER_ATTORNEY_EXPIRED;
           }
           return memberTypes.USER_ATTORNEY;
-        }
-
-        // Law Notes subscriber
-        else if (lastPlanType === memberTypes.USER_LAW_NOTES) {
+        } else if (lastPlanType === memberTypes.USER_LAW_NOTES) {
+          // Law Notes subscriber
           if (isPastDue) {
             return memberTypes.USER_LAW_NOTES_EXPIRED;
           }
           return memberTypes.USER_LAW_NOTES;
         }
-      }
-
-      // student
-      else if (lastPlanType === memberTypes.USER_STUDENT) {
+      } else if (lastPlanType === memberTypes.USER_STUDENT) {
+        // student
         // graduation date
         const graduationDate = getGraduationDate({ member, userPayments, memberPlans });
 
@@ -205,17 +210,17 @@ const getMemberStatus = ({
   return '';
 };
 
-// takes same params as getMemberStatus()
-const getAccountIsActive = ({
-  userPayments,
-  memberPlans,
-  member, // for student grad year
-}) => {
-  const memberStatus = getMemberStatus({ userPayments, memberPlans, member });
+// use memberStatus func to pass as parameter
+const getAccountIsActive = (memberStatus) => {
   if (memberStatus === memberTypes.USER_ATTORNEY ||
-    memberStatus === memberTypes.USER_STUDENT) return true;
+    memberStatus === memberTypes.USER_STUDENT ||
+    memberStatus === memberTypes.USER_LAW_NOTES ||
+    // deprecate
+    memberStatus === memberTypes.USER_MEMBER ||
+    memberStatus === memberTypes.USER_DONOR
+  ) return true;
   return false; // 'expired', 'graduated'
-};
+}
 
 const getFullName = (firstName, lastName) => {
   let fullName = '';
@@ -235,86 +240,74 @@ const getMemberFullName = (member) => {
   return getFullName(firstName, lastName);
 }
 
-/************************
- * DETERMINE USER LISTS
- ************************
- * based on
- * * user's unsubscribed settings for all
- * * member status for members-only lists
- * * any verified email ESP contact info for newsletter
- *
- * @param {object}
- *        * emailContacts: if send, will check verified ESP contacts to see if subscribed to newsletter
- * @returns { listIds, unlinkListIds }: ESP SendinBlue contacts params
+/*******************************
+ * Member-only lists
+ *******************************
+ * eligible lists according to member status
+ * 
+ * NOTES!
+ * * Newsletter is not included on this function. This function is only for member mailing lists, which is saved in Airtable. The Newsletter preferences get saved in SendinBlue.
+ * * Status calculated on app, not taken from Airtable _status formula field.
+ * 
+ * @param {Object}:
+ *   memberStatus {String}
+ * @returns {Array | null} list of member mailing lists, ie, "Members", "Newsletter"
  */
-const getUserMailingLists = ({
-  member,
-  memberStatus,
-  emailContacts, // optional for newsletter
-}) => {
-  // get member unsubscribe settings
-  let lists = null,
-    unsubscribedToNewsletter = null,
-    unsbuscribedToMembers = null,
-    unsbuscribedTolawNotes = null;
-  if (member) {
-    const memberSettings = member.fields[dbFields.members.listsUnsubscribed];
-    if (memberSettings) {
-      unsubscribedToNewsletter = memberSettings.find((type) => type === 'newsletter');
-      unsbuscribedToMembers = memberSettings.find((type) => type === 'members');
-      unsbuscribedTolawNotes = memberSettings.find((type) => type === 'law_notes');
-    }
-    const mailingSettings = member.fields[dbFields.members.mailingLists];
-  }
-
-  // remove from lists
-  let unlinkListIds = [];
-  if (unsubscribedToNewsletter) unlinkListIds.push(sibLists.newsletter.id);
-  if (unsbuscribedTolawNotes ||
-    (memberStatus !== memberTypes.USER_STUDENT &&
-      memberStatus !== memberTypes.USER_ATTORNEY &&
-      memberStatus !== memberTypes.USER_LAW_NOTES)
-  ) unlinkListIds.push(sibLists.law_notes.id);
-  if (unsbuscribedToMembers ||
-    (memberStatus !== memberTypes.USER_STUDENT &&
-      memberStatus !== memberTypes.USER_ATTORNEY)
-  ) unlinkListIds.push(sibLists.members.id);
-
-  let listIds = [];
-  // NEWSLETTER:
-  // if user not unsubscribed
-  // if emailContacts is passed, if any verified email is subscribed to newsletter
-  let subscribedToNewsletter = false;
-  if (emailContacts) {
-    emailContacts.forEach((contact) => {
-      let newsletterFound = null;
-      if (contact.listIds) {
-        newsletterFound = contact.listIds.find((id) => {
-          if (id === sibLists.newsletter.id) return id;
-        });
-        if (newsletterFound) subscribedToNewsletter = true;
-      }
-    })
-  }
-  // unsubscribedToNewsletter in Aritable; subscribedToNewsletter from ESP SendinBlue
-  // if don't send emailContacts, will not check if ESP contacts are subscribed to newsletter
-  if ((!unsubscribedToNewsletter && subscribedToNewsletter) ||
-    !emailContacts) listIds.push(sibLists.newsletter.id);
-
-  // MEMBERS-ONLY lists
+const getMemberEligibleLists = (memberStatus) => {
+  let lists = []
   if (memberStatus === memberTypes.USER_ATTORNEY ||
-    memberStatus === memberTypes.USER_STUDENT) {
-    if (!unsbuscribedTolawNotes) listIds.push(sibLists.law_notes.id);
-    if (!unsbuscribedToMembers) listIds.push(sibLists.members.id);
+    memberStatus === memberTypes.USER_STUDENT ||
+    memberStatus === memberTypes.USER_MEMBER || // deprecated?
+    memberStatus === memberTypes.USER_DONOR // deprecated?
+  ) {
+    lists.push(dbFields.members.listLawNotes);
+    lists.push(dbFields.members.listMembers);
   }
 
-  if (listIds.length > 0 || unlinkListIds.length > 0) {
-    lists = {};
-    if (listIds.length > 0) lists.listIds = listIds;
-    if (unlinkListIds.length > 0) lists.unlinkListIds = unlinkListIds;
+  if (memberStatus === memberTypes.USER_LAW_NOTES) {
+    lists.push(dbFields.members.listLawNotes);
   }
-  return lists; // may be null
-};
+  if (lists.length > 0) {
+    return lists
+  } else {
+    return null
+  }
+}
+
+/*******************************
+ * Member/Elected-only lists
+ *******************************
+ * - eligible lists according to member status
+ * - and user mailing exclusions
+ * 
+ * See NOTE about Newsletter in getMemberEligibleLists function
+ * 
+ * @param {Object}:
+ *   memberStatus {String}
+ *   member: Airtable {Object}
+ * @returns {Array | null} list of member mailing lists, ie, "Members", "Newsletter"
+ */
+const getMemberElectedLists = (member, memberStatus) => {
+  const excludeLists = member.fields?.[dbFields.members.listsUnsubscribed]
+  const memberEligibleLists = getMemberEligibleLists(memberStatus)
+  // if not eligible for any lists return null
+  if (!memberEligibleLists || memberEligibleLists.length < 0) {
+    return null
+  } else {
+    // eligible for some lists
+    if (excludeLists) {
+      // filter out lists excluded by member
+      return memberEligibleLists.filter((list) => {
+        if (!excludeLists.find((excList) => excList === list)) {
+          return list
+        }
+      })
+    } else {
+      // all eligible since no lists excluded
+      return memberEligibleLists
+    }
+  }
+}
 
 export {
   // API calls
@@ -329,5 +322,6 @@ export {
   getAccountIsActive,
   getFullName,
   getMemberFullName,
-  getUserMailingLists,
-};
+  getMemberEligibleLists,
+  getMemberElectedLists,
+}

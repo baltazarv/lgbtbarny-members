@@ -1,3 +1,5 @@
+// TODO: move to /constants/emails/sendin-blue-fields
+
 const sibFields = {
   contacts: {
     listIds: 'listIds',
@@ -9,14 +11,16 @@ const sibFields = {
       firstname: 'firstname',
       lastname: 'lastname',
       firmOrg: 'firm_org',
-      expDate: 'expdate',
-      gradDate: 'graddate',
       practice: 'practice',
       groups: 'groups',
+      expDate: 'expdate',
+      gradDate: 'graddate',
+      lnExpDate: 'lnexpdate',
     }
   }
 }
 
+// titles same as Airtable listsUnsubscribed values
 const sibLists = {
   newsletter: {
     id: 2,
@@ -30,13 +34,20 @@ const sibLists = {
     id: 5,
     title: 'Law Notes',
   },
-  inactive: {
-    id: 8,
-    // title: '',
-  },
+  // inactive: {
+  //   id: 8,
+  //   // title: '',
+  // },
 }
 
-const getAllListIndexes = () => {
+const getSibListIdByTitle = (title) => {
+  for (let key in sibLists) {
+    if (title === sibLists[key].title) return sibLists[key].id;
+  }
+  return null
+}
+
+const getAllListIndeces = () => {
   let lists = [];
   for (const key in sibLists) {
     lists.push(sibLists[key].id);
@@ -44,7 +55,7 @@ const getAllListIndexes = () => {
   return lists;
 }
 
-const getMemberOnlyListIndexes = () => {
+const getMemberOnlyListIndeces = () => {
   let lists = [];
   for (const key in sibLists) {
     if (key !== 'newsletter') lists.push(sibLists[key].id);
@@ -62,7 +73,8 @@ const getListTitle = (id) => {
 module.exports = {
   sibFields,
   sibLists,
-  getAllListIndexes,
-  getMemberOnlyListIndexes,
+  getSibListIdByTitle,
+  getAllListIndeces,
+  getMemberOnlyListIndeces,
   getListTitle,
 };

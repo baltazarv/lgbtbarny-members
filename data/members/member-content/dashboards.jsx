@@ -46,9 +46,9 @@ export const addToSignupLinks = ({
   } else if (memberType === memberTypes.USER_ANON ||
     memberType === memberTypes.USER_NON_MEMBER) {
     links = ['signup'].concat(links);
-  } else if (memberStatus === 'expired') {
+  } else if (memberStatus === memberTypes.USER_ATTORNEY_EXPIRED) {
     links = ['renew'].concat(links);
-  } else if (memberStatus === 'graduated') {
+  } else if (memberStatus === memberTypes.USER_STUDENT_GRADUATED) {
     links = ['upgrade'].concat(links);
   };
   return links;
@@ -60,9 +60,9 @@ export const addToSignupLinks = ({
 
 export const getDashboard = ({
   member,
+  memberStatus, // "student", "graduated", "attorney"...
   memberType,
   setMember, // when making edits on user object
-  memberStatus, // student graduated, show attorney
   onLink,
   setTitle, // Law Notest latest for active accounts
   previewUser,
@@ -72,9 +72,9 @@ export const getDashboard = ({
     banner = banners('login', onLink);
   } else if (memberType === memberTypes.USER_NON_MEMBER) {
     banner = banners('membership', onLink);
-  } else if (memberStatus === 'expired') {
+  } else if (memberStatus === memberTypes.USER_ATTORNEY_EXPIRED) {
     banner = banners('expired', onLink);
-  } else if (memberStatus === 'graduated') {
+  } else if (memberStatus === memberTypes.USER_STUDENT_GRADUATED) {
     banner = banners('graduated', onLink);
   };
 
@@ -93,12 +93,12 @@ export const getDashboard = ({
     // attorney or graduated student
     if (
       memberType === memberTypes.USER_ATTORNEY ||
-      (memberType === memberTypes.USER_STUDENT && memberStatus === 'graduated')
+      (memberType === memberTypes.USER_STUDENT && memberStatus === memberTypes.USER_STUDENT_GRADUATED)
     ) return attorneyDashboard({
       member,
+      memberStatus,
       memberType,
       setMember,
-      memberStatus,
       onLink,
       setTitle,
       banner,
@@ -107,28 +107,19 @@ export const getDashboard = ({
     // active student
     if (memberType === memberTypes.USER_STUDENT) return studentDashboard({
       user: member,
-      memberType,
       memberStatus,
+      memberType,
       setMember,
       onLink,
       setTitle,
       banner,
     });
 
-    // pending member
-    if (memberType === memberTypes.USER_NON_MEMBER) return nonMemberDashboard({
-      member,
-      memberType,
-      setMember,
-      onLink,
-      banner,
-    });
-
     // Law Notes subscriber: active and expired
     if (memberType === memberTypes.USER_LAW_NOTES) return lawNotesDashboard({
       member,
-      memberType,
       memberStatus,
+      memberType,
       onLink,
       setTitle,
       banner,
@@ -138,6 +129,7 @@ export const getDashboard = ({
     // also other plans, eg, "donor"
     return nonMemberDashboard({
       member,
+      memberStatus,
       memberType,
       setMember,
       onLink,
@@ -190,8 +182,8 @@ const anonDashboard = ({
 const attorneyDashboard = ({
   member,
   setMember, // needed?
-  memberType,
   memberStatus,
+  memberType,
   onLink,
   setTitle, // Law Notest latest
   banner = null,
@@ -200,7 +192,7 @@ const attorneyDashboard = ({
     options: {
       ...defaultOptions(memberType),
     },
-    account: account({ memberType, memberStatus, user: member, setUser: setMember, onLink, banner }),
+    account: account({ memberStatus, memberType, user: member, setUser: setMember, onLink, banner }),
     participate: participate({ memberType, memberStatus, onLink, banner }),
     lawnotes: lawNotes({ memberType, memberStatus, onLink, setTitle, banner }),
     clecenter: cleCenter({ member, memberType, memberStatus, onLink, banner }),
@@ -211,8 +203,8 @@ const attorneyDashboard = ({
 
 const studentDashboard = ({
   user,
-  memberType,
   memberStatus,
+  memberType,
   setUser, // needed?
   onLink,
   setTitle, // Law Notest latest
@@ -221,7 +213,7 @@ const studentDashboard = ({
     options: {
       ...defaultOptions(memberType),
     },
-    account: account({ memberType, user, setUser, onLink }),
+    account: account({ memberStatus, memberType, user, setUser, onLink }),
     participate: participate({ memberType, onLink }),
     lawnotes: lawNotes({ memberType, memberStatus, onLink, setTitle }),
     clecenter: cleCenter({ memberType, memberStatus, onLink }),
@@ -232,6 +224,7 @@ const studentDashboard = ({
 const nonMemberDashboard = ({
   member,
   setUser, // needed?
+  memberStatus,
   memberType,
   onLink,
   banner,
@@ -241,7 +234,7 @@ const nonMemberDashboard = ({
     options: {
       ...defaultOptions(memberType),
     },
-    account: account({ memberType, user: member, setUser, onLink, banner }),
+    account: account({ memberStatus, memberType, user: member, setUser, onLink, banner }),
     participate: participate({ memberType, onLink, banner }),
     lawnotes: lawNotes({ memberType, onLink, banner, previewUser }),
     clecenter: cleCenter({ memberType, user: member, onLink, banner }),
@@ -263,7 +256,7 @@ const lawNotesDashboard = ({
     options: {
       ...defaultOptions(memberType),
     },
-    account: account({ memberType, user: member, setUser, onLink, banner }),
+    account: account({ memberStatus, memberType, user: member, setUser, onLink, banner }),
     lawnotes: lawNotes({ memberType, memberStatus, onLink, setTitle, banner }),
     participate: participate({ memberType, onLink, banner }),
     clecenter: cleCenter({ memberType, user: member, onLink, banner }),

@@ -23,7 +23,6 @@ const MemberGroups = ({
   onLink,
   previewUser,
 }) => {
-  const { member, userEmails, userPayments, memberPlans } = useContext(MembersContext);
   const [groupsData, setGroupsData] = useState({});
   const [categories, setCategories] = useState(Object.keys(groupCategories));
   const [memberTypeView, setMemberTypeView] = useState('');

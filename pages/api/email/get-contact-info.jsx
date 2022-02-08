@@ -5,9 +5,9 @@ const contactsApi = new sibContactsApi();
 export default async (req, res) => {
   // console.log('/api/email/get-contact-info', req.body);
 
-  const email = req.body;
+  const id = req.body; // email, ID, or SMS
   try {
-    const contact = await contactsApi.getContactInfo(email);
+    const contact = await contactsApi.getContactInfo(id);
     return res.status('200').send({ contact });
   } catch (error) {
     const status = error.status || '400';

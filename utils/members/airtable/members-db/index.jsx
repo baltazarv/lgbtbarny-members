@@ -26,7 +26,8 @@ import {
   getAccountIsActive,
   getFullName,
   getMemberFullName,
-  getUserMailingLists,
+  getMemberEligibleLists,
+  getMemberElectedLists,
 } from './members-table-utils';
 
 // plans table
@@ -59,8 +60,12 @@ import {
   updateEmails,
   deleteEmail,
   getPrimaryEmail,
-  // updatePrimaryInEmails,
+  getVerifiedEmails,
 } from './emails-table-utils';
+
+import {
+  getGroups,
+} from './groups-table-utils'
 
 /**
  * Functions that access more than one table
@@ -90,7 +95,8 @@ export {
   getAccountIsActive,
   getFullName,
   getMemberFullName,
-  getUserMailingLists,
+  getMemberEligibleLists,
+  getMemberElectedLists,
 
   // plans table
   getPlans, // api call
@@ -117,7 +123,9 @@ export {
   updateEmails,
   deleteEmail,
   getPrimaryEmail,
-  // updatePrimaryInEmails,
-
   getIsLastPlanComplimentary,
+  getVerifiedEmails,
+
+  // groups table
+  getGroups,
 };

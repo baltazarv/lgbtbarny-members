@@ -49,8 +49,19 @@ const createContact = async (payload) => {
 
 /**
  * Calls SendinBlue API endpoint
- * @param {object} payload | need to include `email` and items to update:
- *                 listIds, unlinkListIds, newEmail, firstname, lastname,
+ * @param {Object} payload | with following:
+ *  email, // required
+    listIds,
+    unlinkListIds,
+    emailBlacklisted,
+    firstname,
+    lastname,
+    firmOrg,
+    practice,
+    groups,
+    expdate,
+    graddate,
+    lnexpdate,
  * TODO: change signature to (email, fields)?
  */
 const updateContact = async (payload) => {
@@ -67,52 +78,9 @@ const updateContact = async (payload) => {
   }
 }
 
-/*************
- * functions *
- *************/
-
-const updateContactLists = ({
-  emailAddress,
-  userMailingLists,
-}) => {
-  const { listIds, unlinkListIds } = userMailingLists;
-  if ((unlinkListIds && unlinkListIds.length > 0) || (listIds && listIds.length > 0)) {
-    const payload = { email: emailAddress };
-    if (unlinkListIds && unlinkListIds.length > 0) payload[sibFields.contacts.unlinkListIds] = unlinkListIds;
-    if (listIds && listIds.length > 0) payload[sibFields.contacts.listIds] = listIds;
-    updateContact(payload);
-  }
-}
-
-// May not need this. Better to figure out based on member unsubscribed list and member status. See MembersContext `userMailingLists`
-const getMailListsSubscribed = (primaryEmail, emailContacts) => {
-  if (primaryEmail && emailContacts && emailContacts.length > 0) {
-    const contact = emailContacts.find((c) => c.email === primaryEmail);
-    if (contact) {
-      const lists = contact[sibFields.contacts.listIds];
-      if (lists.length > 0) {
-        const mailLists = lists.map((list) => {
-          for (const key in sibLists) {
-            if (sibLists[key].id === list) {
-              return key;
-            }
-          }
-        });
-        return mailLists;
-      } else {
-        return null
-      }
-    }
-  } else {
-    return null;
-  }
-}
-
 export {
   // API calls
   getContactInfo,
   createContact,
   updateContact,
-  updateContactLists,
-  getMailListsSubscribed, // remove?
 }

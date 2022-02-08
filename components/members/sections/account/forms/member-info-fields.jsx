@@ -55,7 +55,7 @@ const MemberInfoFields = ({
    */
 
   useEffect(() => {
-    if (member && member.fields[dbFields.members.certify]) setCertifyStatus(member.fields[dbFields.members.certify]);
+    if (!!member?.fields?.[dbFields.members.certify]) setCertifyStatus(member.fields[dbFields.members.certify]);
   }, [member]);
 
   const onMemberTypeSelect = (value) => {
@@ -82,7 +82,7 @@ const MemberInfoFields = ({
 
   // when cancel & gradyear not saved
   useEffect(() => {
-    if (!editing && member.fields[dbFields.members.gradYear]) {
+    if (!editing && !!member.fields?.[dbFields.members.gradYear]) {
       // console.log('GRAD YR', member.fields[dbFields.members.gradYear], 'vs', new Date().getFullYear());
       if (member.fields[dbFields.members.gradYear] < new Date().getFullYear()) {
         setStudentHasGraduated(true);
@@ -90,7 +90,7 @@ const MemberInfoFields = ({
         setStudentHasGraduated(false);
       }
     }
-  }, [member.fields[dbFields.members.gradYear]]); // editing
+  }, [member.fields?.[dbFields.members.gradYear]]); // editing
 
   const onGradYearUpdate = (date) => {
     const thisYear = new Date().getFullYear();
@@ -187,7 +187,7 @@ const MemberInfoFields = ({
               {salaryOptions}
             </Select>
             :
-            <>{member && member.fields[dbFields.members.salary]} {fee && <Text code><span className="text-nowrap">${fee} members fee</span></Text>}</>
+            <>{!!member?.fields?.[dbFields.members.salary]} {fee && <Text code><span className="text-nowrap">${fee} members fee</span></Text>}</>
           }
         </Form.Item>
 
@@ -210,6 +210,7 @@ const MemberInfoFields = ({
               disabled={loading}
             />
             :
+            !!member.fields?.[dbFields.members.employer] &&
             member.fields[dbFields.members.employer]
           }
         </Form.Item>
@@ -232,6 +233,7 @@ const MemberInfoFields = ({
               {practiceSettingOptions()}
             </Select>
             :
+            !!member.fields?.[dbFields.members.practiceSetting] &&
             member.fields[dbFields.members.practiceSetting]
           }
         </Form.Item>
@@ -258,6 +260,7 @@ const MemberInfoFields = ({
               disabled={loading}
             />
             :
+            !!member.fields?.[dbFields.members.practiceAreas] &&
             member.fields[dbFields.members.practiceAreas]
           }
         </Form.Item>

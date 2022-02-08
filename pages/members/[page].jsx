@@ -29,29 +29,36 @@ import MemberModal from '../../components/members/elements/member-modal';
 import SvgIcon from '../../components/elements/svg-icon';
 // import NewsNotification from '../../components/utils/open-notification';
 import './members.less';
-// data
+// constants
 import { getDashboard } from '../../data/members/member-content/dashboards';
 import * as memberTypes from '../../data/members/member-types';
 import { dbFields } from '../../data/members/airtable/airtable-fields';
-import { getMemberOnlyListIndexes, getAllListIndexes } from '../../data/emails/sendinblue-fields';
+import {
+  getMemberOnlyListIndeces,
+  getSibListIdByTitle,
+} from '../../data/emails/sendinblue-fields';
 // contexts
 import { MembersContext } from '../../contexts/members-context';
 // utils
 import {
   // members table
+  updateMember, // exclude_mailings
   getMemberType,
+  getGraduationDate,
   getMemberStatus,
-  getUserMailingLists,
+  getMemberElectedLists,
   // plans table
   getPlans,
   // payments table
   getUserPayments,
+  getNextPaymentDate,
   // emails
   getPrimaryEmail,
+  // groups table
+  getGroups,
 } from '../../utils/members/airtable/members-db';
 import { getMemberPageParentKey } from '../../utils/members/dashboard-utils';
-import { updateCustomer } from '../../utils/payments/stripe-utils';
-import { updateContact, updateContactLists } from '../../utils/emails/sendinblue-utils';
+import { updateContact } from '../../utils/emails/sendinblue-utils';
 // server-side function to populate loggedInMember => member
 import { processUser } from '../api/init/processes';
 
@@ -69,39 +76,31 @@ const MembersPage = ({
 }) => {
   const router = useRouter();
 
-  // If the page is not yet generated, this will be displayed
-  // initially until getStaticProps() finishes running
-  if (router.isFallback) {
-    return <div>Loading...</div>
-  }
-
   // contexts
   // const { subscriptions, setSubscriptions } = useContext(PaymentsContext);
   const {
-    // members
+    // member
     member, setMember,
     authUser, setAuthUser,
-    userEmails, setUserEmails,
+    // payments
     userPayments, setUserPayments,
     memberPlans, setMemberPlans,
-    // payments
-    setSubscriptions, setDefaultCard,
-    // set by this page
+    subscriptions, setSubscriptions, // NOT USED!
+    defaultCard, setDefaultCard, // NOT USED!
+    // email
+    userEmails, setUserEmails,
     primaryEmail, setPrimaryEmail,
-    userMailingLists, setUserMailingLists,
-    // ESP emails
-    emailContacts, setEmailContacts,
+    mailingLists, setMailingLists,
   } = useContext(MembersContext);
 
   // when anon user, select tab to view preview content
   const [previewUser, setPreviewUser] = useState(memberTypes.USER_ATTORNEY);
-  // when modalType is 'signup' signupType is a loginUser type
 
   // menu & main content page/section selections
   const [selectedKey, setSelectedKey] = useState('');
   const [menuOpenKeys, setMenuOpenKeys] = useState([]);
   const [menuCollapsed, setMenuCollapsed] = useState(false);
-  // key sent to login API to open with query string, ie, 'login' or 'law-notes-subscribe'
+  // query string, ie, 'login' or 'law-notes-subscribe'
   const [queryKey, setQueryKey] = useState('');
 
   const [data, setData] = useState(null);
@@ -109,36 +108,19 @@ const MembersPage = ({
   const [contentTitle, setContentTitle] = useState('');
   // TODO: remove setSignupType from all children
   const [signupType, setSignupType] = useState('');
+  // when modalType is 'signup' signupType is a loginUser type
 
+  // TODO: REVIEW AND REMOVE - DOES NOTHING
   useEffect(() => {
     // Using an IIFE
     (async function fetchUser() {
       const res = await fetch('/api/auth/me');
       if (res.ok) {
         const session = await res.json();
-        // setSession(session);
         console.log('SESSION on front-end', session);
       }
     })();
   }, []);
-
-  // TODO: remove memberStatus, only need memberType
-
-  const memberType = useMemo(() => {
-    return getMemberType({
-      member,
-      userPayments,
-      memberPlans,
-    });
-  }, [member, userPayments, memberPlans]);
-
-  const memberStatus = useMemo(() => {
-    return getMemberStatus({
-      userPayments,
-      memberPlans,
-      member,
-    });
-  }, [userPayments, memberPlans, member]);
 
   // modals
   const [modalType, setModalType] = useState('login');
@@ -182,28 +164,51 @@ const MembersPage = ({
     setAuthUser(loggedInUser);
   }, [loggedInUser]);
 
-  // track when auth session changes
-  // if not logged in, redirect from pages for logged-in users
-  useEffect(() => {
-    if (!authUser) {
-      if (router.asPath === '/members/account') router.replace(`/members/[page]`, `/members/participate`, { shallow: true });
-    }
-  }, [authUser]);
+  // // TODO: if not logged in, redirect from pages for logged-in users
+  // // happen in a latter life cycle phase
+  // useEffect(() => {
+  //   if (!authUser) {
+  //     if (router.asPath === '/members/account') router.replace(`/members/[page]`, `/members/participate`, { shallow: true });
+  //   }
+  // }, [authUser]);
 
   useEffect(() => {
     setMember(loggedInMember);
   }, [loggedInMember]);
 
-  /*****************
-   * USER PAYMENTS *
-   *****************/
+  /*=====
+    INIT
+   ====*/
+
+  const loggedInEmail = loggedInUser.name
+
+  /**************
+   * init PLANS *
+   *************/
   useEffect(() => {
-    if (authUser && !userPayments) {
+    if (!memberPlans) {
+      (async function fetchPlans() {
+        const { plans, error } = await getPlans()
+        if (error) {
+          console.log('error', error)
+          return
+        }
+        if (plans) setMemberPlans(plans)
+      })()
+    }
+  }, [])
+
+  /**********************
+   * init USER PAYMENTS *
+   **********************
+   * save payments object assoc to member
+   */
+  useEffect(() => {
+    if (loggedInMember && !userPayments) {
       // IIFE
       (async function fetchUserPayments() {
-        const user = member || loggedInMember;
-        if (user?.fields[dbFields.members.payments]) {
-          const paymentIds = user.fields[dbFields.members.payments];
+        if (loggedInMember?.fields[dbFields.members.payments]) {
+          const paymentIds = loggedInMember.fields[dbFields.members.payments]
           if (paymentIds) {
             const { payments, error } = await getUserPayments(paymentIds);
             if (error) {
@@ -211,213 +216,361 @@ const MembersPage = ({
               return;
             }
             if (payments) {
-              setUserPayments(payments);
+              setUserPayments(payments)
             }
           }
         }
       })();
     }
-  }, [authUser, userPayments]);
+  }, [loggedInMember]);
 
-  /*********
-   * PLANS *
-   *********/
-  useEffect(() => {
-    if (!memberPlans) {
-      (async function fetchPlans() {
-        const { plans, error } = await getPlans();
-        if (error) {
-          console.log('error', error);
-          return;
-        }
-        if (plans) setMemberPlans(plans);
-      })();
+  // TODO: create util for API call in utils/payments/stripe-utils.jsx
+  /***************************
+   * process STRIPE CUSTOMER
+   **************************
+   * If Stripe ID in member rec,
+   * ...update Stripe customer name.
+   * ...set Stripe subscription and default card.
+   * If email provided, update email address.
+   * 
+   * And if email address provided but no Stripe account,
+   * ...create account with email address.
+   * ...and save ID to member rec.
+   * 
+   * IMPORTANT: Stripe account cannot be retrieved with an email address.
+   *
+   * @returns void
+   */
+  const processStripeCust = async (_user, emailAddress) => {
+    const result = await fetch('/api/init/process-stripe-cust', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user: _user,
+        emailAddress,
+      })
+    })
+    const { user, subscriptions, defaultCard, error } = await result.json()
+    if (error) {
+      console.log('processStripeCust error', error)
+      return
     }
-  }, [memberPlans]);
+    // update with Stripe ID
+    if (user) setMember(user)
 
-  /*******************
-   * SET USER EMAILS *
-   *******************
-   * When log in (!userEmails), get all user emails.
-   * Mark logged-in email verified. Add to ESP SendinBlue if not there.
-   * Mark blacklisted emails as blocked in Airtable.
-   * Set userEmails and emailContacts.
+    if (subscriptions?.length > 0) setSubscriptions(subscriptions);
+    if (defaultCard) setDefaultCard(defaultCard);
+  }
+
+  // TODO: create util for API call in utils/emails/sendinblue-utils.jsx
+  /********************
+   * init USER EMAILS *
+   ********************
+   * At init, set userEmails (if null).
+   * * Mark logged-in email verified.
+   * * Add SendinBlue contact if not there.
+   * * Mark SendinBlue blacklisted emails as blocked in Airtable.
+   * * Create Stripe account if doesn't exist?
+   * 
+   * Also...
+   *** init STRIPE CUSTOMER ***
+   *** init SIB CONTACT ***
    */
   useEffect(() => {
-    if (authUser && !userEmails) {
-      const loginEmailAddress = authUser.name;
+    if (!userEmails) {
       const processUserEmails = async () => {
-        const user = member || loggedInMember;
+        const user = member || loggedInMember
         const result = await fetch('/api/init/process-user-emails', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             user,
-            loginEmailAddress,
+            loginEmailAddress: loggedInEmail,
           })
-        });
-        const resultJson = await result.json();
+        })
+        const resultJson = await result.json()
         if (resultJson.error) {
-          console.log('error', resultJson.error);
-          return;
+          console.log('error', resultJson.error)
+          return
         }
-        if (resultJson.emails) setUserEmails(resultJson.emails);
-        if (resultJson.contacts) {
-          setEmailContacts(resultJson.contacts);
-          // since both member, memberStatus (at least "pending") and email contacts have been set, good place to update mailing lists, which will update the ESP contact's lists
-          const mailingLists = getUserMailingLists({ member, memberStatus, emailContacts: resultJson.contacts });
-          setUserMailingLists(mailingLists);
+        if (resultJson.emails) {
+          setUserEmails(resultJson.emails)
+
+          // Most efficient place to init Stripe account
+          // ...only on init but after primaryEmail can be calculated
+          processStripeCust(user, getPrimaryEmail(resultJson.emails, loggedInEmail))
+
+          // processUserEmails in /pages/api/init/processes.jsx takes care of SiB init
         }
       }
-      processUserEmails();
+      processUserEmails()
     }
-  }, [authUser]);
+  }, [])
 
-  /**************************************
-   *           PRIMARY EMAIL            *
-   **************** and *****************
-   * userEmails =>                      *
-   *   mailing lists for email contacts *
-   *   update Stripe customer email     *
-   **************************************
-   * primaryEmail:
-   * * Calculated in this order:
-   *   (1) a verified email already marked as primary if not blacklisted on SendinBlue (SiB),
-   *   (2) the logged-in email if not blacklisted on SiB,
-   *   (3) any verified email that is not blacklisted on SiB.
-   * * Needed for following:
-   *   * Stripe customer email address.
-   *   * Mailing lists on ESP SendinBlue.
-   * * Email can be marked primary email in Airtable but not be the primaryEmail, eg, when user has unsubscribed it.
-   *
-   * Move lists to new primary email and remove from all other verified. Remove emails from lists only if they are not unsubscribed.
-   *
-   * Update Stripe email address with PrimaryEmail. (even if after init logged-in email written to Stripe)
+  // TODO: move to utility file
+  const hasBeenMember = (type) => {
+    if (!type) return null;
+    return type === memberTypes.USER_STUDENT ||
+      type === memberTypes.USER_STUDENT_GRADUATED ||
+      type === memberTypes.USER_ATTORNEY ||
+      type === memberTypes.USER_ATTORNEY_EXPIRED ||
+      // Law Notes
+      type === memberTypes.USER_LAW_NOTES ||
+      type === memberTypes.USER_LAW_NOTES_EXPIRED ||
+      // deprecated?
+      type === memberTypes.USER_MEMBER ||
+      type === memberTypes.USER_DONOR
+  }
+
+  // TODO: move to utils
+  /************************
+   * process MAILING LISTS 
+   ************************
+   * For members with active or expired accounts:
+   * ...update SiB member attributes.
+   * ...update mailingList local var.
+   * ...update member exclude_mailings for Newsletter.
+   * 
+   * REQUIRED:
+   * * member for mailing list exclusion settings
+   * * emails for verified, blacklisted and Newsletter prefs from SiB
+   * * memberPayments for active/expired status
+   * * ...to calculate expiration and graduation dates
+   * 
+   * For blacklisted SiB contacts remove all member mailing lists ("unlinkListIds")
+   * For verified emails (SiB contacts), not blacklisted,
+   * ...update SiB fields: "listIds", "unlinkListIds", "expdate", "graddate", "lnexpdate"
+   * Keep newsletter opt-in/out pref for every SiB contact
    */
-  useEffect(() => {
-    // only after userEmails populated
-    if (userEmails) {
-      // update primary email
-      const loggedInEmail = loggedInUser.name;
-      const primaryEmailRecord = getPrimaryEmail(userEmails, loggedInEmail);
-      let primaryEmailAddress = null;
-      if (primaryEmailRecord) {
-        primaryEmailAddress = primaryEmailRecord.fields[dbFields.emails.address];
-        setPrimaryEmail(primaryEmailAddress);
-      } else {
-        setPrimaryEmail(null);
+  const processMailingLists = ({
+    member,
+    emails,
+    userPayments,
+  }) => {
+    const status = getMemberStatus({
+      member,
+      userPayments,
+      memberPlans,
+    })
+    // when users log in, for current and expired members
+    if (hasBeenMember(status)) {
+      // lists for mailingLists
+      let lists = getMemberElectedLists(member, status) || []
+      // SiB expiration dates
+      let expdate = ''
+      let graddate = ''
+      let lnexpdate = ''
+      const siBDateFormat = 'YYYY-MM-DD'
+      if (
+        status === memberTypes.USER_ATTORNEY ||
+        status === memberTypes.USER_ATTORNEY_EXPIRED ||
+        status === memberTypes.USER_LAW_NOTES ||
+        status === memberTypes.USER_LAW_NOTES_EXPIRED
+      ) {
+        const date = getNextPaymentDate({
+          userPayments,
+          memberPlans,
+          format: siBDateFormat,
+        })
+        if (
+          status === memberTypes.USER_ATTORNEY ||
+          status === memberTypes.USER_ATTORNEY_EXPIRED
+        ) expdate = date;
+        if (
+          status === memberTypes.USER_LAW_NOTES ||
+          status === memberTypes.USER_LAW_NOTES_EXPIRED
+        ) lnexpdate = date;
+      } else if (
+        status === memberTypes.USER_STUDENT ||
+        status === memberTypes.USER_STUDENT_GRADUATED
+      ) {
+        graddate = getGraduationDate({
+          member,
+          userPayments,
+          memberPlans,
+          format: siBDateFormat,
+        })
       }
+      // deprecated:
+      // memberTypes.USER_DONOR
+      // memberTypes.USER_DONOR
 
-      // take care of ESP mailing lists
-      // may switch email on Stripe customer
-      userEmails.forEach((email) => {
-        const emailAddress = email.fields[dbFields.emails.address];
-        if (primaryEmailAddress && emailAddress === primaryEmailAddress) {
-          if (userMailingLists) {
-            updateContactLists({
-              emailAddress,
-              userMailingLists,
-            });
-            // update Stripe customer
-            const customerId = member.fields[dbFields.members.stripeId];
+      // emailHasNewsletter:
+      // ...if no valid SiB contact subscribed remove from Airtable member exclude_mailings
+      // ...add/remove Newsletter to/from mailingLists
+      let emailHasNewsletter = false
 
-            // no await necessary
-            updateCustomer({
-              customerId,
-              email: emailAddress,
-            });
+      const primaryEmail = getPrimaryEmail(emails, loggedInEmail)
+
+      emails.forEach((email) => {
+        // siB
+        let listIds = null
+        let unlinkListIds = null
+
+        // if email is blacklisted
+        if (email.fields[dbFields.emails.blocked]) {
+          // remove all member lists
+          unlinkListIds = getMemberOnlyListIndeces()
+          // TODO: AND EXPIRATION DATES?
+        } else {
+          // if verified (not blacklisted)
+          if (email.fields[dbFields.emails.verified]) {
+            // find if subscribed to newsletter
+            if (email.fields[dbFields.emails.mailingLists]?.find((list) => list === dbFields.emails.listNewsletter)) {
+              emailHasNewsletter = true
+              // don't update newsletter on SiB!
+            }
+
+            // update SiB contact - only for verified emails
+            let payload = {
+              email: email.fields[dbFields.emails.address],
+              expdate,
+              graddate,
+              lnexpdate,
+            }
+
+            if (
+              lists?.length > 0 &&
+              primaryEmail === email.fields[dbFields.emails.address]
+            ) {
+              // add eligible lists to primary address
+              listIds = lists.map((listName) => {
+                return getSibListIdByTitle(listName)
+              })
+              // remove other lists from primary address
+              unlinkListIds = getMemberOnlyListIndeces().reduce((acc, memberId) => {
+                if (!listIds.find((listId) => listId === memberId)) {
+                  acc = acc || []
+                  acc.push(memberId)
+                }
+                return acc
+              }, null)
+              if (listIds) payload.listIds = listIds;
+            } else {
+              // remove all lists from unverified emails
+              // ...or if no eligible for primary email
+              unlinkListIds = getMemberOnlyListIndeces()
+            }
+            if (unlinkListIds) payload.unlinkListIds = unlinkListIds;
+            updateContact(payload)
           }
-        } else if (email.fields[dbFields.emails.verified] && !email.fields[dbFields.emails.blocked]) {
-          // if blocked, don't remove from lists
-          let unlinkListIds = getMemberOnlyListIndexes();
-          // if there is a primary email that will get the newsletter, remove newsletter from other emails
-          if (primaryEmailAddress) unlinkListIds = getAllListIndexes();
-          updateContact({
-            email: emailAddress,
-            unlinkListIds,
-          });
         }
-      });
-    }
-  }, [userEmails]);
+      })
 
-  /*****************
-   * MAILING LISTS *
-   *****************
-   * Add members-only lists to ESP when member status changes:
-   * * Member-only lists added when user (re)joins or student upgrades.
-   * * Member's unsubscribe list taken into account.
-   *
-   * Newsletter: if send `emailContacts` will check that a verified email contact was subscribed to the newsletter.
-   */
-  useEffect(() => {
-    // member required for memberStatus
-    // sending `emailContacts` to get newspaper subscription from ESP contacts
-    if (memberStatus && emailContacts) {
-      const mailingLists = getUserMailingLists({ member, memberStatus, emailContacts });
-      setUserMailingLists(mailingLists);
-    }
-  }, [memberStatus]);
+      // update Airtable member
+      if (emailHasNewsletter) {
+        // ...add Newsletter to mailingList
+        lists = [...lists, dbFields.members.listNewsletter]
 
-  /****************************************
-   * userMailingLists =>                  *
-   *   add/remove primaryEmail contacts   *
-   *   to/from mailingList                *
-   ****************************************
-   * When mailing list changes, update primary email with the new mailing list.
-   */
-  useEffect(() => {
-    if (primaryEmail && userMailingLists) {
-      updateContactLists({
-        emailAddress: primaryEmail,
-        userMailingLists,
-      });
-    }
-  }, [userMailingLists]);
-
-  /*******************
-   * STRIPE CUSTOMER *
-   *******************
-   * When log in get stripe info, if already a stripe customer:
-   * * subscriptions
-   * * default card minimal info
-   *
-   * If not stripe customer:
-   * * Create Stripe customer with logged-in email address.
-   *   (if primaryEmail changes will update email in Stripe!)
-   * * And add stripe customer id to members table.
-   *  */
-  useEffect(() => {
-    if (authUser) {
-      const emailAddress = authUser.name;
-      const processStripeCust = async () => {
-        const result = await fetch('/api/init/process-stripe-cust', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            user: loggedInMember,
-            emailAddress,
+        // remove Newsletter from exclude_mailings
+        if (member.fields?.[dbFields.members.listsUnsubscribed]) {
+          const exclusions = member.fields?.[dbFields.members.listsUnsubscribed].reduce((acc, list) => {
+            if (list !== dbFields.members.listNewsletter) {
+              acc.push(list)
+            }
+            return acc
+          }, [])
+          updateMember({
+            id: member.id,
+            fields: {
+              [dbFields.members.listsUnsubscribed]: exclusions,
+            }
           })
-        });
-        const { user, subscriptions, defaultCard, error } = await result.json();
-        if (error) {
-          console.log('error', error);
-          return;
         }
-        // update with Stripe ID
-        if (user) setMember(user);
-
-        if (subscriptions?.length > 0) setSubscriptions(subscriptions);
-        if (defaultCard) setDefaultCard(defaultCard);
+      } else {
+        // ...mark Newsletter as a members exclude_mailings item
+        let otherExclusions = []
+        if (member.fields?.[dbFields.members.listsUnsubscribed]) {
+          otherExclusions = member.fields?.[dbFields.members.listsUnsubscribed].reduce((acc, list) => {
+            if (list !== dbFields.members.listNewsletter) {
+              acc.push(list)
+            }
+            return acc
+          }, [])
+        }
+        const listsUnsubscribed = [...otherExclusions, dbFields.members.listNewsletter]
+        updateMember({
+          id: member.id,
+          fields: {
+            [dbFields.members.listsUnsubscribed]: listsUnsubscribed,
+          }
+        })
       }
-      processStripeCust();
+
+      setMailingLists(lists)
     }
-  }, [authUser]);
+  }
+
+  /*********************
+   * init MAILING LISTS 
+   ********************/
+  useEffect(() => {
+    if (!mailingLists && member && userEmails && userPayments && memberPlans) {
+      processMailingLists({
+        member,
+        emails: userEmails,
+        userPayments,
+      })
+    }
+  }, [mailingLists, member, userEmails, userPayments, memberPlans])
+
+  /*================
+   * SECONDARY VARS 
+   ================*/
+
+  // TODO: consolidate memberType and memberStatus
+  // ...maybe make fuc insead: const getMemberType/Status
+
+  // currently does NOT have "expired" and "graduated" for values
+  const memberType = useMemo(() => {
+    // There should always be memberPlans
+    // ...but users not logged-on will have no member rec
+    // ...and some login users will not have payments
+    if (memberPlans) {
+      return getMemberType({
+        member,
+        userPayments,
+        memberPlans,
+      })
+    }
+    return null
+  }, [member, userPayments, memberPlans]);
+
+
+  // currently has "expired" and "graduated" as values
+  const memberStatus = useMemo(() => {
+    return getMemberStatus({
+      userPayments,
+      memberPlans,
+      member,
+    })
+  }, [userPayments, memberPlans, member])
+
+  // could be a useMemo!
+  /********************
+   * set PRIMARY EMAIL
+   ********************
+   * Anytime user emails are modified, set primary email.
+   * 
+   * NOTE: Primary email should never be null.
+   * ...It could be different from primary email set by user.
+   *
+   * SIDE EFFECTS: any?
+   * */
+  useEffect(() => {
+    if (userEmails) {
+      const email = getPrimaryEmail(userEmails, loggedInEmail)
+      // only update if value is different
+      setPrimaryEmail((state) => email !== state ?
+        email :
+        null)
+    }
+  }, [userEmails])
 
   /****************
    * QUERY STRING *
    ****************
-   *  * Open signup & subscribe motals.
+   *  * Open signup & subscribe modals.
    *  * Show prototype users.
    */
   useEffect(() => {
@@ -438,7 +591,7 @@ const MembersPage = ({
         setModalVisible(false);
       }
     }
-  }, [router.query, member, authUser]); // , member, authUser
+  }, [router.query, member, authUser])
 
   /*************************
    * CONTENT CLICK HANDLER *
@@ -519,13 +672,13 @@ const MembersPage = ({
     setData(getDashboard({
       member,
       setMember,
-      memberType,
       memberStatus,
+      memberType,
       onLink: handleContentLink,
       setTitle: setContentTitle,
       previewUser,
     }));
-  }, [member, memberType, memberStatus, previewUser]);
+  }, [member, memberStatus, memberType, previewUser]);
 
   /**
    *** DASHBOARD ROUTES ***
@@ -658,6 +811,12 @@ const MembersPage = ({
     setPreviewUser(previewUser); // populates data var >> routes >>> selections
   }
 
+  // If the page is not yet generated, this will be displayed
+  // initially until getStaticProps() finishes running
+  if (router.isFallback) {
+    return <div>Loading...</div>
+  }
+
   return (
     <Elements stripe={stripePromise}>
 
@@ -760,8 +919,14 @@ const MembersPage = ({
 export default MembersPage;
 
 export async function getServerSideProps(context) {
-  // req not available with getStaticProps
-  const session = await auth0.getSession(context.req);
+
+  // TEMP TESTING ONLY: BYPASSING AUTH0
+  const session = {
+    user: {
+      name: "baltazarv@gmail.com",
+    }
+  }
+  // const session = await auth0.getSession(context.req);
   console.log('BACKEND session:', session, '; params:', context.params, '; query:', context.query);
 
   let emailAddress = null,
@@ -775,12 +940,12 @@ export async function getServerSideProps(context) {
 
       // TODO: maybe move following requests to client-side
       if (emailAddress) {// already checking for session!
-        /*** user ***/
+        // get Airtable member record
+        // ...if doesn't exist, create it
         let userResult = await processUser(emailAddress);
         let isNewUser = null;
         if (userResult.user) loggedInMember = userResult.user;
         if (userResult.isNewUser !== null) isNewUser = userResult.isNewUser;
-        // console.log('loggedInMember', loggedInMember, 'isNewUser', isNewUser);
       }
     } catch (error) {
       console.log(error);

@@ -1,6 +1,7 @@
-import { stripe } from '../utils/stripe';
+// use updateCustomer utility function shared by this and init process function in pages/api/init/processes.jsx
+import { stripe } from '../utils/stripe'
 
-const updateCustomer = async (req, res) => {
+const updateCustomerApi = async (req, res) => {
   console.log('/api/payments/update-customer', req.body);
 
   const {
@@ -41,4 +42,4 @@ const updateCustomer = async (req, res) => {
   }
 };
 
-export default updateCustomer;
+export default updateCustomerApi

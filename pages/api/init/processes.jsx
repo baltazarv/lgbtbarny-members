@@ -13,19 +13,30 @@
  */
 // data
 import { dbFields } from '../../../data/members/airtable/airtable-fields';
-import { sibFields } from '../../../data/emails/sendinblue-fields';
+import { sibFields, sibLists } from '../../../data/emails/sendinblue-fields';
 // back end utils
-import { sibContactsApi, sibCreateContact } from '../utils/sendinblue';
-import { membersTable, emailsTable, minifyRecords, getMinifiedRecord } from '../utils/Airtable';
+import {
+  sibContactsApi,
+  sibUpdateContact,
+  sibCreateContact,
+} from '../utils/sendinblue';
+import {
+  membersTable,
+  emailsTable,
+  groupsTable,
+  minifyRecords,
+  getMinifiedRecord,
+} from '../utils/Airtable';
 import { stripe, getActiveSubscription, getPaymentMethodObject } from '../utils/stripe';
 // front end utils
 import { getMemberFullName } from '../../../utils/members/airtable/members-db';
 
 /**
- * Get members table data.
- * If member record does not exist:
- *   (1) Create email record.
- *   (2) Create member record with associated email
+ * Airtable member & email:
+ * 1) Try to get members table data.
+ * 2) If member record does not exist:
+ *   - Create email record.
+ *   - Create member record with associated email
  */
 const processUser = async (emailAddress) => {
   try {
@@ -73,93 +84,192 @@ const processUser = async (emailAddress) => {
   }
 }
 
+const getSibAttributes = ({
+  firstname,
+  lastname,
+  firm_org,
+  practice,
+  groups,
+}) => {
+  let attributes = null
+  if (firstname) {
+    attributes = attributes || {}
+    attributes.firstname = firstname
+  }
+  if (lastname) {
+    attributes = attributes || {}
+    attributes.lastname = lastname
+  }
+  if (firm_org) {
+    attributes = attributes || {}
+    attributes.firm_org = firm_org
+  }
+  if (practice) {
+    attributes = attributes || {}
+    attributes.practice = practice
+  }
+  if (groups) {
+    attributes = attributes || {}
+    attributes.groups = groups
+  }
+  return attributes
+}
+
 /**
- * Mark LOGGED-IN email VERIFIED and save to Airtable.
- *   When no SendinBlue contact for logged-in email, create contact.
+ * Called from front-end on [page] init.
+ * 
+ * 1) Mark LOGGED-IN email VERIFIED and save to Airtable.
+ *    - Mark emails BLACKLISTED in SendinBlue as BLOCKED in Airtable.
+ * 2) SendinBlue contacts:
+ *    ...Update SendinBlue contact attributes
+ *    ...When no SendinBlue contact for logged-in email, create contact.
+ * 3) Stripe:
+ *    ...
+ * 
+ * NOTE: function called at init and too early to update SendinBlue contact's member-only mailing lists
  *
- * Mark all BLACKLISTED emails as BLOCKED and save to Airtable.
- *
- * Don't care about PRIMARY email - will be processed on [page] useEffect
- *
- * @param {object}
+ * @param {Object}:
+ *   loginEmailAddress {String}
+ *   user {object}: Airtable members table record
+ * 
  * @returns { emails, contacts }
  * * emails: to populate `userEmails` state object.
- * * contact: SendinBlue contact to populate `emailContacts` state object.
+ * * contact: SendinBlue contact to populate update userLists
  */
 const processUserEmails = async ({
   loginEmailAddress,
   user,
 }) => {
   try {
-    let emails = null;
+    let emails = null
+    const groupRecords = await groupsTable.select().firstPage()
+    const allGroups = minifyRecords(groupRecords)
 
-    // Get emails from Airtable
+    // get user fields to update SendinBlue contacts
+    const firstname = user.fields[dbFields.members.firstName]
+    const lastname = user.fields[dbFields.members.lastName]
+    const firm_org = user.fields[dbFields.members.employer]
+    const practice = user.fields[dbFields.members.practiceSetting]
+    const insterestGroupIds = user.fields[dbFields.members.interestGroups]
+    const groupsArr = insterestGroupIds?.map((id) => {
+      const foundGroup = allGroups.find((group) => group.id === id)
+      if (foundGroup) return foundGroup.fields[dbFields.groups.name];
+    })
+    const groups = groupsArr?.join(', ')
+
+    // Get all user emails from Airtable
     const getUserEmails = async () => {
-      const memberEmailIds = user?.fields.emails.join(',');
+      const memberEmailIds = user?.fields?.[dbFields.members.emails].join(',')
+
       const emailRecords = await emailsTable.select({
         filterByFormula: `SEARCH(RECORD_ID(), "${memberEmailIds}")`
-      }).firstPage();
-      return minifyRecords(emailRecords);
+      }).firstPage()
+      return minifyRecords(emailRecords)
     }
-    emails = await getUserEmails();
+    emails = await getUserEmails()
 
-    // get info for all verified contacts to return `contacts`
-    let contacts = [];
+    // get SendinBlue info for all verified contacts to return `contacts`
+    let contacts = []
 
-    const contactsApi = new sibContactsApi();
+    const contactsApi = new sibContactsApi()
 
-    let recordsToUpdate = [],
-      loggedInEmail = null;
+    let recordsToUpdate = []
+    // let loggedInEmail = null;
 
     // loop through Airtable emails
     for (let i = 0; i < emails.length; i++) {
-      const _email = emails[i];
-      let fields = {};
+      const _email = emails[i]
+      let fields = {}
 
-      // only process verified emails, including logged-in email
+      // filter by verified emails, including logged-in email
       if (_email.fields.verified || _email.fields[dbFields.emails.address] === loginEmailAddress) {
 
         if (_email.fields[dbFields.emails.address] === loginEmailAddress) {
-          // save login email's Airtable record to possibly mark as primary later
-          loggedInEmail = _email;
           // mark logged-in email verified
-          fields.verified = true;
+          fields.verified = true
         }
 
         // add previous primary flag to possibly mark as primary later
         if (_email.fields[dbFields.emails.primary]) fields[dbFields.emails.primary] = true;
 
-        // get ESP SendinBlue contact info to mark blacklisted contacts as blocked on Airtable
+        const emailAddress = _email.fields[dbFields.emails.address]
+
+        // Update or create SendinBlue contact
         try {
-          const contactInfo = await contactsApi.getContactInfo(_email.fields[dbFields.emails.address]);
+          // Get contact info and update
+          const updateContact = new sibUpdateContact()
+          const attributes = getSibAttributes({
+            firstname,
+            lastname,
+            firm_org,
+            practice,
+            groups,
+          })
+          if (attributes) updateContact.attributes = attributes;
+          await contactsApi.updateContact(emailAddress, updateContact)
 
+          const contactInfo = await contactsApi.getContactInfo(emailAddress)
           if (contactInfo) {
-
             // add to contacts return value
-            contacts.push(contactInfo);
+            contacts.push(contactInfo)
 
-            const emailBlacklisted = contactInfo[sibFields.contacts.emailBlacklisted];
+            // mark blacklisted/blocked emails from ESP SendinBlue contact info
+            const emailBlacklisted = contactInfo[sibFields.contacts.emailBlacklisted]
             if (emailBlacklisted) {
-              fields[dbFields.emails.blocked] = true;
+              fields[dbFields.emails.blocked] = true
             } else {
-              fields[dbFields.emails.blocked] = false;
+              fields[dbFields.emails.blocked] = false
+            }
+
+            // add or remove Newsletter to email mailingList field
+            const listIds = contactInfo[sibFields.contacts.listIds]
+            let emailLists = null
+            let otherEmailLists = []
+            if (_email.fields[dbFields.emails.mailingLists]) {
+              emailLists = [..._email.fields[dbFields.emails.mailingLists]]
+            }
+            if (emailLists?.length > 0) {
+              otherEmailLists = emailLists.reduce((acc, item) => {
+                if (item !== dbFields.emails.listNewsletter) {
+                  acc.push(item)
+                }
+                return acc
+              }, [])
+            }
+            if (listIds?.find((id) => id === sibLists.newsletter.id)) {
+              fields[dbFields.emails.mailingLists] = [
+                ...otherEmailLists,
+                dbFields.emails.listNewsletter,
+              ]
+            } else {
+              fields[dbFields.emails.mailingLists] = [...otherEmailLists]
             }
           }
         } catch (error) {
-          // if error status 404 'Error: Not Found', create verified email on SendinBlue
+          // Create contact
+          // ...if error status 404 'Error: Not Found', create verified email on SendinBlue
           if (error.status === 404) {
-            const createContact = new sibCreateContact();
-            createContact.email = _email.fields[dbFields.emails.address];
+            const createContact = new sibCreateContact()
+            createContact.email = emailAddress
+            const attributes = getSibAttributes({
+              firstname,
+              lastname,
+              firm_org,
+              practice,
+              groups,
+            })
+            if (attributes) createContact.attributes = attributes;
 
-            createContact.firstname = user.fields[dbFields.members.firstName];
-            createContact.lastname = user.fields[dbFields.members.lastName];
+            // For new contact also add Newsletter
+            createContact.listIds = [sibLists.newsletter.id]
+
             try {
-              const newContact = await contactsApi.createContact(createContact); // id returned
+              const newContact = await contactsApi.createContact(createContact) // id returned
 
               // need to get full contact info for return `contacts` value
               if (newContact && newContact.id) {
-                const newContactInfo = await contactsApi.getContactInfo(newContact.id);
-                contacts.push(newContactInfo);
+                const newContactInfo = await contactsApi.getContactInfo(newContact.id)
+                contacts.push(newContactInfo)
               }
 
             } catch (error) {
@@ -170,10 +280,11 @@ const processUserEmails = async ({
       }
 
       // add all records to update so response can be all emails
-      recordsToUpdate.push({ id: _email.id, fields });
+      recordsToUpdate.push({ id: _email.id, fields })
     }
 
-    const updatedEmails = await emailsTable.update(recordsToUpdate);
+    // update user emails in Airtable
+    const updatedEmails = await emailsTable.update(recordsToUpdate)
     emails = minifyRecords(updatedEmails);
     return { emails, contacts };
   } catch (error) {
@@ -183,57 +294,156 @@ const processUserEmails = async ({
 }
 
 /**
-   * When log in get stripe info, if already a stripe customer:
- * * subscriptions
- * * default card minimal info
+ * TODO: split processStripeCust into three functions:
+ * 1) initStripeCustomer(user, email=null)...
+ * 2) updateStripeEmail(user, email) - called when primaryEmail updates
+ *    * update Stripe account with primary email
+ *    * if no Stripe account call createStripeAccount(user, email)
+ * 3) createStripeAccount(user, email)
+ */
+
+/**
+ * Check if already stripe customer:
+ * 1) Find Stripe account with Stripe ID
+ *  * get subscriptions
+ *  * get default card minimal info
+ * 2) Or create new Stripe account.
+ * 
+ * Side effect of primaryEmail
  *
  * If not stripe customer, create and add stripe customer id to members table
  *  */
+/** 
+ * Call at page load
+ * If Stripe ID in member rec,
+ * ...update Stripe customer name and (optionally) email address.
+ * ...set Stripe subscription and default card.
+ * If no Stripe ID, could call createStripeAccount(user, email)
+ */
+/**
+ * 
+ * @param {Object} params:
+ *           user {String}: Airtable member record
+             emailAddress {String} (optional)
+ * @returns { user, subscriptions, defaultCard }
+ */
 const processStripeCust = async ({ user, emailAddress }) => {
   try {
-    let subscriptions = null;
-    let defaultCard = null;
-    const stripeId = user.fields[dbFields.members.stripeId];
-    const fullName = getMemberFullName(user)
+    let subscriptions = null
+    let defaultCard = null
+    let newOrUpdatedCust = null
+    let updatedUser = null
+    const stripeId = user.fields[dbFields.members.stripeId]
     if (stripeId) {
+      const fullName = getMemberFullName(user)
       // get stripe info
-      let subsResults = await stripe.subscriptions.list({ customer: stripeId });
+      let subsResults = await stripe.subscriptions.list({ customer: stripeId })
       if (subsResults?.data?.length > 0) {
-        subscriptions = subsResults.data;
+
+        // update customer name and address
+        let payload = {
+          customerId: stripeId,
+          name: fullName,
+        }
+        if (emailAddress) payload.email = emailAddress
+        const { customer } = await updateCustomer(payload)
+        if (customer) newOrUpdatedCust = customer
+
+        subscriptions = subsResults.data
         // get info about active subscription's default payment method, eg, last4
-        const activeSubscription = getActiveSubscription(subscriptions);
-        if (activeSubscription && activeSubscription.default_payment_method) {
-          const paymentMethod = await stripe.paymentMethods.retrieve(activeSubscription.default_payment_method);
+        const activeSubscription = getActiveSubscription(subscriptions)
+        if (activeSubscription?.default_payment_method) {
+          const paymentMethod = await stripe.paymentMethods.retrieve(activeSubscription.default_payment_method)
           defaultCard = getPaymentMethodObject(paymentMethod, {
             type: 'subscription',
             id: activeSubscription.id,
             field: 'default_payment_method',
-          });
+          })
         }
       }
     } else {
       // no stripe customer yet
-      let fields = { email: emailAddress };
-      if (fullName) fields.name = fullName;
-      const stripeCustomer = await stripe.customers.create(fields);
-      const fieldsToUpdate = { [dbFields.members.stripeId]: stripeCustomer.id };
-      const updatedRecords = await membersTable.update([{
-        id: user.id,
-        fields: fieldsToUpdate,
-      }]);
-      const updatedUser = minifyRecords(updatedRecords)[0];
-      ;
-      user = updatedUser;
+      const res = await createStripeAccount(user, emailAddress)
+      if (res.customer) newOrUpdatedCust = res.customer
+      if (res.user) updatedUser = res.user
     }
-    return { user, subscriptions, defaultCard };
+    return {
+      user: updatedUser || user,
+      customer: newOrUpdatedCust,
+      subscriptions,
+      defaultCard,
+    }
   } catch (error) {
-    console.log(error);
-    return { error };
+    console.log(error)
+    return { error }
+  }
+}
+
+const createStripeAccount = async (_user, emailAddress) => {
+  const fullName = getMemberFullName(_user)
+  let fields = { email: emailAddress }
+  if (fullName) fields.name = fullName
+  const stripeCustomer = await stripe.customers.create(fields)
+  const fieldsToUpdate = { [dbFields.members.stripeId]: stripeCustomer.id }
+  const updatedRecords = await membersTable.update([{
+    id: _user.id,
+    fields: fieldsToUpdate,
+  }])
+  const user = minifyRecords(updatedRecords)[0]
+  return { user, customer: stripeCustomer }
+}
+
+/********************
+ * utility functions
+ ********************
+ * may be the same as functions in separate APIs
+ */
+
+// move to utility file for pages/api/payments/update-customer.jsx to use
+const updateCustomer = async ({
+  customerId, // required!
+  name,
+  email,
+  defaultPaymentMethod,
+}) => {
+  let updateFields = {};
+
+  if (defaultPaymentMethod) {
+    updateFields = Object.assign(updateFields, {
+      invoice_settings: {
+        default_payment_method: defaultPaymentMethod,
+      },
+    })
+
+    // if hasn't been done, attach payment method to customer first
+    try {
+      const paymentMethod = await stripe.paymentMethods.attach(
+        defaultPaymentMethod,
+        { customer: customerId }
+      )
+    } catch (error) {
+      return res.status('400').send({ error: error.message })
+    }
+  }
+
+  if (name) updateFields.name = name
+  if (email) updateFields.email = email
+
+  try {
+    const customer = await stripe.customers.update(customerId, updateFields)
+    return { customer }
+  } catch (error) {
+    console.log('updateCustomer error', {
+      error
+    })
+    return { error: error.message }
   }
 }
 
 export {
   processUser,
   processUserEmails,
+  // stripe
   processStripeCust,
+  createStripeAccount,
 }
