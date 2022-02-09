@@ -28,6 +28,7 @@ import { dbFields } from '../../../../data/members/airtable/airtable-fields';
 import { getCertifyType, CERTIFY_OPTIONS } from '../../../../data/members/airtable/airtable-values';
 // import { LAW_NOTES_PRICE } from '../../../../data/payments/law-notes-values';
 import { FIRST_TIME_COUPON } from '../../../../data/payments/stripe/stripe-values';
+import { getSibListIdByTitle } from '../../../../data/emails/sendinblue-fields'
 // utils
 import {
   duesInit,
@@ -35,16 +36,24 @@ import {
   getMemberFees,
 } from '../../../../utils/payments/member-dues'; // , setDonation
 import {
+  // members
   updateMember,
-  addPayment,
   getMemberStatus,
-  getNextPaymentDate,
+  getMemberElectedLists,
+  // plans
   getPlanFee,
+  // payments
+  addPayment,
+  getNextPaymentDate,
   getPaymentPayload,
-  getVerifiedEmails,
 } from '../../../../utils/members/airtable/members-db';
 import { updateCustomer, retrieveCoupon } from '../../../../utils/payments/stripe-utils';
-import { updateContact } from '../../../../utils/emails/sendinblue-utils'
+import {
+  updateContact,
+  getExpDate,
+  getLnDate,
+  getGradDate,
+} from '../../../../utils/emails/sendinblue-utils'
 // import DonationFields from '../../../payments/donation-fields';
 // import { getDonationValues } from '../../../../data/payments/donation-values';
 
@@ -63,6 +72,7 @@ const Signup = ({
     memberPlans,
     primaryEmail, // email for stripe payments
     userEmails,
+    setMailingLists,
   } = useContext(MembersContext);
   const memberInfoFormRef = useRef(null);
   const [certifyChoice, setCertifyChoice] = useState('');
@@ -125,9 +135,9 @@ const Signup = ({
       userPayments,
       memberPlans,
       member, // for student grad year
-    });
-    return status;
-  }, [userPayments, memberPlans, member]);
+    })
+    return status
+  }, [userPayments, memberPlans, member])
 
   /**
    * Has very different functions
@@ -364,8 +374,11 @@ const Signup = ({
           });
         }
 
-        // update SiB contact firmOrg attribute
-        if (info.values[employer] !== member.fields[employer]) contactPayload.firmOrg = info.values[employer]
+        // update SiB contact firmOrg attribute (on attorney form)
+        if (info.values[employer] &&
+          info.values[employer] !== member.fields[employer]
+        ) contactPayload.firmOrg = info.values[employer];
+
         // if there are any fields to update
         if (Object.keys(contactPayload).length > 0) {
           userEmails.forEach((emailRec) => {
@@ -382,21 +395,23 @@ const Signup = ({
             userid: member.id,
             memberPlans,
             salary: 0, // student plan
-          });
-          const addedPayment = await addPayment(paymentPayload);
+          })
+          const addedPayment = await addPayment(paymentPayload)
           if (addedPayment.error) {
-            console.log(addedPayment.error);
-            setIsServerError(true);
+            console.log(addedPayment.error)
+            setIsServerError(true)
           } else {
             const newStateItems = setPaymentState({
               member: updatedMember.member,
               payment: addedPayment.payment,
-            });
-            setUserPayments(newStateItems.payments);
-            setMember(newStateItems.member);
-            setStep(step + 1);
-            setIsConfirmation(true);
-            setIsServerError(false);
+            })
+            setUserPayments(newStateItems.payments)
+            setMember(newStateItems.member)
+            updateContactMembership(newStateItems.member, newStateItems.payments)
+
+            setStep(step + 1)
+            setIsConfirmation(true)
+            setIsServerError(false)
           }
           setLoading(false);
         } else {
@@ -414,14 +429,91 @@ const Signup = ({
         setLoading(false);
       }
     }
-
-    // if (formName === SIGNUP_FORMS.payment) {
-    // payment processing from PaymentForm onFinish() > onSuccess()
-    // }
   };
 
-  const onPaymentSuccessful = () => {
-    setPaymentSuccessful(true);
+  /**
+   * After Stripe attorney subscription,
+   * Or student "payment",
+   * ...add new expiration dates to SendinBlue
+   * ...and add contact to mailing lists.
+   * 
+   * NOTE: Newsletter is always added to primary contact.
+   */
+  const updateContactMembership = async (member, payments) => {
+    // remove Newsletter from exclusion list
+    const newsletterExcluded = member.fields?.[dbFields.members.listsUnsubscribed]?.find((list) => list === dbFields.members.listNewsletter)
+    if (newsletterExcluded) {
+      // remove any excluded member lists
+      const newExcludedList = member.fields?.[dbFields.members.listsUnsubscribed]?.filter((list) => list !== dbFields.members.listNewsletter)
+      // update Airtable member
+      const excludePayload = {
+        id: member.id,
+        fields: {
+          [dbFields.members.listsUnsubscribed]: newExcludedList,
+        }
+      }
+      await updateMember(excludePayload)
+
+      // add Newsletter to the Airtable primary email's mailint_lists?
+    }
+
+    // get member eligible lists
+    const status = getMemberStatus({
+      member,
+      userPayments: payments,
+      memberPlans,
+    })
+    let memberLists = getMemberElectedLists(member, status) || []
+    memberLists = [...memberLists, dbFields.members.listNewsletter]
+
+    // update SiB attributes
+    // get new expiration dates
+    const expdate = getExpDate({
+      status,
+      userPayments: payments,
+      memberPlans,
+    })
+    const lnexpdate = getLnDate({
+      status,
+      userPayments: payments,
+      memberPlans,
+    })
+    const graddate = getGradDate({
+      status,
+      member,
+      userPayments: payments,
+      memberPlans,
+    })
+    userEmails.forEach((emailRec) => {
+      // add primary email to member lists
+      const address = emailRec.fields[dbFields.emails.address]
+      let payload = {}
+      // add expiration dates to all verified emails (incl primary)
+      if (emailRec.fields[dbFields.emails.verified]) {
+        payload = { ...payload, expdate, lnexpdate, graddate }
+      }
+      if (address === primaryEmail) {
+        payload.listIds = memberLists.map((listName) => getSibListIdByTitle(listName))
+      }
+      // if primary or verified
+      if (Object.keys(payload).length > 0) {
+        console.log('update...', {
+          address,
+          payload,
+        })
+        updateContact({ ...payload, email: address })
+      }
+    })
+
+    // update mailingList
+    setMailingLists(memberLists)
+
+    // update Airtable email mailing_list col with Newsletter?
+  }
+
+  const onPaymentSuccessful = (member, payments) => {
+    setPaymentSuccessful(true)
+    updateContactMembership(member, payments)
   }
 
   /** content */

@@ -58,7 +58,12 @@ import {
   getGroups,
 } from '../../utils/members/airtable/members-db';
 import { getMemberPageParentKey } from '../../utils/members/dashboard-utils';
-import { updateContact } from '../../utils/emails/sendinblue-utils';
+import {
+  updateContact,
+  getExpDate,
+  getLnDate,
+  getGradDate,
+} from '../../utils/emails/sendinblue-utils';
 // server-side function to populate loggedInMember => member
 import { processUser } from '../api/init/processes';
 
@@ -357,44 +362,22 @@ const MembersPage = ({
       // lists for mailingLists
       let lists = getMemberElectedLists(member, status) || []
       // SiB expiration dates
-      let expdate = ''
-      let graddate = ''
-      let lnexpdate = ''
-      const siBDateFormat = 'YYYY-MM-DD'
-      if (
-        status === memberTypes.USER_ATTORNEY ||
-        status === memberTypes.USER_ATTORNEY_EXPIRED ||
-        status === memberTypes.USER_LAW_NOTES ||
-        status === memberTypes.USER_LAW_NOTES_EXPIRED
-      ) {
-        const date = getNextPaymentDate({
-          userPayments,
-          memberPlans,
-          format: siBDateFormat,
-        })
-        if (
-          status === memberTypes.USER_ATTORNEY ||
-          status === memberTypes.USER_ATTORNEY_EXPIRED
-        ) expdate = date;
-        if (
-          status === memberTypes.USER_LAW_NOTES ||
-          status === memberTypes.USER_LAW_NOTES_EXPIRED
-        ) lnexpdate = date;
-      } else if (
-        status === memberTypes.USER_STUDENT ||
-        status === memberTypes.USER_STUDENT_GRADUATED
-      ) {
-        graddate = getGraduationDate({
-          member,
-          userPayments,
-          memberPlans,
-          format: siBDateFormat,
-        })
-      }
-      // deprecated:
-      // memberTypes.USER_DONOR
-      // memberTypes.USER_DONOR
-
+      const expdate = getExpDate({
+        status,
+        userPayments,
+        memberPlans,
+      })
+      const lnexpdate = getLnDate({
+        status,
+        userPayments,
+        memberPlans,
+      })
+      const graddate = getGradDate({
+        status,
+        member,
+        userPayments,
+        memberPlans,
+      })
       // emailHasNewsletter:
       // ...if no valid SiB contact subscribed remove from Airtable member exclude_mailings
       // ...add/remove Newsletter to/from mailingLists
@@ -402,28 +385,30 @@ const MembersPage = ({
 
       const primaryEmail = getPrimaryEmail(emails, loggedInEmail)
 
-      emails.forEach((email) => {
+      emails.forEach((emailRec) => {
         // siB
         let listIds = null
         let unlinkListIds = null
 
         // if email is blacklisted
-        if (email.fields[dbFields.emails.blocked]) {
+        if (emailRec.fields[dbFields.emails.blocked]) {
           // remove all member lists
           unlinkListIds = getMemberOnlyListIndeces()
           // TODO: AND EXPIRATION DATES?
         } else {
           // if verified (not blacklisted)
-          if (email.fields[dbFields.emails.verified]) {
+          if (emailRec.fields[dbFields.emails.verified]) {
+            const address = emailRec.fields[dbFields.emails.address]
+
             // find if subscribed to newsletter
-            if (email.fields[dbFields.emails.mailingLists]?.find((list) => list === dbFields.emails.listNewsletter)) {
+            if (emailRec.fields[dbFields.emails.mailingLists]?.find((list) => list === dbFields.emails.listNewsletter)) {
               emailHasNewsletter = true
               // don't update newsletter on SiB!
             }
 
             // update SiB contact - only for verified emails
             let payload = {
-              email: email.fields[dbFields.emails.address],
+              email: address,
               expdate,
               graddate,
               lnexpdate,
@@ -431,7 +416,7 @@ const MembersPage = ({
 
             if (
               lists?.length > 0 &&
-              primaryEmail === email.fields[dbFields.emails.address]
+              primaryEmail === address
             ) {
               // add eligible lists to primary address
               listIds = lists.map((listName) => {
@@ -459,7 +444,6 @@ const MembersPage = ({
 
       // update Airtable member
       if (emailHasNewsletter) {
-        // ...add Newsletter to mailingList
         lists = [...lists, dbFields.members.listNewsletter]
 
         // remove Newsletter from exclude_mailings

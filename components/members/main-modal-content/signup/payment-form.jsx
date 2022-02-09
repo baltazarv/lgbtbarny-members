@@ -130,12 +130,12 @@ const PaymentForm = ({
   };
 
   const createAirtablePayment = async (subscription) => {
-    saveNewSubscription(subscription);
+    saveNewSubscription(subscription)
 
     // when expand subscription get latest_invoice object, including latest_invoice.id, otherwise, latest_invoice is id
-    const stripeInvoiceId = subscription.latest_invoice.id || subscription.latest_invoice;
-    const invoicePdf = subscription.latest_invoice.invoice_pdf;
-    const invoiceUrl = subscription.latest_invoice.hosted_invoice_url;
+    const stripeInvoiceId = subscription.latest_invoice.id || subscription.latest_invoice
+    const invoicePdf = subscription.latest_invoice.invoice_pdf
+    const invoiceUrl = subscription.latest_invoice.hosted_invoice_url
 
     const paymentPayload = (getPaymentPayload({
       userid: member.id,
@@ -145,27 +145,27 @@ const PaymentForm = ({
       invoice: stripeInvoiceId,
       invoicePdf,
       invoiceUrl,
-    }));
+    }))
 
     // TODO: use webhook to check that payment was created from subscription?
-    const addedPayment = await addPayment(paymentPayload);
+    const addedPayment = await addPayment(paymentPayload)
     if (addedPayment.error) {
-      console.log(addedPayment.error);
+      console.log(addedPayment.error)
     } else {
       const newStateItems = setPaymentState({
         member,
         payment: addedPayment.payment,
       })
       // payment added to userPayments
-      setUserPayments(newStateItems.payments);
+      setUserPayments(newStateItems.payments)
       // add payment to member payments
-      setMember(newStateItems.member);
+      setMember(newStateItems.member)
+
+      onPaymentSuccessful(newStateItems.member, newStateItems.payments)
     }
 
-    setLoading(false);
-    onPaymentSuccessful();
-    // return <Redirect to={{pathname: '/account'}} />
-  };
+    setLoading(false)
+  }
 
   /** Steps
    * 1. Tokenize payment method
