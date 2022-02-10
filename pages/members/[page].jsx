@@ -185,7 +185,7 @@ const MembersPage = ({
     INIT
    ====*/
 
-  const loggedInEmail = loggedInUser.name
+  const loggedInEmail = loggedInUser?.name
 
   /**************
    * init PLANS *
@@ -301,7 +301,7 @@ const MembersPage = ({
    *** init SIB CONTACT ***
    */
   useEffect(() => {
-    if (!userEmails) {
+    if (!userEmails && loggedInEmail) {
       const processUserEmails = async () => {
         const user = member || loggedInMember
         const result = await fetch('/api/init/process-user-emails', {
@@ -329,7 +329,7 @@ const MembersPage = ({
       }
       processUserEmails()
     }
-  }, [])
+  }, [loggedInEmail])
 
   // TODO: move to utility file
   const hasBeenMember = (type) => {
@@ -923,13 +923,14 @@ export default MembersPage;
 
 export async function getServerSideProps(context) {
 
-  // TEMP TESTING ONLY: BYPASSING AUTH0
-  const session = {
-    user: {
-      name: "baltazarv@gmail.com",
-    }
-  }
-  // const session = await auth0.getSession(context.req);
+  // // TEMP TESTING ONLY: BYPASSING AUTH0
+  // const session = {
+  //   user: {
+  //     name: "baltazarv@gmail.com",
+  //   }
+  // }
+
+  const session = await auth0.getSession(context.req);
   console.log('BACKEND session:', session, '; params:', context.params, '; query:', context.query);
 
   let emailAddress = null,
