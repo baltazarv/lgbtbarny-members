@@ -44,14 +44,12 @@ import {
   // members table
   updateMember, // exclude_mailings
   getMemberType,
-  getGraduationDate,
   getMemberStatus,
   getMemberElectedLists,
   // plans table
   getPlans,
   // payments table
   getUserPayments,
-  getNextPaymentDate,
   // emails
   getPrimaryEmail,
   // groups table
@@ -96,6 +94,8 @@ const MembersPage = ({
     userEmails, setUserEmails,
     primaryEmail, setPrimaryEmail,
     mailingLists, setMailingLists,
+    // groups
+    groups, setGroups,
   } = useContext(MembersContext);
 
   // when anon user, select tab to view preview content
@@ -199,6 +199,25 @@ const MembersPage = ({
           return
         }
         if (plans) setMemberPlans(plans)
+      })()
+    }
+  }, [])
+
+  /**************
+   * init GROUPS
+   **************
+   A call to the Airtable groups table also happens from the processUserEmails server-side function - used to populate the SendinBlue "groups" attribute.
+   */
+  useEffect(() => {
+    if (!groups) {
+      (async function fetchGroups() {
+        const { groups, error } = await getGroups()
+        if (error) {
+          console.log('error', error)
+          return
+        }
+        // TODO: merge with group props in data/members/sample/member-groups.jsx?
+        if (groups) setGroups(groups)
       })()
     }
   }, [])

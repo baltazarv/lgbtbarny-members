@@ -55,7 +55,7 @@ const AdditionalInfoForm = ({
       {editing
         ?
         <Select
-          placeholder="Choose one..."
+          placeholder="Choose any..."
           disabled={loading}
           mode='multiple'
         >

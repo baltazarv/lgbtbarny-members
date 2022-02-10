@@ -3,6 +3,8 @@
  * * Forms in AccountsForm submitted in this onFormFinish().
  * * EmailAddresses handle its new email form.
  *     `changePrimaryEmail` on this Accounts form handles switching primary emails.
+ * 
+ * NOTE: Any props sent to child components have to be passed thru AccountsForm!
  */
 import { useState, useContext, useMemo, useEffect } from 'react';
 import { Form, Tooltip } from 'antd';
@@ -15,6 +17,7 @@ import AccountsItem from './accounts-item';
 import ProfileForm from './forms/profile-form';
 import EmailAddresses from './forms/email-addresses';
 import MemberInfoFields from './forms/member-info-fields';
+import GroupInterestForm from './forms/group-interest-form'
 import AdditionalInfoForm from './forms/additional-info-form';
 import PaymentInfo from './forms/payment-info';
 import MailingPrefs from './forms/mailing-prefs';
@@ -73,6 +76,7 @@ const Account = ({
     userEmails, setUserEmails,
     memberPlans,
     userPayments,
+    groups,
     subscriptions, saveNewSubscription,
     primaryEmail,
     mailingLists,
@@ -171,6 +175,18 @@ const Account = ({
         })
       })
     }
+
+    // if group interests are updated
+    const userGroups = info.values[dbFields.members.interestGroups]
+    if (userGroups) {
+      const groupString = userGroups.map((id) => groups.find((rec) => rec.id === id).fields[dbFields.groups.name]).join(', ')
+      verifiedEmails.forEach((email) => {
+        updateContact({
+          email,
+          groups: groupString,
+        })
+      })
+    }
   }
 
   const emailTableDataSource = useMemo(() => {
@@ -259,6 +275,22 @@ const Account = ({
     }
   }
 
+
+  /**
+   * Filter groups by type for GroupInterestForm:
+   * ...if "student" show student-only
+   * ...or if "attorney" show attorney-only
+   */
+  const memberTypeGroups = useMemo(() => {
+    if (groups && member.fields[dbFields.members.interestGroups]) {
+      return member?.fields?.[dbFields.members.interestGroups].filter((id) => {
+        return groups.find((rec) => {
+          return id === rec.id && rec.fields?.[dbFields.groups.type]?.find((type) => type === memberType)
+        })
+      })
+    }
+  }, [member, groups])
+
   return <div className="members-account">
     <Form.Provider
       onFormFinish={onFormFinish}
@@ -320,6 +352,22 @@ const Account = ({
           />
         </div>
       }
+
+      {/* Group interests */}
+
+      <div className="mb-3">
+        <AccountsForm
+          name={ACCOUNT_FORMS.groupInterests}
+          title={`${memberType === memberTypes.USER_STUDENT ? 'Student ' : ''}Group Interests`}
+          memberType={memberType}
+          memberTypeGroups={memberTypeGroups}
+          initialValues={{
+            [dbFields.members.interestGroups]: memberTypeGroups,
+          }}
+          loading={loading}
+          render={(args) => <GroupInterestForm {...args} />}
+        />
+      </div>
 
       <div className="mb-3">
         <AccountsForm

@@ -1,13 +1,11 @@
-import { useEffect, useState, useMemo, useContext } from 'react';
-import { Row, Col, Select, Card, Button, Typography, Radio, Modal } from 'antd';
-import { Container } from 'react-bootstrap';
-import './member-groups.less';
+import { useEffect, useState, useMemo } from 'react'
+import { Row, Col, Select, Card, Button, Typography, Radio, Modal } from 'antd'
+import { Container } from 'react-bootstrap'
+import './member-groups.less'
 // data
-import { MembersContext } from '../../../../contexts/members-context';
-import * as memberTypes from '../../../../data/members/member-types';
-import { dbFields } from '../../../../data/members/airtable/airtable-fields';
-import { ATTORNEY_GROUPS, STUDENT_GROUPS } from '../../../../data/members/sample/member-groups';
-import { groupCategories } from '../../../../data/members/sample/member-groups';
+import * as memberTypes from '../../../../data/members/member-types'
+import { ATTORNEY_GROUPS, STUDENT_GROUPS } from '../../../../data/members/sample/member-groups'
+import { groupCategories } from '../../../../data/members/sample/member-groups'
 
 const { Option } = Select;
 const { Meta } = Card;
@@ -42,8 +40,8 @@ const MemberGroups = ({
     setModalKey(key);
   }
 
-  const filters = useMemo(() => {
-    let _filter = null;
+  const filters = () => {
+    let _filter = null
     if (
       memberType === memberTypes.USER_ATTORNEY ||
       (
@@ -65,10 +63,10 @@ const MemberGroups = ({
         >
           {categoryOptions}
         </Select>
-      </div>;
+      </div>
     }
-    return _filter;
-  }, [categoryOptions, groupCategories, memberTypes, previewUser, memberTypeView]);
+    return _filter
+  }
 
   const groupCards = useMemo(() => {
     const _groupCards = [];
@@ -159,10 +157,10 @@ const MemberGroups = ({
     </>
   }, [ATTORNEY_GROUPS, STUDENT_GROUPS, memberType, previewUser, categories, memberTypeView]);
 
-  const introText = useMemo(() => {
-    if (memberType === memberTypes.USER_ATTORNEY) return <div className="mb-2">Browse over the following ways to get involved or find by using the filters:</div>;
+  const introText = () => {
+    if (memberType === memberTypes.USER_ATTORNEY) return <div className="mb-2">Browse over the following ways to get involved or find by using the filters:</div>
 
-    if (memberType === memberTypes.USER_STUDENT) return <p>See the opportunities available to you:</p>;
+    if (memberType === memberTypes.USER_STUDENT) return <p>See the opportunities available to you:</p>
 
     if (memberType === memberTypes.USER_NON_MEMBER ||
       memberType === memberTypes.USER_LAW_NOTES) {
@@ -180,7 +178,7 @@ const MemberGroups = ({
           <Radio.Button value={memberTypes.USER_STUDENT}>Student</Radio.Button>
         </Radio.Group>
       </>
-    };
+    }
 
     if (memberType === memberTypes.USER_ANON) return <>
       {previewUser === memberTypes.USER_ATTORNEY &&
@@ -200,8 +198,8 @@ const MemberGroups = ({
           Committee, section, and program participation is restricted to <Button type="link" onClick={() => onLink(memberTypes.TAB_ATTORNEY)}>Attorney Members</Button> and <Button type="link" onClick={() => onLink(memberTypes.TAB_STUDENT)}>Law Student Members.</Button>
         </div>
       }
-    </>;
-  }, [memberType, previewUser, memberTypeView]);
+    </>
+  }
 
   const cardModal = useMemo(() => {
     let _cardModal = null;
@@ -277,8 +275,8 @@ const MemberGroups = ({
   }, [modalKey, groupsData, cardModalVisible]);
 
   return <div className="member-groups">
-    {introText}
-    {filters}
+    {introText()}
+    {filters()}
     {groupCards}
     {cardModal}
   </div>

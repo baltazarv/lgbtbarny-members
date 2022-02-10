@@ -8,21 +8,23 @@ const longFieldFormat = {
     sm: { span: 24 },
   },
   wrapperCol: {
-    xs :{ span: 24 },
+    xs: { span: 24 },
     sm: { span: 24 },
   }
-};
+}
 
 const AccountsForm = ({
+  initialValues,
+  editable = true,
+  render,
+  // passed to render
   name, // form name
   title,
-  initialValues,
-  editable=true,
   memberType,
   onLink,
   loading,
   setLoading,
-  render,
+  memberTypeGroups, // for GroupInterestForm
 }) => {
   const [form] = Form.useForm();
   // enable submit button
@@ -88,16 +90,19 @@ const AccountsForm = ({
         initialValues={initialValues}
       >
         {render({
-          name,
-          title,
+          // props defined by this component:
           form,
-          memberType,
           longFieldFormat, // for fields with label above
-          onLink,
           editing,
           setEditing,
+          // props passed thru from parent:
+          name,
+          title,
+          memberType,
+          onLink,
           loading,
           setLoading,
+          memberTypeGroups, // for GroupInterestForm
         })}
       </Form>
     </Card>

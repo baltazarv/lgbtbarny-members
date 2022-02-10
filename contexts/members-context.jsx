@@ -13,6 +13,7 @@ const MembersProvider = ({ children }) => {
   const [userEmails, setUserEmails] = useState(null);
   const [userPayments, setUserPayments] = useState(null);
   const [memberPlans, setMemberPlans] = useState(null);
+  const [groups, setGroups] = useState(null)
   // Stripe payments
   const [subscriptions, setSubscriptions] = useState(null);
   const [defaultCard, setDefaultCard] = useState(null);
@@ -174,6 +175,7 @@ const MembersProvider = ({ children }) => {
     userEmails, setUserEmails,
     userPayments, setUserPayments,
     memberPlans, setMemberPlans,
+    groups, setGroups,
 
     // Stripe payments
     subscriptions, setSubscriptions,

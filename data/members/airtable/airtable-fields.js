@@ -144,6 +144,7 @@ exports.dbFields = {
   },
   groups: {
     name: 'name',
+    type: 'type', // "attorney" or "student"
   },
 
   /** `law notes` base */
