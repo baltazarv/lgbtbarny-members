@@ -4,7 +4,7 @@
 import { emailsTable, minifyRecords } from '../../utils/Airtable';
 
 export default async (req, res) => {
-  console.log('/api/members/update-emails', req.body);
+  // console.log('/api/members/update-emails', req.body)
 
   try {
     const updateRes = await emailsTable.update(req.body);

@@ -20,21 +20,29 @@ const createCustomer = async (fields) => {
   }
 }
 
+/**
+ * @param {Object} fieldsToUpdate
+ *  customerId (required)
+    name
+    email
+    defaultPaymentMethod
+ * @returns {Object} Stripe customer object
+ */
 const updateCustomer = async (fieldsToUpdate) => {
   try {
     const { error, customer } = await fetch('/api/payments/update-customer', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(fieldsToUpdate),
-    }).then(r => r.json());
-    if (error) return { error };
+    }).then(r => r.json())
+    if (error) return { error }
     // customer isn't being saved to context
-    return { customer };
+    return { customer }
   } catch (error) {
-    console.log(error);
+    console.log(error)
     return { error }
   }
-};
+}
 
 /**
  * Update for (1) collection method or (2) price

@@ -39,7 +39,7 @@ import {
 } from '../../data/emails/sendinblue-fields';
 // contexts
 import { MembersContext } from '../../contexts/members-context';
-// utils
+// utils // api calls
 import {
   // members table
   updateMember, // exclude_mailings
@@ -64,6 +64,7 @@ import {
 } from '../../utils/emails/sendinblue-utils';
 // server-side function to populate loggedInMember => member
 import { processUser } from '../api/init/processes';
+import { updateCustomer } from '../../utils/payments/stripe-utils'
 
 const { Sider } = Layout;
 
@@ -549,24 +550,38 @@ const MembersPage = ({
     })
   }, [userPayments, memberPlans, member])
 
-  // could be a useMemo!
+  const updateStripeCustEmail = (email) => {
+    const user = member || loggedInMember
+    const stripeId = user.fields[dbFields.members.stripeId]
+    if (stripeId) {
+      updateCustomer({
+        customerId: stripeId,
+        email,
+      })
+    }
+  }
+
   /********************
    * set PRIMARY EMAIL
    ********************
    * Anytime user emails are modified, set primary email.
+   * ...and update Stripe customer email address.
    * 
    * NOTE: Primary email should never be null.
    * ...It could be different from primary email set by user.
-   *
-   * SIDE EFFECTS: any?
    * */
   useEffect(() => {
     if (userEmails) {
       const email = getPrimaryEmail(userEmails, loggedInEmail)
       // only update if value is different
-      setPrimaryEmail((state) => email !== state ?
-        email :
-        null)
+      setPrimaryEmail((state) => {
+        if (email !== state) {
+          updateStripeCustEmail(email)
+          return email
+        } else {
+          return null
+        }
+      })
     }
   }, [userEmails])
 

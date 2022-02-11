@@ -273,6 +273,8 @@ const Account = ({
 
       setUserEmails(_userEmails)
     }
+
+    // Stripe customer email is updated from a [page] useEffect that runs when userEmails changes
   }
 
 

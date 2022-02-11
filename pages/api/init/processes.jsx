@@ -294,37 +294,18 @@ const processUserEmails = async ({
 }
 
 /**
- * TODO: split processStripeCust into three functions:
- * 1) initStripeCustomer(user, email=null)...
- * 2) updateStripeEmail(user, email) - called when primaryEmail updates
- *    * update Stripe account with primary email
- *    * if no Stripe account call createStripeAccount(user, email)
- * 3) createStripeAccount(user, email)
- */
-
-/**
+ * Called at page load.
  * Check if already stripe customer:
- * 1) Find Stripe account with Stripe ID
- *  * get subscriptions
- *  * get default card minimal info
+ * 1) If Stripe ID in member rec,
+ *  * update Stripe customer name
+ *  * if subscription, get it and default card minimal info
  * 2) Or create new Stripe account.
  * 
- * Side effect of primaryEmail
- *
- * If not stripe customer, create and add stripe customer id to members table
- *  */
-/** 
- * Call at page load
- * If Stripe ID in member rec,
- * ...update Stripe customer name and (optionally) email address.
- * ...set Stripe subscription and default card.
- * If no Stripe ID, could call createStripeAccount(user, email)
- */
-/**
- * 
+ * NOTE: Stripe customer email is updated when primary email is set, ie, from a [page] useEffect that runs when userEmails changes
+
  * @param {Object} params:
- *           user {String}: Airtable member record
-             emailAddress {String} (optional)
+ *   user {String}: Airtable member record
+     emailAddress {String} (optional)
  * @returns { user, subscriptions, defaultCard }
  */
 const processStripeCust = async ({ user, emailAddress }) => {
@@ -336,19 +317,17 @@ const processStripeCust = async ({ user, emailAddress }) => {
     const stripeId = user.fields[dbFields.members.stripeId]
     if (stripeId) {
       const fullName = getMemberFullName(user)
-      // get stripe info
+      // update customer name
+      const { customer } = await updateCustomer({
+        customerId: stripeId,
+        name: fullName,
+      })
+      if (customer) newOrUpdatedCust = customer
+
+      // get stripe payment info
       let subsResults = await stripe.subscriptions.list({ customer: stripeId })
+      // if customer has previous subscriptions, get info
       if (subsResults?.data?.length > 0) {
-
-        // update customer name and address
-        let payload = {
-          customerId: stripeId,
-          name: fullName,
-        }
-        if (emailAddress) payload.email = emailAddress
-        const { customer } = await updateCustomer(payload)
-        if (customer) newOrUpdatedCust = customer
-
         subscriptions = subsResults.data
         // get info about active subscription's default payment method, eg, last4
         const activeSubscription = getActiveSubscription(subscriptions)
