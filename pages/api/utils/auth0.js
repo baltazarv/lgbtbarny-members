@@ -1,4 +1,6 @@
-import { initAuth0 } from '@auth0/nextjs-auth0';
+import { initAuth0 } from '@auth0/nextjs-auth0'
+
+// Cannot use VERCEL_URL environment variable, which is commit-specific domain from Vercel, eg, "https://lgbtbarny-e7gz5q1ch-baltazarv.vercel.app" to construct "redirectUri" and "postLogoutRedirectUri". Must instead "hard-code" domain in environment variable "DOMAIN".
 
 export default initAuth0({
   domain: process.env.AUTH0_DOMAIN,
@@ -31,4 +33,4 @@ export default initAuth0({
     // (Optional) Configure the clock tolerance in milliseconds, if the time on your server is running behind.
     clockTolerance: 10000
   }
-});
+})
