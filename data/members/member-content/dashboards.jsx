@@ -78,65 +78,64 @@ export const getDashboard = ({
     banner = banners('graduated', onLink);
   };
 
-  // not logged in
-  if (!member || isEmpty(member)) {
-    return anonDashboard({
-      userType: memberTypes.USER_ANON,
-      user: member,
-      onLink,
-      banner,
-      previewUser,
-    });
+  // // not logged in
+  // if (!member || isEmpty(member)) {
+  //   return anonDashboard({
+  //     userType: memberTypes.USER_ANON,
+  //     user: member,
+  //     onLink,
+  //     banner,
+  //     previewUser,
+  //   });
+  // } else {
+  // }
 
-  } else {
+  // attorney or graduated student
+  if (
+    memberType === memberTypes.USER_ATTORNEY ||
+    (memberType === memberTypes.USER_STUDENT && memberStatus === memberTypes.USER_STUDENT_GRADUATED)
+  ) return attorneyDashboard({
+    member,
+    memberStatus,
+    memberType,
+    setMember,
+    onLink,
+    setTitle,
+    banner,
+  });
 
-    // attorney or graduated student
-    if (
-      memberType === memberTypes.USER_ATTORNEY ||
-      (memberType === memberTypes.USER_STUDENT && memberStatus === memberTypes.USER_STUDENT_GRADUATED)
-    ) return attorneyDashboard({
-      member,
-      memberStatus,
-      memberType,
-      setMember,
-      onLink,
-      setTitle,
-      banner,
-    });
+  // active student
+  if (memberType === memberTypes.USER_STUDENT) return studentDashboard({
+    user: member,
+    memberStatus,
+    memberType,
+    setMember,
+    onLink,
+    setTitle,
+    banner,
+  });
 
-    // active student
-    if (memberType === memberTypes.USER_STUDENT) return studentDashboard({
-      user: member,
-      memberStatus,
-      memberType,
-      setMember,
-      onLink,
-      setTitle,
-      banner,
-    });
+  // Law Notes subscriber: active and expired
+  if (memberType === memberTypes.USER_LAW_NOTES) return lawNotesDashboard({
+    member,
+    memberStatus,
+    memberType,
+    onLink,
+    setTitle,
+    banner,
+  });
 
-    // Law Notes subscriber: active and expired
-    if (memberType === memberTypes.USER_LAW_NOTES) return lawNotesDashboard({
-      member,
-      memberStatus,
-      memberType,
-      onLink,
-      setTitle,
-      banner,
-    });
-
-    // pending member, aka memberTypes.USER_NON_MEMBER (default)
-    // also other plans, eg, "donor"
-    return nonMemberDashboard({
-      member,
-      memberStatus,
-      memberType,
-      setMember,
-      onLink,
-      banner,
-    })
-  }
-};
+  // pending member, aka memberTypes.USER_NON_MEMBER (default)
+  // also other plans, eg, "donor"
+  return nonMemberDashboard({
+    member,
+    memberStatus,
+    memberType,
+    setMember,
+    onLink,
+    banner,
+  })
+}
 
 /***************************
  * User-specific dashboards
@@ -150,6 +149,7 @@ const defaultOptions = (memberType) => {
   }
 }
 
+// no longer being used - redirecting to Auth0 login form if user not logged in
 const anonDashboard = ({
   onLink,
   banner,
@@ -228,7 +228,6 @@ const nonMemberDashboard = ({
   memberType,
   onLink,
   banner,
-  previewUser,
 }) => {
   return {
     options: {
@@ -236,7 +235,7 @@ const nonMemberDashboard = ({
     },
     account: account({ memberStatus, memberType, user: member, setUser, onLink, banner }),
     participate: participate({ memberType, onLink, banner }),
-    lawnotes: lawNotes({ memberType, onLink, banner, previewUser }),
+    lawnotes: lawNotes({ memberType, onLink, banner }),
     clecenter: cleCenter({ memberType, user: member, onLink, banner }),
     discounts: discounts({ memberType, onLink, banner }),
     logout: logout(memberType, onLink),

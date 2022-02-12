@@ -65,6 +65,7 @@ import {
 // server-side function to populate loggedInMember => member
 import { processUser } from '../api/init/processes';
 import { updateCustomer } from '../../utils/payments/stripe-utils'
+import './[page].less'
 
 const { Sider } = Layout;
 
@@ -167,8 +168,12 @@ const MembersPage = ({
   // when loggedInUser & loggedInUser set by getServerSideProps on page loads
 
   useEffect(() => {
-    setAuthUser(loggedInUser);
-  }, [loggedInUser]);
+    if (!loggedInMember) {
+      logIn()
+    } else {
+      setAuthUser(loggedInUser)
+    }
+  }, [loggedInUser])
 
   // // TODO: if not logged in, redirect from pages for logged-in users
   // // happen in a latter life cycle phase
@@ -685,18 +690,22 @@ const MembersPage = ({
    *** DASHBOARD ***
    * set data, ie, dashboard, when user info is established
    * TODO: set up a dashboard that requires some or no data. On certain pages data not even needed.
+   * 
+   * NOTE: previewUser is only relevant for the anonymous user for whom we are no longer showing a dashboard
    */
   useEffect(() => {
-    setData(getDashboard({
-      member,
-      setMember,
-      memberStatus,
-      memberType,
-      onLink: handleContentLink,
-      setTitle: setContentTitle,
-      previewUser,
-    }));
-  }, [member, memberStatus, memberType, previewUser]);
+    if (member && memberType !== memberTypes.USER_ANON) {
+      setData(getDashboard({
+        member,
+        setMember,
+        memberStatus,
+        memberType,
+        onLink: handleContentLink,
+        setTitle: setContentTitle,
+        previewUser,
+      }))
+    }
+  }, [member, memberStatus, memberType, previewUser])
 
   /**
    *** DASHBOARD ROUTES ***
@@ -837,75 +846,78 @@ const MembersPage = ({
 
   return (
     <Elements stripe={stripePromise}>
-
       <div className="members-page">
         <MainLayout
           subtitle="| Members"
+          isLoggedIn={!!member}
         >
-          <Jumbotron fluid className={`${memberType}`}>
-            <Container>
-              <h1 className="h1">
-                {
-                  memberType === memberTypes.USER_NON_MEMBER || (memberType === memberTypes.USER_ANON && previewUser === memberTypes.USER_NON_MEMBER)
-                    ?
-                    <>DASHBOARD</>
-                    :
-                    <>MEMBERS <span className="subtitle">Dashboard</span></>
-                }
-              </h1>
-            </Container>
-          </Jumbotron>
+          {member &&
+            <>
+              <Jumbotron fluid className={`${memberType}`}>
+                <Container>
+                  <h1 className="h1">
+                    {
+                      memberType === memberTypes.USER_NON_MEMBER || (memberType === memberTypes.USER_ANON && previewUser === memberTypes.USER_NON_MEMBER)
+                        ?
+                        <>DASHBOARD</>
+                        :
+                        <>MEMBERS <span className="subtitle">Dashboard</span></>
+                    }
+                  </h1>
+                </Container>
+              </Jumbotron>
 
-          <Breakpoint xs only>
-            <MemberAccordion
-              data={data}
-              title={contentTitle}
-              setTitle={setContentTitle}
-              logout={logOut}
-              activeKey={selectedKey}
-              setActiveKey={selectItem}
-            />
-          </Breakpoint>
-
-          <Breakpoint sm up>
-            <Layout
-              className="member-page-layout"
-            >
-              <Sider
-                collapsible
-                collapsed={menuCollapsed}
-                onCollapse={onMenuCollapse}
-                theme="light"
-              >
-
-                <div className="avatar-box" onClick={toggleOpenMenuKeys}>
-                  {avatar}
-                </div>
-                <MemberMenu
+              <Breakpoint xs only>
+                <MemberAccordion
                   data={data}
-                  selectedKeys={selectedKey}
-                  setSelectedKey={setSelectedKey}
-                  onMenuClick={onMenuClick}
-                  menuOpenKeys={menuOpenKeys}
-                  onMenuOpenChange={onMenuOpenChange}
-                />
-              </Sider>
-              <Layout className="site-layout">
-                {/* TODO: render props to manage content types from this component? */}
-                <MemberContent
-                  data={data} // dashboard content
                   title={contentTitle}
                   setTitle={setContentTitle}
-                  dataKey={selectedKey}
-                  onLinkClick={handleContentLink}
-                  onPreviewUserTabClick={handleSelectPreviewUser}
-                  tabKey={previewUser}
-                  userType={memberType}
+                  logout={logOut}
+                  activeKey={selectedKey}
+                  setActiveKey={selectItem}
                 />
-              </Layout>
-            </Layout>
-          </Breakpoint>
+              </Breakpoint>
 
+              <Breakpoint sm up>
+                <Layout
+                  className="member-page-layout"
+                >
+                  <Sider
+                    collapsible
+                    collapsed={menuCollapsed}
+                    onCollapse={onMenuCollapse}
+                    theme="light"
+                  >
+
+                    <div className="avatar-box" onClick={toggleOpenMenuKeys}>
+                      {avatar}
+                    </div>
+                    <MemberMenu
+                      data={data}
+                      selectedKeys={selectedKey}
+                      setSelectedKey={setSelectedKey}
+                      onMenuClick={onMenuClick}
+                      menuOpenKeys={menuOpenKeys}
+                      onMenuOpenChange={onMenuOpenChange}
+                    />
+                  </Sider>
+                  <Layout className="site-layout">
+                    {/* TODO: render props to manage content types from this component? */}
+                    <MemberContent
+                      data={data} // dashboard content
+                      title={contentTitle}
+                      setTitle={setContentTitle}
+                      dataKey={selectedKey}
+                      onLinkClick={handleContentLink}
+                      onPreviewUserTabClick={handleSelectPreviewUser}
+                      tabKey={previewUser}
+                      userType={memberType}
+                    />
+                  </Layout>
+                </Layout>
+              </Breakpoint>
+            </>
+          }
         </MainLayout>
 
         <MemberModal
@@ -929,7 +941,6 @@ const MembersPage = ({
         />
 
       </div>
-
     </Elements>
   );
 };
