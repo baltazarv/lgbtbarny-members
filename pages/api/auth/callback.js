@@ -4,7 +4,7 @@ export default async function callback(req, res) {
   try {
     // set any cookies...
     await auth0.handleCallback(req, res, {
-      redirectTo: "/"
+      redirectTo: "/",
       // onUserLoaded: async (req, res, session, state) => {
       //   return {
       //     ...session,
@@ -14,15 +14,22 @@ export default async function callback(req, res) {
       //     },
       //   };
       // },
-    });
-    // await auth0.handleCallback(req, res, {
-    //   onUserLoaded: async (req, res, session, state) => {
-    //     throw new Error("You are not allowed to sign in");
-    //   },
-    // });
+    })
   } catch (error) {
-    console.error(error);
-    res.status(error.status || 400).end(error.message);
-    // TODO: handle error, such as `error: 'unauthorized', error_description: 'Wrong email or verification code.'`
+    /**
+     * error: "unauthorized"
+     * error_description: See examples in pages/members/auth-failed.js
+    */
+    if (req.query.error === 'unauthorized') {
+      const query = req.url.split('&')[1]
+      res.redirect(`/members/auth-failed?${query}`)
+      return
+    }
+    res.status(error.status || 400).end(error.message)
   }
 }
+
+/**
+ * Not covered:
+ * {"code":"too_many_attempts","message":"Your account has been blocked after multiple consecutive login attempts. We've sent you an email with instructions on how to unblock it."}
+ */
