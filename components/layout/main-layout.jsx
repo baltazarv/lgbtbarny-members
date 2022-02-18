@@ -14,6 +14,7 @@ setDefaultBreakpoints([
 ]);
 
 const MainLayout = ({
+  pageType,
   children,
   subtitle = '',
   isLoggedIn,
@@ -38,13 +39,13 @@ const MainLayout = ({
       <meta name="theme-color" content="#ffffff"></meta>
     </Head>
     <Layout>
-      {isLoggedIn ?
+      {pageType === 'dashboard' && !isLoggedIn ?
+        <LoadingScreen /> :
         <>
           <MainHeader />
           {children}
           <MainFooter />
-        </> :
-        <LoadingScreen />
+        </>
       }
     </Layout>
   </BreakpointProvider>

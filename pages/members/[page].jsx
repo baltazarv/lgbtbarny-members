@@ -848,6 +848,7 @@ const MembersPage = ({
     <Elements stripe={stripePromise}>
       <div className="members-page">
         <MainLayout
+          pageType="dashboard"
           subtitle="| Members"
           isLoggedIn={!!member}
         >

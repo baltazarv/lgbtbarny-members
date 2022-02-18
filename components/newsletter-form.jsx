@@ -272,7 +272,7 @@ const NewsletterForm = ({
 
       <div className="mb-2"><TitleIcon name="demographic" ariaLabel="Participate" />&nbsp;<TitleIcon name="bookmark" ariaLabel="LGBT Law Notes" />&nbsp;<TitleIcon name="government" ariaLabel="CLE Center" />&nbsp;<TitleIcon name="star" ariaLabel="Discounts" /></div>
 
-      <p className="px-5">
+      <div className="px-5">
         <p>
           If you are an attorney or law student <a href="/members/home?signup">become a member</a>.
         </p>
@@ -280,7 +280,7 @@ const NewsletterForm = ({
           If you are a member <a href="/api/auth/login">login</a> to check out the new <strong>Members&nbsp;Dashboard</strong>.<br />
           <span className="text-secondary">Email validation is the only requirement to login.</span>
         </div>
-      </p>
+      </div>
     </>;
     return null;
   }, [authUser, submitError, loading, isSubmitted]);
