@@ -554,7 +554,7 @@ const RenewFormPage = () => {
 
   return <div>
     <Elements stripe={stripePromise}>
-      <MainLayout>
+      <MainLayout pageType="renew">
         <Content>
           <div
             className="med-blue-bg-color"

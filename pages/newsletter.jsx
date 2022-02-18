@@ -6,7 +6,7 @@ const { Content } = Layout;
 
 const Newsletter = () => {
   return <div>
-    <MainLayout>
+    <MainLayout pageType="newsletter">
       <Content>
         <div
           className="med-blue-bg-color"
