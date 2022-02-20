@@ -14,7 +14,7 @@ import SeeMore from '../../../../elements/see-more';
 // data
 import { MembersContext } from '../../../../../contexts/members-context';
 import { dbFields } from '../../../../../data/members/airtable/airtable-fields';
-import { sibFields, getListTitle } from '../../../../../data/emails/sendinblue-fields';
+import { sibFields } from '../../../../../data/emails/sendinblue-fields';
 // utils
 import {
   createEmail,
@@ -26,7 +26,8 @@ import { updateContact } from '../../../../../utils/emails/sendinblue-utils';
 const { Link } = Typography;
 const { Search } = Input;
 
-const EmailsAddresses = ({
+const EmailAddresses = ({
+  onLink,
   loading,
   editing,
 
@@ -105,6 +106,9 @@ const EmailsAddresses = ({
    */
 
   const addEmail = async (emailAddress) => {
+    // check if user session expired
+    onLink('check-session')
+
     setAddEmailLoading(true);
     if (emailAddress) {
       try {
@@ -348,7 +352,7 @@ const EmailsAddresses = ({
     }
     return <>{listMessage} Go to <a href="#mail-prefs">Mailing preferences</a> below to update your mailing list settings.</>
   }
-  
+
   return <>
     <Table
       rowSelection={rowSelection}
@@ -396,4 +400,4 @@ const EmailsAddresses = ({
   </>;
 };
 
-export default EmailsAddresses;
+export default EmailAddresses;

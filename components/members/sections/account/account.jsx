@@ -239,6 +239,9 @@ const Account = ({
    * @returns
    */
   const changePrimaryEmail = async (newPrimaryEmail) => {
+    // check if user session expired
+    onLink('check-session')
+
     const oldPrimary = userEmails.find((email) => email.fields[dbFields.emails.address] === primaryEmail)
     let emails = [
       { id: newPrimaryEmail.key, fields: { primary: true } },
@@ -284,7 +287,7 @@ const Account = ({
    * ...or if "attorney" show attorney-only
    */
   const memberTypeGroups = useMemo(() => {
-    if (groups && member.fields[dbFields.members.interestGroups]) {
+    if (groups && member.fields?.[dbFields.members.interestGroups]) {
       return member?.fields?.[dbFields.members.interestGroups].filter((id) => {
         return groups.find((rec) => {
           return id === rec.id && rec.fields?.[dbFields.groups.type]?.find((type) => type === memberType)
@@ -318,9 +321,11 @@ const Account = ({
       {/* Email addresses */}
 
       <div id="emails" className="mb-3">
+        {/* AccountsItem vs AccountsForm */}
         <AccountsItem
           // name={ACCOUNT_FORMS.editEmails}
           title="Email addresses"
+          onLink={onLink}
           loading={loading}
           values={emailTableValues}
           changeValues={changePrimaryEmail}
@@ -362,6 +367,7 @@ const Account = ({
           name={ACCOUNT_FORMS.groupInterests}
           title={`${memberType === memberTypes.USER_STUDENT ? 'Student ' : ''}Group Interests`}
           memberType={memberType}
+          onLink={onLink}
           memberTypeGroups={memberTypeGroups}
           initialValues={{
             [dbFields.members.interestGroups]: memberTypeGroups,
@@ -370,6 +376,8 @@ const Account = ({
           render={(args) => <GroupInterestForm {...args} />}
         />
       </div>
+
+      {/* Additional info */}
 
       <div className="mb-3">
         <AccountsForm
@@ -382,12 +390,13 @@ const Account = ({
             [dbFields.members.specialAccom]: member?.fields?.[dbFields.members.specialAccom],
             [dbFields.members.howFound]: member?.fields?.[dbFields.members.howFound],
           }}
+          onLink={onLink}
           loading={loading}
           render={(args) => <AdditionalInfoForm {...args} />}
         />
       </div>
 
-      {/* Additional info */}
+      {/* Payment info */}
 
       {(
         memberType === memberTypes.USER_ATTORNEY &&
@@ -397,6 +406,7 @@ const Account = ({
             name={ACCOUNT_FORMS.editPayment}
             title="Payment information"
             editable={false}
+            onLink={onLink}
             loading={loading}
             setLoading={setLoading}
             render={(args) => <PaymentInfo {...args} />}

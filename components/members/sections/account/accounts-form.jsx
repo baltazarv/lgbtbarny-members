@@ -41,16 +41,19 @@ const AccountsForm = ({
   };
 
   const toggleEditing = () => {
+    onLink('check-session')
     setEditing(prev => !prev);
   };
-
+  
   const onCancel = () => {
+    onLink('check-session')
     form.resetFields();
     setEditing(false);
     setFieldValuesChanged(false);
   };
-
+  
   const onSave = () => {
+    onLink('check-session')
     const formErrors = form.getFieldsError().reduce((acc, cur) => {
       return acc.concat(cur.errors);
     }, []);

@@ -4,6 +4,7 @@ import EditCardButtons from '../../../elements/edit-card-buttons';
 
 const AccountsItem = ({
   title,
+  onLink,
   loading,
   render,
   values,
@@ -53,6 +54,7 @@ const AccountsItem = ({
       style={{ maxWidth: 600 }}
     >
       {render({
+        onLink,
         loading,
         editing,
         values,

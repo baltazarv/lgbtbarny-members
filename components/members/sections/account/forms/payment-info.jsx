@@ -42,6 +42,7 @@ import {
 const { Link } = Typography;
 
 const PaymentInfo = ({
+  onLink,
   loading,
   setLoading,
   editing,
@@ -115,6 +116,13 @@ const PaymentInfo = ({
     }
     return null;
   }, [activeSubscription]);
+
+  // check if user session expired
+  // then open window
+  const openWidow = (func) => {
+    onLink('check-session')
+    func(true)
+  }
 
   const updateCollectMethod = async (values) => {
     // console.log('updateCollectMethod', values);
@@ -218,7 +226,7 @@ const PaymentInfo = ({
     {lastPayment &&
       <Row justify="space-between mt-2">
         <Col><span className={memberStatus === 'expired' ? 'text-danger' : ''}><label className={memberStatus === 'expired' ? 'text-danger' : ''}>Last payment:</label> on {lastPayment.fields && moment(lastPayment.fields.date).format('MMMM Do, YYYY')}.</span></Col>
-        <Col><Link onClick={() => setBillingModalVisible(true)}>Payment history</Link></Col>
+        <Col><Link onClick={() => openWidow(setBillingModalVisible)}>Payment history</Link></Col>
       </Row>
     }
 
@@ -234,7 +242,7 @@ const PaymentInfo = ({
             type="primary"
             ghost={true}
             size="small"
-            onClick={() => setCollectMethodModalVisible(true)}
+            onClick={() => openWidow(setCollectMethodModalVisible)}
           >
             Change method
           </Button>
@@ -253,7 +261,7 @@ const PaymentInfo = ({
             type="primary"
             ghost={true}
             size="small"
-            onClick={() => setCardModalVisible(true)}
+            onClick={() => openWidow(setCardModalVisible)}
           >
             Change card
           </Button>
@@ -271,7 +279,7 @@ const PaymentInfo = ({
           <Button
             danger
             size="small"
-            onClick={() => setCancelModalVisible(true)}
+            onClick={() => openWidow(setCancelModalVisible)}
           >
             Cancel membership
             </Button>

@@ -120,6 +120,9 @@ const MailingPrefs = ({
    * @param {boolean} checked
    */
   const onToggleMailing = async (listTitle, checked) => {
+    // check if user session expired
+    onLink('check-session')
+
     setLoading(true)
     if (listTitle === dbFields.members.listNewsletter) setNewsletterChecked(checked)
     if (listTitle === dbFields.members.listMembers) setMemberEmailChecked(checked)
@@ -132,7 +135,7 @@ const MailingPrefs = ({
       updateContact({ email: primaryEmail, listIds })
 
       // remove from Airtable exclusion list
-      const currentLists = member.fields[dbFields.members.listsUnsubscribed]
+      const currentLists = member.fields?.[dbFields.members.listsUnsubscribed]
       let excludeList = []
       if (currentLists) {
         excludeList = [...currentLists].filter((list) => list !== listTitle)
@@ -159,7 +162,7 @@ const MailingPrefs = ({
       updateContact({ email: primaryEmail, unlinkListIds })
 
       // add to Airtable exclusion list
-      const currentLists = member.fields[dbFields.members.listsUnsubscribed]
+      const currentLists = member.fields?.[dbFields.members.listsUnsubscribed]
       let excludeList = [listTitle]
       if (currentLists) excludeList = [
         ...currentLists,
@@ -187,6 +190,9 @@ const MailingPrefs = ({
    * @param {*} check - true = check all, false = uncheck all
    */
   const toggleAllMailings = async (check) => {
+    // check if user session expired
+    onLink('check-session')
+
     setLoading(true)
 
     // check all

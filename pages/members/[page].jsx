@@ -117,18 +117,6 @@ const MembersPage = ({
   const [signupType, setSignupType] = useState('');
   // when modalType is 'signup' signupType is a loginUser type
 
-  // TODO: REVIEW AND REMOVE - DOES NOTHING
-  useEffect(() => {
-    // Using an IIFE
-    (async function fetchUser() {
-      const res = await fetch('/api/auth/me');
-      if (res.ok) {
-        const session = await res.json();
-        console.log('SESSION on front-end', session);
-      }
-    })();
-  }, []);
-
   // modals
   const [modalType, setModalType] = useState('login');
   const [modalVisible, setModalVisible] = useState(false);
@@ -590,6 +578,18 @@ const MembersPage = ({
     }
   }, [userEmails])
 
+  const isLoggedIn = async () => {
+    const res = await fetch('/api/auth/me')
+    if (res.ok) {
+      const session = await res.json()
+      console.log('session ok', session)
+      return true
+    } else {
+      console.log('user logged off!')
+      return false
+    }
+  }
+
   /****************
    * QUERY STRING *
    ****************
@@ -624,10 +624,20 @@ const MembersPage = ({
    *  * Navigate between anon preview users
    *  *
    */
-  const handleContentLink = (key) => {
+  const handleContentLink = async (key) => {
     // go to auth0 page
     if (key === 'login') {
       logIn();
+    }
+
+    // check if user session expired
+    // log out and open login form, if expired
+    else if (key === 'check-session') {
+      const loggedIn = await isLoggedIn()
+      if (!loggedIn) {
+        logOut()
+        return
+      }
     }
 
     // add query string to url, useEffect will open modal
@@ -686,8 +696,11 @@ const MembersPage = ({
     }
   }
 
-  /**
-   *** DASHBOARD ***
+  /** DASHBOARD TYPE */
+
+  /*************************************
+   *** Display Dashoard for Member Type
+   *************************************
    * set data, ie, dashboard, when user info is established
    * TODO: set up a dashboard that requires some or no data. On certain pages data not even needed.
    * 
@@ -750,17 +763,21 @@ const MembersPage = ({
   //   NewsNotification(notification);
   // }, [notification]);
 
+  /** NAVIGATION */
+
   // select page/section from menu
-  const selectItem = key => {
+  const selectItem = (key) => {
     setSelectedKey(key);
     const parent = getMemberPageParentKey(data, key);
     if (parent) setMenuOpenKeys([...menuOpenKeys, parent]);
   };
 
   // triggered by ant-menu-submenu-title
-  const onMenuOpenChange = openKeys => {
-    setMenuOpenKeys(openKeys);
-  };
+  const onMenuOpenChange = async (openKeys) => {
+    setMenuOpenKeys(openKeys)
+    const loggedIn = await isLoggedIn()
+    if (!loggedIn) logOut()
+  }
 
   // called from menu & content links
   const changeRoute = (key) => {
@@ -774,18 +791,25 @@ const MembersPage = ({
   }
 
   // triggered by ant-menu-item
-  const onMenuClick = ({ item, key, keyPath, domEvent }) => {
-    // console.log('onMenuClick item:', item, 'key', key);
-    if (key === 'logout') {
-      logOut();
-    } else if (key === 'login') {
-      logIn();
-    } else {
-      changeRoute(key);
-    }
-  };
+  const onMenuClick = async ({ item, key, keyPath, domEvent }) => {
+    // console.log('onMenuClick item:', item, 'key', key)
 
-  const onMenuCollapse = collapsed => {
+    const loggedIn = await isLoggedIn()
+    if (!loggedIn) {
+      logOut()
+      return
+    }
+
+    if (key === 'logout') {
+      logOut()
+    } else if (key === 'login') {
+      logIn()
+    } else {
+      changeRoute(key)
+    }
+  }
+
+  const onMenuCollapse = (collapsed) => {
     setMenuCollapsed(collapsed);
   };
 
