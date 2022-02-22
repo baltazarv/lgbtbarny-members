@@ -247,7 +247,7 @@ const NewsletterForm = ({
         }
 
         <Form.Item
-          className="mt-3 mb-4"
+          className="mt-3"
           wrapperCol={{
             xs: {
               span: 24,
@@ -266,9 +266,10 @@ const NewsletterForm = ({
     return null;
   }, [authUser, loading, isSubmitted, submitError]);
 
+  // No longer adding this section, which invites the users to visit the Members Dashboard
   const memberLinks = useMemo(() => {
     if (!authUser) return <>
-      <Divider className="mb-0">Members</Divider>
+      <Divider className="mb-4">Members</Divider>
 
       <div className="mb-2"><TitleIcon name="demographic" ariaLabel="Participate" />&nbsp;<TitleIcon name="bookmark" ariaLabel="LGBT Law Notes" />&nbsp;<TitleIcon name="government" ariaLabel="CLE Center" />&nbsp;<TitleIcon name="star" ariaLabel="Discounts" /></div>
 
@@ -337,7 +338,7 @@ const NewsletterForm = ({
         {loggedInContent}
         {submitMessage}
         {newsletterForm}
-        {memberLinks}
+        {/* {memberLinks} */}
       </Card>
     </Container>
   </>;

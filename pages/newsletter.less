@@ -1,0 +1,38 @@
+body {
+  height: 100%;
+  
+  #__next {
+    height: 100%;
+    
+    .ant-layout {
+      height: 100%;
+
+      .main-header {
+        z-index: 1;
+        align-items: flex-start;
+
+        .special-btns {
+          display: none;
+        }
+      }
+      
+      .ant-layout-content {
+        height: 100%;
+        
+        .newsletter-wrapper {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          padding: 48px;
+          text-align: center;
+          height: 100%;
+          overflow: auto;
+        }
+      }
+
+      .footer {
+        z-index: 1;
+      }
+    }
+  }
+}
