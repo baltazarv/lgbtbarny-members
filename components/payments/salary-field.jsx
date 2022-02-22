@@ -53,7 +53,7 @@ const SalaryField = ({
               xs={{ span: 24, offset: 0 }}
               sm={{ span: 16, offset: 8 }}
             >
-              50% discount for first-time membership!
+              10% discount for first-time membership!
             </Col>
           </Row>
         }
