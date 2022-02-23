@@ -1,14 +1,15 @@
-import { stripe } from '../utils/stripe';
-import { STRIPE_FIELDS } from '../../../data/payments/stripe/stripe-fields';
-import { DAYS_UNTIL_DUE } from '../../../data/payments/stripe/stripe-values';
+import { stripe } from '../utils/stripe'
+import { STRIPE_FIELDS } from '../../../data/payments/stripe/stripe-fields'
+import { DAYS_UNTIL_DUE } from '../../../data/payments/stripe/stripe-values'
+import auth0 from '../utils/auth0'
 
-export default async (req, res) => {
+export default auth0.requireAuthentication(async (req, res) => {
   // console.log('/api/payments/update-subscription', req.body);
 
   const {
     subcriptionId,
     priceId, // plan update
-    collectionMethod, // collection method update
+    collectionMethod, // 'charge_automatically' or 'send_invoice',
     defaultPaymentMethod, // change credit card
     cancelAtPeriodEnd,
   } = req.body;
@@ -68,4 +69,4 @@ export default async (req, res) => {
   } catch (error) {
     return res.status('400').send({ error: { message: error.message } });
   }
-};
+})

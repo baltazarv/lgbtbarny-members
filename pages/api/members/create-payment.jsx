@@ -4,7 +4,8 @@
  *  */
 import { paymentsTable, getMinifiedRecord } from '../utils/Airtable';
 // import auth0 from '../utils/auth0';
-import { dbFields } from '../../../data/members/airtable/airtable-fields';
+import { dbFields } from '../../../data/members/airtable/airtable-fields'
+import auth0 from '../utils/auth0';
 
 /**
  * body.userid {String}
@@ -18,7 +19,7 @@ import { dbFields } from '../../../data/members/airtable/airtable-fields';
 // can be called from ananomously...
 // export default auth0.requireAuthentication(async function createPayment(req, res) {
 
-const createPayment = async (req, res) => {
+const createPayment = auth0.requireAuthentication(async (req, res) => {
   // console.log('/api/members/create-payment', req.body);
 
   const {
@@ -33,18 +34,18 @@ const createPayment = async (req, res) => {
     invoice, // invoice id
     invoicePdf,
     invoiceUrl,
-} = req.body;
+  } = req.body;
   try {
     // required
     const fields = {
-      member: [ userid ],
-      plans: [ planid ],
+      member: [userid],
+      plans: [planid],
       type,
       status,
       total,
       date: new Date().toISOString(), // ISO 8601 formatted date,
     };
-  
+
     // optional:coupon/discount
     // ... no payment for student
     if (coupon_id) fields[dbFields.payments.coupon_id] = coupon_id;
@@ -63,6 +64,6 @@ const createPayment = async (req, res) => {
     console.log(error);
     res.status(500).json(error);
   }
-};
+})
 
 export default createPayment;

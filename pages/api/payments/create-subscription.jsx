@@ -1,7 +1,8 @@
-import { stripe } from '../utils/stripe';
+import { stripe } from '../utils/stripe'
+import auth0 from '../utils/auth0';
 
-export default async (req, res) => {
-  console.log('/api/payments/create-subscription', req.body)
+export default auth0.requireAuthentication(async (req, res) => {
+  // console.log('/api/payments/create-subscription', req.body)
 
   // Attach the payment method to the customer
   const {
@@ -57,4 +58,4 @@ export default async (req, res) => {
     console.log('create subscription error', error)
     return res.status('402').send({ error: { message: error.message } });
   }
-};
+})

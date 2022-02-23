@@ -1,7 +1,8 @@
 // ideal stripe api code
 import { stripe } from '../utils/stripe'
+import auth0 from '../utils/auth0';
 
-const apiRetrieveCoupon = async (req, res) => {
+const apiRetrieveCoupon = auth0.requireAuthentication(async (req, res) => {
   // console.log('/api/payments/retrieve-coupon')
 
   const code = req.body
@@ -27,6 +28,6 @@ const apiRetrieveCoupon = async (req, res) => {
       }
     })
   }
-}
+})
 
 export default apiRetrieveCoupon

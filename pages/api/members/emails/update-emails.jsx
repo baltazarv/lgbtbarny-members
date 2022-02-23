@@ -1,10 +1,13 @@
 /**
    * Used to switch primary emails
  */
-import { emailsTable, minifyRecords } from '../../utils/Airtable';
+import { emailsTable, minifyRecords } from '../../utils/Airtable'
+import auth0 from '../../utils/auth0';
 
-export default async (req, res) => {
-  // console.log('/api/members/update-emails', req.body)
+export default auth0.requireAuthentication(async (req, res) => {
+  // console.log('/api/members/emails/update-emails', req.body)
+
+  // req: [{ id, fields }]
 
   try {
     const updateRes = await emailsTable.update(req.body);
@@ -14,4 +17,4 @@ export default async (req, res) => {
     console.error(error);
     res.status(500).json(error);
   }
-}
+})

@@ -1,7 +1,9 @@
-import { sibContactsApi, sibCreateContact } from '../utils/sendinblue';
+// not sure if this is being used
+import { sibContactsApi, sibCreateContact } from '../utils/sendinblue'
+import auth0 from '../utils/auth0'
 
-export default async (req, res) => {
-  console.log('/api/email/create-contact', req.body);
+export default auth0.requireAuthentication(async (req, res) => {
+  // console.log('/api/email/create-contact', req.body);
 
   const {
     email, // required
@@ -37,4 +39,4 @@ export default async (req, res) => {
     const status = error.status || '400';
     return res.status(status).send({ error: error.response.body });
   }
-}
+})

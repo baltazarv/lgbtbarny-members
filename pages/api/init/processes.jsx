@@ -1,5 +1,5 @@
 /**
- * Back-end processes for initialization
+ * Back-end processes for initialization, called by protected route /api/init/process-user-emails
  *
  * Dependencies:
  * * processUser (may create new email & member records)
@@ -29,9 +29,113 @@ import {
 } from '../utils/Airtable';
 import { stripe, getActiveSubscription, getPaymentMethodObject } from '../utils/stripe';
 // front end utils
-import { getMemberFullName } from '../../../utils/members/airtable/members-db';
+import { getMemberFullName } from '../../../utils/members/airtable/members-db'
+
+/********************
+ * PRIVATE UTILITIES
+ ********************
+ * Utility functions used by other functions
+ * on this file and not exported.
+ */
+
+// Used by processUserEmails
+const getSibAttributes = ({
+  firstname,
+  lastname,
+  firm_org,
+  practice,
+  groups,
+}) => {
+  let attributes = null
+  if (firstname) {
+    attributes = attributes || {}
+    attributes.firstname = firstname
+  }
+  if (lastname) {
+    attributes = attributes || {}
+    attributes.lastname = lastname
+  }
+  if (firm_org) {
+    attributes = attributes || {}
+    attributes.firm_org = firm_org
+  }
+  if (practice) {
+    attributes = attributes || {}
+    attributes.practice = practice
+  }
+  if (groups) {
+    attributes = attributes || {}
+    attributes.groups = groups
+  }
+  return attributes
+}
+
+// Used by processStripeCust
+const createStripeAccount = async (_user, emailAddress) => {
+  const fullName = getMemberFullName(_user)
+  let fields = { email: emailAddress }
+  if (fullName) fields.name = fullName
+  const stripeCustomer = await stripe.customers.create(fields)
+  const fieldsToUpdate = { [dbFields.members.stripeId]: stripeCustomer.id }
+  const updatedRecords = await membersTable.update([{
+    id: _user.id,
+    fields: fieldsToUpdate,
+  }])
+  const user = minifyRecords(updatedRecords)[0]
+  return { user, customer: stripeCustomer }
+}
+
+// Used by processStripeCust
+const updateCustomer = async ({
+  customerId, // required!
+  name,
+  email,
+  defaultPaymentMethod,
+}) => {
+  let updateFields = {};
+
+  if (defaultPaymentMethod) {
+    updateFields = Object.assign(updateFields, {
+      invoice_settings: {
+        default_payment_method: defaultPaymentMethod,
+      },
+    })
+
+    // if hasn't been done, attach payment method to customer first
+    try {
+      const paymentMethod = await stripe.paymentMethods.attach(
+        defaultPaymentMethod,
+        { customer: customerId }
+      )
+    } catch (error) {
+      return res.status('400').send({ error: error.message })
+    }
+  }
+
+  if (name) updateFields.name = name
+  if (email) updateFields.email = email
+
+  try {
+    const customer = await stripe.customers.update(customerId, updateFields)
+    return { customer }
+  } catch (error) {
+    console.log('updateCustomer error', {
+      error
+    })
+    return { error: error.message }
+  }
+}
 
 /**
+ ********************
+ * BACKEND FUNCTIONS
+ ********************
+ * Called by protected routes or by Next page getServerSideProps.
+ */
+
+/**
+ * Called by [page] getServerSideProps.
+ * 
  * Airtable member & email:
  * 1) Try to get members table data.
  * 2) If member record does not exist:
@@ -84,39 +188,8 @@ const processUser = async (emailAddress) => {
   }
 }
 
-const getSibAttributes = ({
-  firstname,
-  lastname,
-  firm_org,
-  practice,
-  groups,
-}) => {
-  let attributes = null
-  if (firstname) {
-    attributes = attributes || {}
-    attributes.firstname = firstname
-  }
-  if (lastname) {
-    attributes = attributes || {}
-    attributes.lastname = lastname
-  }
-  if (firm_org) {
-    attributes = attributes || {}
-    attributes.firm_org = firm_org
-  }
-  if (practice) {
-    attributes = attributes || {}
-    attributes.practice = practice
-  }
-  if (groups) {
-    attributes = attributes || {}
-    attributes.groups = groups
-  }
-  return attributes
-}
-
 /**
- * Called from front-end on [page] init.
+ * Called by protected route /api/init/process-user-emails
  * 
  * 1) Mark LOGGED-IN email VERIFIED and save to Airtable.
  *    - Mark emails BLACKLISTED in SendinBlue as BLOCKED in Airtable.
@@ -294,7 +367,8 @@ const processUserEmails = async ({
 }
 
 /**
- * Called at page load.
+ * Called by protected backend route /api/init/process-stripe-cust
+ * 
  * Check if already stripe customer:
  * 1) If Stripe ID in member rec,
  *  * update Stripe customer name
@@ -358,71 +432,9 @@ const processStripeCust = async ({ user, emailAddress }) => {
   }
 }
 
-const createStripeAccount = async (_user, emailAddress) => {
-  const fullName = getMemberFullName(_user)
-  let fields = { email: emailAddress }
-  if (fullName) fields.name = fullName
-  const stripeCustomer = await stripe.customers.create(fields)
-  const fieldsToUpdate = { [dbFields.members.stripeId]: stripeCustomer.id }
-  const updatedRecords = await membersTable.update([{
-    id: _user.id,
-    fields: fieldsToUpdate,
-  }])
-  const user = minifyRecords(updatedRecords)[0]
-  return { user, customer: stripeCustomer }
-}
-
-/********************
- * utility functions
- ********************
- * may be the same as functions in separate APIs
- */
-
-// move to utility file for pages/api/payments/update-customer.jsx to use
-const updateCustomer = async ({
-  customerId, // required!
-  name,
-  email,
-  defaultPaymentMethod,
-}) => {
-  let updateFields = {};
-
-  if (defaultPaymentMethod) {
-    updateFields = Object.assign(updateFields, {
-      invoice_settings: {
-        default_payment_method: defaultPaymentMethod,
-      },
-    })
-
-    // if hasn't been done, attach payment method to customer first
-    try {
-      const paymentMethod = await stripe.paymentMethods.attach(
-        defaultPaymentMethod,
-        { customer: customerId }
-      )
-    } catch (error) {
-      return res.status('400').send({ error: error.message })
-    }
-  }
-
-  if (name) updateFields.name = name
-  if (email) updateFields.email = email
-
-  try {
-    const customer = await stripe.customers.update(customerId, updateFields)
-    return { customer }
-  } catch (error) {
-    console.log('updateCustomer error', {
-      error
-    })
-    return { error: error.message }
-  }
-}
-
 export {
   processUser,
   processUserEmails,
   // stripe
   processStripeCust,
-  createStripeAccount,
 }

@@ -1,6 +1,7 @@
-import { processUserEmails } from './processes';
+import { processUserEmails } from './processes'
+import auth0 from '../utils/auth0';
 
-export default async (req, res) => {
+export default auth0.requireAuthentication(async (req, res) => {
   const { loginEmailAddress, user } = req.body;
   // console.log('/api/init/process-user-emails', req.body)
 
@@ -12,4 +13,4 @@ export default async (req, res) => {
   } catch (error) {
     res.status(500).json({ error });
   }
-}
+})

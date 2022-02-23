@@ -1,7 +1,8 @@
-import { stripe } from '../utils/stripe';
+import { stripe } from '../utils/stripe'
+import auth0 from '../utils/auth0';
 
-const createCustomer = async (req, res) => {
-  console.log('/api/payments/create-customer', req.body);
+const createCustomer = auth0.requireAuthentication(async (req, res) => {
+  // console.log('/api/payments/create-customer', req.body);
 
   const {
     name,
@@ -17,6 +18,6 @@ const createCustomer = async (req, res) => {
   } catch (error) {
     res.status('500').json({ error: error.message })
   }
-}
+})
 
 export default createCustomer;

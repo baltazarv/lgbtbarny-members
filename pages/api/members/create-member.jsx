@@ -1,10 +1,11 @@
 /**
  * Used by /members/renew form for anonymous users to create accounts.
  */
-import { membersTable, getMinifiedRecord } from '../utils/Airtable';
+import { membersTable, getMinifiedRecord } from '../utils/Airtable'
+import auth0 from '../utils/auth0';
 
-export default async (req, res) => {
-  console.log('/api/members/create-member', req.body);
+export default auth0.requireAuthentication(async (req, res) => {
+  // console.log('/api/members/create-member', req.body);
 
   try {
     const fields = req.body;
@@ -18,4 +19,4 @@ export default async (req, res) => {
     console.log(error);
     res.status(500).json({ error });
   }
-};
+})

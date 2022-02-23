@@ -1,7 +1,11 @@
-import { stripe } from '../utils/stripe';
+// called when pay for subscription
+import { stripe } from '../utils/stripe'
+import auth0 from '../utils/auth0';
 
-const getSubsbcription = async (req, res) => {
-  console.log('/api/payments/get-subscription', req.body);
+const getSubsbcription = auth0.requireAuthentication(async (req, res) => {
+  // console.log('/api/payments/get-subscription', req.body)
+
+  // subscription id
   const { id } = req.body;
   try {
     const subscription = await stripe.subscriptions.retrieve(id, {
@@ -13,6 +17,6 @@ const getSubsbcription = async (req, res) => {
     console.log(error);
     res.status('500').send({ error: error.message });
   }
-}
+})
 
 export default getSubsbcription;

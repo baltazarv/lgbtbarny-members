@@ -1,8 +1,9 @@
 // use updateCustomer utility function shared by this and init process function in pages/api/init/processes.jsx
 import { stripe } from '../utils/stripe'
+import auth0 from '../utils/auth0'
 
-const updateCustomerApi = async (req, res) => {
-  console.log('/api/payments/update-customer', req.body);
+const updateCustomerApi = auth0.requireAuthentication(async (req, res) => {
+  // console.log('/api/payments/update-customer', req.body);
 
   const {
     customerId,
@@ -40,6 +41,6 @@ const updateCustomerApi = async (req, res) => {
   } catch (error) {
     return res.status('400').send({ error: error.message })
   }
-};
+})
 
 export default updateCustomerApi

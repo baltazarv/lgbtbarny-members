@@ -2,8 +2,9 @@
  * Used by /members/renew to calculate membership dues
  */
 import { plansTable, minifyRecords } from '../utils/Airtable'
+import auth0 from '../utils/auth0'
 
-export default async (req, res) => {
+export default auth0.requireAuthentication(async (req, res) => {
   // console.log('/api/members/get-plans')
 
   try {
@@ -15,4 +16,4 @@ export default async (req, res) => {
     console.log('/api/members/get-plans', error)
     res.status(500).json({ error })
   }
-}
+})

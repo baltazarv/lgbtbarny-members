@@ -1,5 +1,5 @@
 import { membersTable, getMinifiedRecord } from '../utils/Airtable';
-import auth0 from '../utils/auth0';
+import auth0 from '../utils/auth0'
 
 /**
  * req params:
@@ -10,6 +10,8 @@ import auth0 from '../utils/auth0';
 { "error": "not_authenticated", "description": "The user does not have an active session or is not authenticated"}
  */
 export default auth0.requireAuthentication(async (req, res) => {
+  // console.log('/api/members/update-member', req.body)
+
   const { id, fields } = req.body;
   try {
     const updatedRecords = await membersTable.update([

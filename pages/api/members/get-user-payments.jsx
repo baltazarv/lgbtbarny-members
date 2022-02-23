@@ -4,9 +4,10 @@
  * Used to as init [page] process
  * & on /members/renew to see if account is active
  * */
-import { paymentsTable, minifyRecords } from '../utils/Airtable';
+import { paymentsTable, minifyRecords } from '../utils/Airtable'
+import auth0 from '../utils/auth0'
 
-export default async (req, res) => {
+export default auth0.requireAuthentication(async (req, res) => {
   // console.log('/api/members/get-user-payments', req.body)
 
   try {
@@ -29,4 +30,4 @@ export default async (req, res) => {
     console.log(error);
     res.status(500).json({ error });
   }
-}
+})

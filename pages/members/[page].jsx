@@ -1010,23 +1010,23 @@ export async function getServerSideProps(context) {
         }
       }
     }
-  }
-  /**
-   * return:
-   * * props: {}
-   * * notFound: boolean => 404 page
-   * * redirect: { destination: string, permanent: boolean }
-   */
-  return {
-    props: {
-      loggedInUser,
-      loggedInMember,
-      //   plans,
-      //   userSubscriptions,
-      //   userDefaultCard,
-      //   loggedInMemberEmails,
-      //   loggedInUserPayments,
+    /**
+     * return:
+     * * props: {}
+     * * notFound: boolean => 404 page
+     * * redirect: { destination: string, permanent: boolean }
+     */
+    return {
+      props: {
+        loggedInUser,
+        loggedInMember,
+      }
     }
+  } else {
+    // redirect if not authenticated
+    context.res.statusCode = 401
+    context.res.setHeader('location', '/api/auth/logout');
+    return { props: {} }
   }
 };
 

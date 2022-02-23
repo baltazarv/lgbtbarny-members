@@ -1,10 +1,11 @@
 /**
  * Used by /members/renew form to get user info
  * */
-import { membersTable, getMinifiedRecord } from '../utils/Airtable';
-import { dbFields } from '../../../data/members/airtable/airtable-fields';
+import { membersTable, getMinifiedRecord } from '../utils/Airtable'
+import { dbFields } from '../../../data/members/airtable/airtable-fields'
+import auth0 from '../utils/auth0'
 
-export default async (req, res) => {
+export default auth0.requireAuthentication(async (req, res) => {
   console.log('/api/members/get-member-by-email', req.body);
 
   const email = req.body;
@@ -26,4 +27,4 @@ export default async (req, res) => {
     console.log('error', error)
     res.status(500).json({ error });
   }
-};
+})

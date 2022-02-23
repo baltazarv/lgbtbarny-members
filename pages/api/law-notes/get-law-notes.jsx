@@ -1,6 +1,9 @@
-import { lawNotesIssuesTable, minifyRecords } from '../utils/Airtable';
+import { lawNotesIssuesTable, minifyRecords } from '../utils/Airtable'
+import auth0 from '../utils/auth0'
 
-export default async (req, res) => {
+export default auth0.requireAuthentication(async (req, res) => {
+  // console.log('/api/law-notes/get-law-notes')
+
   try {
     const records = await lawNotesIssuesTable.select({}).firstPage();
     const minifiedRecords = minifyRecords(records);
@@ -10,4 +13,4 @@ export default async (req, res) => {
     res.statusCode = 500;
     res.json(err);
   }
-}
+})
