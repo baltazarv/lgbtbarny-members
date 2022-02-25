@@ -25,7 +25,7 @@ const MainHeader = () => {
             href="https://www.lgbtbarny.org"
             className="nav-link"
           >
-            RETURN TO MAIN SITE<CaretRightOutlined />
+            <span className="text">RETURN TO MAIN&nbsp;SITE</span><CaretRightOutlined />
           </a>
         </div>
       </div>

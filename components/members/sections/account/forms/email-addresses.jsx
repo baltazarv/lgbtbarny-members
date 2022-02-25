@@ -8,8 +8,18 @@
  * * Saving a new email handled within this component by `saveEmail`. The form surrounding the `Search` input is the only form on this component.
  */
 import { useState, useMemo, useContext } from 'react';
-import { Table, Form, Input, Tag, Tooltip, Typography, Popconfirm } from 'antd';
-import { MailOutlined } from '@ant-design/icons';
+import {
+  Table,
+  Form,
+  Input,
+  Tag,
+  Tooltip,
+  Typography,
+  Popconfirm,
+  Radio,
+} from 'antd'
+import { Breakpoint } from 'react-socks' // , useCurrentBreakpointName
+import { MailOutlined, PlusOutlined } from '@ant-design/icons';
 import SeeMore from '../../../../elements/see-more';
 // data
 import { MembersContext } from '../../../../../contexts/members-context';
@@ -22,6 +32,7 @@ import {
   deleteEmail,
 } from '../../../../../utils/members/airtable/members-db';
 import { updateContact } from '../../../../../utils/emails/sendinblue-utils';
+import './email-addresses.less'
 
 const { Link } = Typography;
 const { Search } = Input;
@@ -48,6 +59,8 @@ const EmailAddresses = ({
   const [form] = Form.useForm(); // save email form
   const [addEmailLoading, setAddEmailLoading] = useState(false)
 
+  // console.log('breakpoint', useCurrentBreakpointName());
+
   // the primary email is never null even if all verified emails are blacklisted
   const primaryEmailIsBlocked = useMemo(() => {
     if (primaryEmail && userEmails) {
@@ -66,10 +79,12 @@ const EmailAddresses = ({
    ***********************
    */
   const onSelectChange = (selectedRowKeys) => {
+    // console.log('onSelectChange', selectedRowKeys)
     values.setSelectedRowKeys(selectedRowKeys);
   };
 
   const onSelectPrimary = (record) => {
+    // console.log('onSelectPrimary', record)
     selectChanges(record); // change primary email
   };
 
@@ -142,10 +157,6 @@ const EmailAddresses = ({
     }
   };
 
-  /**
-   * Delete email
-   */
-
   const loggedInEmail = useMemo(() => {
     if (authUser) {
       return authUser.name;
@@ -153,6 +164,11 @@ const EmailAddresses = ({
     return null;
   }, [authUser]);
 
+  /************
+   * functions
+   ************/
+
+  // can only delete un-verified emails from UI
   const onDeleteEmail = async (key) => {
     const { emailid } = await deleteEmail(key);
     if (emailid) {
@@ -161,11 +177,88 @@ const EmailAddresses = ({
         return acc;
       }, [])
       setUserEmails(emails);
-      console.log('TODO: delete or unsubsribe verified email on SiN')
     }
     onCancel();
   }
 
+  const formattedList = useMemo(() => {
+    if (mailingLists?.length > 0) {
+      const listLength = mailingLists.length
+      const formattedList = [...mailingLists].map((list, index) => {
+        return <span key={list}>{listLength > 1 && listLength !== 2 && index > 0 && ', '}{listLength > 1 && index === listLength - 1 && ' and '}<strong>{list}</strong></span>
+      })
+      return <>{formattedList} mailing {mailingLists.length > 1 ? 'lists' : 'list'}</>
+    }
+    return null
+  }, [mailingLists])
+
+  const onExpandedMakePrimary = (record) => {
+    onSelectChange([record.key])
+    onSelectPrimary(record)
+  }
+
+  /*******************
+   * render functions
+   *******************/
+
+  const primeEmailContent = (text, record) => {
+    if (record.blocked) {
+      return <Tooltip title={blockedTagTooltip}>
+        <Tag color="red" style={{
+          background: 'white',
+          borderStyle: "dashed",
+        }}>Blocked</Tag>
+      </Tooltip>
+    } else if (record.primary) {
+      return <Tooltip title={primaryTagTooltip}>
+        <Tag color="blue" style={{
+          background: 'white',
+          borderStyle: "dashed",
+        }}>Primary</Tag>
+      </Tooltip>
+    }
+    return ''
+  }
+
+  const primeEmailEditContent = (record, radiobutton) => {
+    let label = '';
+    if (record.verified) {
+      label = 'Make Primary'
+    } else {
+      return null
+    }
+    if (record.primary) label = 'Primary';
+    if (record.verified && record.blocked) label = <Popconfirm
+      title={<span>Unblock <strong>{record.email}</strong>?</span>} onConfirm={() => toggleBlockEmail(record.key, false)}
+      okText="Unblock"
+      cancelButtonProps={{ danger: true }}
+      placement="topLeft"
+    >
+      <Link
+        className="text-danger"
+        size="small"
+      >
+        Unblock
+      </Link>
+    </Popconfirm>;
+
+    let boldClass = (record.primary) ? 'font-weight-bold' : 'font-weight-normal';
+
+    let colorClass = 'text-muted';
+    if (!record.primary && record.verified) colorClass = 'text-primary';
+
+    const labelContent = <>
+      {radiobutton}&nbsp;&nbsp;<label style={{ fontSize: 12 }} className={`${boldClass} ${colorClass}`}>{label}</label>
+    </>;
+
+    return <div className="prime-email-edit-content">
+      <Tooltip title={primaryTagTooltip}>
+        {labelContent}
+      </Tooltip>
+    </div>
+  }
+
+  // "Make Primary" radio button
   const rowSelection = useMemo(() => {
     if (editing) return {
       type: "radio",
@@ -175,45 +268,15 @@ const EmailAddresses = ({
       getCheckboxProps: (record) => ({
         disabled: record.primary || !record.verified || record.blocked,
       }),
-      renderCell: (checked, record, index, originNode) => {
-        let label = '';
-        if (record.verified) label = 'Make Primary';
-        if (record.primary) label = 'Primary';
-        if (record.verified && record.blocked) label = <Popconfirm
-          title={<span>Unblock <strong>{record.email}</strong>?</span>} onConfirm={() => toggleBlockEmail(record.key, false)}
-          okText="Unblock"
-          cancelButtonProps={{ danger: true }}
-          placement="topLeft"
-        >
-          <Link
-            className="text-danger"
-            size="small"
-          >
-            Unblock
-          </Link>
-        </Popconfirm>;
-
-        let boldClass = (record.primary) ? 'font-weight-bold' : 'font-weight-normal';
-
-        let colorClass = 'text-muted';
-        if (!record.primary && record.verified) colorClass = 'text-primary';
-
-        const labelContent = <>
-          {originNode} <label style={{ fontSize: 12 }} className={`${boldClass} ${colorClass}`}>{label}</label>
-        </>;
-
-        return <Tooltip title={primaryTagTooltip}>
-          {labelContent}
-        </Tooltip>;
-      },
+      renderCell: (checked, record, index, originNode) => primeEmailEditContent(record, originNode),
+      // columnWidth: 200,
     };
     return null;
   }, [editing, values]);
 
-  const verifiedEmailColRender = (text) => {
-    // if text empty not verified
+  const verifiedEmailContent = (record) => {
     let tag = null;
-    if (text) {
+    if (record.verified) {
       tag = <Tag style={{
         backgroundColor: 'white',
         borderStyle: 'dashed',
@@ -227,7 +290,7 @@ const EmailAddresses = ({
     </Tooltip>;
   }
 
-  const deleteBlockButton = (text, record, index) => {
+  const deleteBlockButton = (record) => {
     if (record.verified && !record.blocked) return <Popconfirm
       title={<span>Block <strong>{record.email}</strong> from receiving emails?</span>} onConfirm={() => toggleBlockEmail(record.key, true)}
       okText="Block"
@@ -240,11 +303,11 @@ const EmailAddresses = ({
       >
         Block
       </Link>
-    </Popconfirm>;
+    </Popconfirm>
 
     if (record.primary ||
       record.email === loggedInEmail ||
-      record.blocked) return null;
+      record.blocked) return null
 
     return <Popconfirm
       title={<span>Delete <strong>{record.email}</strong>?</span>} onConfirm={() => onDeleteEmail(record.key)}
@@ -258,8 +321,31 @@ const EmailAddresses = ({
       >
         Delete
       </Link>
-    </Popconfirm>;
-  };
+    </Popconfirm>
+  }
+
+  // expandable row for mobile with desktop table columns hidden on mobile
+  const expandedRowRender = (record) => {
+    const verified = verifiedEmailContent(record)
+    if (editing) {
+      let makePrimCheck = null
+      if (record.verified) makePrimCheck = <Radio
+        disabled={record.blocked || record.primary}
+        className="primary-radio"
+        defaultChecked={record.primary}
+        onChange={() => onExpandedMakePrimary(record)}
+      />
+      let blockDelete = deleteBlockButton(record)
+      return <div className="expanded-row-content">
+        {primeEmailEditContent(record, makePrimCheck)}{verified}{blockDelete}
+      </div>
+    } else {
+      return <div className="expanded-row-content">
+        {primeEmailContent(null, record)}{verified}
+      </div>
+    }
+    return null
+  }
 
   const columns = useMemo(() => {
     let cols = [];
@@ -270,30 +356,14 @@ const EmailAddresses = ({
           title: 'Primary',
           dataIndex: 'primary',
           key: 'primary',
-          render: (text, record) => {
-            if (record.blocked) {
-              return <Tooltip title={blockedTagTooltip}>
-                <Tag color="red" style={{
-                  background: 'white',
-                  borderStyle: "dashed",
-                }}>Blocked</Tag>
-              </Tooltip>;
-            } else if (record.primary) {
-              return <Tooltip title={primaryTagTooltip}>
-                <Tag color="blue" style={{
-                  background: 'white',
-                  borderStyle: "dashed",
-                }}>Primary</Tag>
-              </Tooltip>;
-            }
-            return '';
-          },
+          render: primeEmailContent,
           defaultSortOrder: 'ascend',
           sorter: (a, b) => {
             if (a.primary === b.primary) return 0;
             if (a.primary) return -1;
             if (b.primary) return 1;
           },
+          responsive: ['md'],
         });
     }
     cols.push(
@@ -310,7 +380,7 @@ const EmailAddresses = ({
         title: 'Verified',
         dataIndex: 'verified',
         key: 'verified',
-        render: verifiedEmailColRender,
+        render: (text, record) => verifiedEmailContent(record),
         defaultSortOrder: 'ascend',
         width: 100,
         align: 'center',
@@ -319,27 +389,18 @@ const EmailAddresses = ({
           if (!a.verified && b.verified) return 1;
           return 0;
         },
+        responsive: ['md'],
       }
     );
     if (editing) cols.push({
       title: 'Delete',
       key: 'delete',
-      render: deleteBlockButton,
+      render: (text, record, index) => deleteBlockButton(record),
       width: 100,
+      responsive: ['md'],
     });
     return cols;
   }, [editing]);
-
-  const formattedList = useMemo(() => {
-    if (mailingLists?.length > 0) {
-      const listLength = mailingLists.length
-      const formattedList = [...mailingLists].map((list, index) => {
-        return <span key={list}>{listLength > 1 && listLength !== 2 && index > 0 && ', '}{listLength > 1 && index === listLength - 1 && ' and '}<strong>{list}</strong></span>
-      })
-      return <>{formattedList} mailing {mailingLists.length > 1 ? 'lists' : 'list'}</>
-    }
-    return null
-  }, [mailingLists])
 
   const subscriptionMessage = () => {
     if (primaryEmailIsBlocked) return <span className="text-danger">You will not be able to receive emails, until you unblock an email address above.</span>;
@@ -353,7 +414,7 @@ const EmailAddresses = ({
     return <>{listMessage} Go to <a href="#mail-prefs">Mailing preferences</a> below to update your mailing list settings.</>
   }
 
-  return <>
+  return <div className='email-addresses'>
     <Table
       rowSelection={rowSelection}
       dataSource={values && values.dataSource}
@@ -361,7 +422,7 @@ const EmailAddresses = ({
       pagination={false}
       showHeader={false}
       size="small"
-      className="mb-2"
+      className="mb-3"
       title={() => <SeeMore height={56}>
         <p>The <strong className="text-primary">primary</strong> email address is the one that receives emails from the LGBT Bar of NY. Only verified addresses qualify.</p>
 
@@ -371,6 +432,12 @@ const EmailAddresses = ({
 
         {editing && <div className="footnote">You may not <strong className="text-danger">delete</strong> the primary email address or the one you used to log into the current session, but you can <strong className="text-danger">block</strong> it.</div>}
       </SeeMore>}
+      expandable={{
+        expandedRowRender,
+        defaultExpandAllRows: true, // not working
+        // indentSize: 0, // not indenting anyway
+        // columnWidth: 33, // in styles b/c space added for desktop
+      }}
     />
 
     {/* add new user email */}
@@ -379,25 +446,42 @@ const EmailAddresses = ({
       scrollToFirstError
     >
       <Form.Item
-        name={dbFields.emails.address}
+        id={dbFields.emails.address}
         label={null}
         rules={[{ type: 'email', message: 'Enter a valid email address.' },]}
-        wrapperCol={{ span: 18, offset: 2 }}
+        wrapperCol={{ sm: { span: 18, offset: 2 } }}
       >
-        <Search
-          enterButton="Add"
-          addonBefore="Alternate Email"
-          placeholder="user@domain.com"
-          onSearch={addEmail}
-          loading={addEmailLoading}
-          disabled={addEmailLoading}
-          allowClear={true}
-          prefix={<MailOutlined />}
-        />
+        {/* desktop version */}
+        <Breakpoint md up>
+          <Search
+            enterButton="Add"
+            addonBefore="Alternate Email"
+            placeholder="user@domain.com"
+            onSearch={addEmail}
+            loading={addEmailLoading}
+            disabled={addEmailLoading}
+            allowClear={true}
+            prefix={<MailOutlined />}
+          />
+        </Breakpoint>
+
+        {/* mobile version */}
+        <Breakpoint sm down>
+          <Search
+            enterButton={<PlusOutlined />}
+            addonBefore={<Tooltip title="Alternate Email">@</Tooltip>}
+            placeholder="alternate"
+            onSearch={addEmail}
+            loading={addEmailLoading}
+            disabled={addEmailLoading}
+            allowClear={true}
+            prefix={<MailOutlined />}
+          />
+        </Breakpoint>
       </Form.Item>
     </Form>
-    <div className="mt-3 mx-4">{subscriptionMessage()}</div>
-  </>;
+    <div className="mt-3 mx-sm-4">{subscriptionMessage()}</div>
+  </div>;
 };
 
 export default EmailAddresses;

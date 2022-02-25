@@ -1,0 +1,60 @@
+@import '../../../../../assets/global-styles.less';
+
+.email-addresses {
+  .ant-table {
+    // "Block" text same size as "Make Primary"
+    .ant-table-cell .ant-typography.text-danger {
+      font-size: 12px;
+    }
+
+    .ant-table-expand-icon-col {
+      width: 33px;
+
+      // // doesn't decrease size
+      // @media @sm-up {
+      //   width: 16px;
+      // }
+    }
+
+    // .ant-table-row-expand-icon-cell {
+    .ant-table-row-expand-icon {
+      @media @sm-up {
+        display: none;
+      }
+    }
+
+    .ant-table-selection-column {
+      display: none;
+
+      @media @sm-up {
+        display: table-cell;
+      }
+    }
+
+    .ant-table-tbody>tr.ant-table-expanded-row>td.ant-table-cell {
+      padding-left: 8px;
+    }
+
+    tr.ant-table-expanded-row {
+      .primary-radio {
+        margin-right: 0;
+      }
+
+      .expanded-row-content {
+        display: flex;
+        justify-content: space-around;
+
+        .prime-email-edit-content {
+          white-space: nowrap;
+          margin-right: 8px;
+        }
+      }
+    }
+
+    .ant-input-search>.ant-input-group>.ant-input-group-addon:last-child .ant-input-search-button {
+      display: flex;
+      align-items: center;
+      padding: 4px 6px;
+    }
+  }
+}

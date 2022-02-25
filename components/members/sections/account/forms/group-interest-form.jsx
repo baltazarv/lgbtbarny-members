@@ -2,6 +2,7 @@ import { useContext, useMemo, useEffect } from 'react'
 import { Form, Select } from 'antd'
 import { MembersContext } from '../../../../../contexts/members-context'
 import { dbFields } from '../../../../../data/members/airtable/airtable-fields'
+import './group-interest-form.less'
 
 const { Option } = Select;
 
@@ -58,6 +59,7 @@ const GroupInterestForm = ({
       label="Committees, Sections, and other groups you may be interested in joining:"
       {...longFieldFormat}
       colon={false}
+      className="group-interest-form"
     >
       {editing
         ?
