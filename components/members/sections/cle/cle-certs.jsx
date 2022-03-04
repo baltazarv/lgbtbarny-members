@@ -68,7 +68,7 @@ const CleCerts = () => {
 
   return <>
     <p>View and download CLE certificates from courses you've attended.</p>
-    <p>For certificates issued prior January 1, 2022, please contact <a href="mailto:support@le-gal.org" target="_blank" className="text-nowrap">support@le-gal.org</a> to receive a copy via email.</p>
+    <p>For certificates issued prior April 1, 2022, please contact <a href="mailto:support@le-gal.org" target="_blank" className="text-nowrap">support@le-gal.org</a> to receive a copy via email.</p>
 
     <PdfTable
       data={dataTransformed}
