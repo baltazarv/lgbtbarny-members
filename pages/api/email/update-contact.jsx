@@ -1,12 +1,14 @@
 /**
  * email is required
- * TODO: change payload signature to (email, { listIds... })
+ * Not a protected route, because has to be accessed by /newsletter without users being logged in.
  */
+// TODO: change payload signature to (email, { listIds... })?
 import { sibContactsApi, sibUpdateContact } from '../utils/sendinblue'
 import { sibFields } from '../../../data/emails/sendinblue-fields'
 import auth0 from '../utils/auth0'
 
-export default auth0.requireAuthentication(async (req, res) => {
+export default async (req, res) => {
+  // export default auth0.requireAuthentication(async (req, res) => {
   // console.log('/api/email/update-contact', req.body)
 
   const {
@@ -81,4 +83,4 @@ export default auth0.requireAuthentication(async (req, res) => {
     const status = error.status || '400'
     return res.status(status).send({ error: error.response.body })
   }
-})
+}

@@ -1,8 +1,12 @@
-// not sure if this is being used
+/**
+ * email is required
+ * Not a protected route, because has to be accessed by /newsletter without users being logged in.
+ */
 import { sibContactsApi, sibCreateContact } from '../utils/sendinblue'
 import auth0 from '../utils/auth0'
 
-export default auth0.requireAuthentication(async (req, res) => {
+export default async (req, res) => {
+// export default auth0.requireAuthentication(async (req, res) => {
   // console.log('/api/email/create-contact', req.body);
 
   const {
@@ -39,4 +43,4 @@ export default auth0.requireAuthentication(async (req, res) => {
     const status = error.status || '400';
     return res.status(status).send({ error: error.response.body });
   }
-})
+}

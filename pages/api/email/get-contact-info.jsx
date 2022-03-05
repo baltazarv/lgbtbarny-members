@@ -1,10 +1,13 @@
-// not sure if being used
+/**
+ * email is required
+ * Not a protected route, because has to be accessed by /newsletter without users being logged in.
+ */
 import { sibContactsApi } from '../utils/sendinblue'
 import auth0 from '../utils/auth0'
 
 const contactsApi = new sibContactsApi();
 
-export default auth0.requireAuthentication(async (req, res) => {
+export default async (req, res) => {
   // console.log('/api/email/get-contact-info', req.body);
 
   const id = req.body; // email, ID, or SMS
@@ -17,4 +20,4 @@ export default auth0.requireAuthentication(async (req, res) => {
     console.log('get-contact-info err', errorBody)
     return res.status(status).send(errorBody);
   }
-})
+}
